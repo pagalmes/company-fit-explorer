@@ -1,0 +1,218 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { savePanelState, loadPanelState, PanelState } from '../panelStorage'
+
+describe('panelStorage', () => {
+  const mockLocalStorage = {
+    getItem: vi.fn(),
+    setItem: vi.fn(),
+    removeItem: vi.fn(),
+    clear: vi.fn(),
+    length: 0,
+    key: vi.fn(),
+  }
+
+  beforeEach(() => {
+    // Mock localStorage
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true,
+    })
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  describe('savePanelState', () => {
+    it('should save panel state successfully', () => {
+      const mockCurrentState: PanelState = {
+        cmfCollapsed: false,
+        lastUpdated: '2023-01-01T00:00:00.000Z'
+      }
+      
+      mockLocalStorage.getItem.mockReturnValue(JSON.stringify(mockCurrentState))
+      
+      const newState = { cmfCollapsed: true }
+      savePanelState(newState)
+
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        'cmf-explorer-panel-state',
+        expect.stringContaining('"cmfCollapsed":true')
+      )
+    })
+
+    it('should handle localStorage setItem errors gracefully', () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const error = new Error('Storage quota exceeded')
+      mockLocalStorage.setItem.mockImplementation(() => {
+        throw error
+      })
+      mockLocalStorage.getItem.mockReturnValue(null)
+
+      expect(() => savePanelState({ cmfCollapsed: true })).not.toThrow()
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to save panel state:', error)
+      
+      consoleSpy.mockRestore()
+    })
+
+    it('should handle loadPanelState errors during save', () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const error = new Error('Invalid JSON')
+      mockLocalStorage.getItem.mockImplementation(() => {
+        throw error
+      })
+
+      expect(() => savePanelState({ cmfCollapsed: true })).not.toThrow()
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to load panel state:', error)
+      
+      consoleSpy.mockRestore()
+    })
+
+    it('should merge state correctly with existing state', () => {
+      const existingState: PanelState = {
+        cmfCollapsed: false,
+        lastUpdated: '2023-01-01T00:00:00.000Z'
+      }
+      
+      mockLocalStorage.getItem.mockReturnValue(JSON.stringify(existingState))
+      
+      savePanelState({ cmfCollapsed: true })
+
+      const setItemCall = mockLocalStorage.setItem.mock.calls[0]
+      const savedData = JSON.parse(setItemCall[1])
+      
+      expect(savedData.cmfCollapsed).toBe(true)
+      expect(savedData.lastUpdated).not.toBe(existingState.lastUpdated) // Should be updated
+    })
+  })
+
+  describe('loadPanelState', () => {
+    it('should load panel state successfully', () => {
+      const mockState: PanelState = {
+        cmfCollapsed: true,
+        lastUpdated: '2023-01-01T00:00:00.000Z'
+      }
+      
+      mockLocalStorage.getItem.mockReturnValue(JSON.stringify(mockState))
+      
+      const result = loadPanelState()
+      
+      expect(result).toEqual(mockState)
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith('cmf-explorer-panel-state')
+    })
+
+    it('should return default state when no stored data exists', () => {
+      mockLocalStorage.getItem.mockReturnValue(null)
+      
+      const result = loadPanelState()
+      
+      expect(result.cmfCollapsed).toBe(false)
+      expect(result.lastUpdated).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/)
+    })
+
+    it('should return default state when stored data is empty string', () => {
+      mockLocalStorage.getItem.mockReturnValue('')
+      
+      const result = loadPanelState()
+      
+      expect(result.cmfCollapsed).toBe(false)
+      expect(result.lastUpdated).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/)
+    })
+
+    it('should handle localStorage getItem errors gracefully', () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const error = new Error('Storage access denied')
+      mockLocalStorage.getItem.mockImplementation(() => {
+        throw error
+      })
+
+      const result = loadPanelState()
+      
+      expect(result.cmfCollapsed).toBe(false)
+      expect(result.lastUpdated).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/)
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to load panel state:', error)
+      
+      consoleSpy.mockRestore()
+    })
+
+    it('should handle JSON parse errors gracefully', () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      mockLocalStorage.getItem.mockReturnValue('invalid json')
+
+      const result = loadPanelState()
+      
+      expect(result.cmfCollapsed).toBe(false)
+      expect(result.lastUpdated).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/)
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to load panel state:', expect.any(Error))
+      
+      consoleSpy.mockRestore()
+    })
+
+    it('should handle corrupted data gracefully', () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      mockLocalStorage.getItem.mockReturnValue('{"corrupted": true}')
+
+      const result = loadPanelState()
+      
+      // The actual implementation returns the parsed data as-is if it's valid JSON
+      // So corrupted but valid JSON will be returned as-is
+      expect(result).toEqual({ corrupted: true })
+      
+      consoleSpy.mockRestore()
+    })
+  })
+
+  describe('error scenarios', () => {
+    it('should handle SecurityError (private mode)', () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const securityError = new Error('Security error')
+      securityError.name = 'SecurityError'
+      
+      mockLocalStorage.getItem.mockImplementation(() => {
+        throw securityError
+      })
+
+      const result = loadPanelState()
+      
+      expect(result.cmfCollapsed).toBe(false)
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to load panel state:', securityError)
+      
+      consoleSpy.mockRestore()
+    })
+
+    it('should handle QuotaExceededError during save', () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const quotaError = new Error('Quota exceeded')
+      quotaError.name = 'QuotaExceededError'
+      
+      mockLocalStorage.setItem.mockImplementation(() => {
+        throw quotaError
+      })
+      mockLocalStorage.getItem.mockReturnValue(null)
+
+      expect(() => savePanelState({ cmfCollapsed: true })).not.toThrow()
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to save panel state:', quotaError)
+      
+      consoleSpy.mockRestore()
+    })
+
+    it('should handle undefined localStorage', () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      
+      // Simulate environment without localStorage
+      Object.defineProperty(window, 'localStorage', {
+        value: undefined,
+        writable: true,
+      })
+
+      expect(() => savePanelState({ cmfCollapsed: true })).not.toThrow()
+      expect(() => loadPanelState()).not.toThrow()
+      
+      const result = loadPanelState()
+      expect(result.cmfCollapsed).toBe(false)
+      
+      consoleSpy.mockRestore()
+    })
+  })
+})

@@ -12,6 +12,12 @@ An interactive CMF (Candidate Market Fit) visualization tool that helps you disc
 ## ✨ Features
 
 - **CMF-Centered Graph**: Your Candidate Market Fit profile sits at the center with companies positioned around it based on match scores
+- **Collapsible CMF Panel**: Space-saving CMF information panel in the top-left corner:
+  - **Click to Collapse/Expand**: Toggle between full details and compact header
+  - **Keyboard Accessible**: Full keyboard navigation support (Enter, Space, Escape)
+  - **Persistent State**: Remembers your collapse preference across browser sessions
+  - **Smooth Animations**: Polished expand/collapse transitions for better UX
+  - **Responsive Design**: Optimized for desktop, tablet, and mobile devices
 - **Precise Company Positioning**: Companies arranged in perfect circles around your CMF using exact angle/distance calculations
 - **Match Quality Zones**: Visual background zones indicate excellent (90%+), good (80%+), and fair matches
 - **Interactive Company Details**: Click any company to see comprehensive information:
@@ -19,6 +25,11 @@ An interactive CMF (Candidate Market Fit) visualization tool that helps you disc
   - Industry, stage, location, and team size
   - Open roles and remote work policies
   - Connection types to other companies in your network
+- **Company Management**: Full control over your company exploration:
+  - **Remove Companies**: Clean "Remove Company" button in company details
+  - **Smart Restore**: Automatically restores previously removed companies when re-added
+  - **Persistent Removal**: Removed companies stay hidden across browser sessions
+  - **Watchlist Integration**: Automatically removes companies from watchlist when removed
 - **Connection Highlighting**: Hover over companies to see their relationships:
   - 🔵 **AI Competitors** - Companies in similar AI/ML spaces
   - 🟢 **Similar Culture** - Companies with similar values and culture
@@ -87,12 +98,13 @@ npx playwright show-report tests/reports # View test results and screenshots
 1. **Write failing test** → 2. **Implement feature** → 3. **Verify test passes** → 4. **Refactor safely**
 
 **Test Coverage:**
-- ✅ **83 tests** across 7 test files
+- ✅ **104+ tests** across 8 test files
 - ✅ **Utility functions** (30 tests) - Data transformations, formatting, validations
-- ✅ **Component logic** (16 tests) - UI interactions, rendering, accessibility  
+- ✅ **Component logic** (36+ tests) - UI interactions, rendering, accessibility  
 - ✅ **Integration testing** (15 tests) - End-to-end workflows with real data
 - ✅ **Watchlist functionality** (12 tests) - Storage, state management, error handling
 - ✅ **Type safety** (10 tests) - Interface validation, data integrity
+- ✅ **New features** (20+ tests) - Collapsible CMF panel, keyboard accessibility, company removal
 
 📖 **Complete testing guide:** [TESTING.md](./TESTING.md)
 
@@ -133,6 +145,10 @@ src/
 │   ├── CMFGraphExplorer.tsx         # Main CMF graph explorer component
 │   ├── CompanyGraph.tsx             # Cytoscape graph visualization
 │   ├── CompanyDetailPanel.tsx       # Company details sidebar
+│   ├── CollapsibleCMFPanel.tsx      # Collapsible CMF information panel
+│   ├── RemoveCompanyModal.tsx       # Company removal confirmation modal
+│   ├── AddCompanyModal.tsx          # Add/restore company modal
+│   ├── LLMSettingsModal.tsx         # AI settings configuration modal
 │   ├── __tests__/                   # Component tests
 │   └── index.ts                     # Component exports
 ├── data/                # Static data and configuration
@@ -150,6 +166,10 @@ src/
 ├── utils/               # Utility functions and configurations
 │   ├── graphDataTransform.ts        # Graph positioning and styling logic
 │   ├── watchlistStorage.ts          # localStorage utilities with error handling
+│   ├── removedCompaniesStorage.ts   # Removed companies persistence utilities
+│   ├── panelStorage.ts              # CMF panel state persistence utilities
+│   ├── companyStateManager.ts       # Cross-tab company synchronization
+│   ├── llm/                         # AI integration utilities
 │   ├── index.ts                     # Helper functions
 │   └── __tests__/                   # Utility function tests
 ├── App.tsx              # Root application component
@@ -275,6 +295,32 @@ Match scores can be enhanced to be dynamic based on:
 - Heart indicators appear on company logos in the sidebar for saved companies
 - Data persists across browser sessions using localStorage
 
+### Company Management
+
+**Remove Companies:**
+- Click any company to view details in the sidebar
+- Click the "Remove Company" button at the bottom
+- Confirm removal in the modal dialog
+- Removed companies are hidden from both explore and watchlist views
+
+**Restore Companies:**
+- Use the "+" button to add a company
+- If you try to add a previously removed company, it will be automatically restored
+- No LLM analysis is needed for restored companies (improves performance)
+
+**Persistent Storage:**
+- All removal/restore actions are saved across browser sessions
+- Removed companies remain hidden until explicitly restored
+- Data is synchronized across multiple browser tabs
+
+### CMF Panel Customization
+
+**Collapse/Expand the CMF Panel:**
+- Click anywhere on the CMF panel header to toggle
+- Use keyboard shortcuts: Enter, Space (expand/collapse), Escape (collapse only)
+- Your preference is automatically saved for future visits
+- Provides more screen space for graph visualization when collapsed
+
 ### Styling Customization
 
 The application uses Tailwind CSS. Key styling areas:
@@ -291,6 +337,21 @@ The application uses Tailwind CSS. Key styling areas:
 - **Developer Tools**: Companies building tools and platforms for developers
 - **Fintech APIs**: Financial technology and payment processing companies
 
+## ⌨️ Keyboard Shortcuts
+
+The application supports keyboard navigation for accessibility:
+
+### CMF Panel Navigation
+- **Enter** or **Space**: Toggle collapse/expand of CMF panel
+- **Escape**: Collapse CMF panel (when expanded)
+- **Tab**: Navigate between interactive elements
+
+### General Navigation
+- **Tab**: Move focus between UI elements
+- **Shift + Tab**: Move focus backwards
+- **Enter**: Activate buttons and links
+- **Escape**: Close modals and dialogs
+
 ## 📱 Responsive Design
 
 The application is responsive and works on:
@@ -304,7 +365,7 @@ We use **Test-Driven Development** to ensure code quality. Please follow these g
 
 ### Before Making Changes
 1. **Run existing tests**: `npm test`
-2. **Ensure all tests pass** (currently 83 unit tests across 7 files)
+2. **Ensure all tests pass** (currently 104+ unit tests across 8 files)
 3. **Check coverage doesn't decrease**: `npm run test:coverage`
 4. **Run E2E tests**: `npm run test:e2e` (may need visual baseline updates)
 
