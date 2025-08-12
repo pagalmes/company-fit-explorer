@@ -33,5 +33,9 @@ export default defineConfig({
         'dist/',
       ],
     },
+    bail: 0,
+    passWithNoTests: true,
+    silent: false,
+    watch: false,
   },
 })
