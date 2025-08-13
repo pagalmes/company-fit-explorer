@@ -26,6 +26,12 @@ jobs:
     - name: Run type check
       run: npm run build
 
+    - name: Validate test setup
+      run: npm run test:validate
+
+    # IMPORTANT: Use 'npm test' NOT 'npm run test:run' 
+    # npm test uses our vitest bug workaround script
+    # Direct vitest commands will fail CI due to snapshot bug
     - name: Run tests
       run: npm test
 
