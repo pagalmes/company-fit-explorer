@@ -37,7 +37,9 @@ export default defineConfig({
     passWithNoTests: true,
     silent: false,
     watch: false,
-    // Disable snapshots to prevent the internal vitest error
-    snapshot: false,
+    // Try to prevent the vitest snapshot error
+    snapshot: {
+      resolveSnapshotPath: () => false
+    }
   },
 })
