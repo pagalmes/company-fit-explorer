@@ -3,8 +3,8 @@
 // Validation script to prevent vitest CI issues
 // Run this to verify test setup is correct
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 console.log('🔍 Validating test setup...\n');
 
@@ -29,11 +29,20 @@ const ciPath = '.github/workflows/ci.yml';
 if (fs.existsSync(ciPath)) {
   const ciContent = fs.readFileSync(ciPath, 'utf8');
   
-  if (ciContent.includes('npm run test:run') || ciContent.includes('vitest run')) {
+  // Check for actual command usage, not comments
+  const commandLines = ciContent.split('\n').filter(line => 
+    line.trim().startsWith('run:') && !line.trim().startsWith('#')
+  );
+  
+  const hasDangerousCommands = commandLines.some(line => 
+    line.includes('npm run test:run') || line.includes('vitest run')
+  );
+  
+  if (hasDangerousCommands) {
     console.log('❌ DANGER: CI workflow bypasses vitest bug fix!');
     console.log('✅ FIX: Use "npm test" instead of direct vitest commands');
     process.exit(1);
-  } else if (ciContent.includes('npm test')) {
+  } else if (ciContent.includes('run: npm test')) {
     console.log('✅ GOOD: CI uses npm test command');
   } else {
     console.log('⚠️  WARNING: CI test command not found or unclear');

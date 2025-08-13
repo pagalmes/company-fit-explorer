@@ -1,6 +1,7 @@
 {
   "name": "company-fit-explorer",
   "version": "1.0.0",
+  "type": "module",
   "description": "Interactive company graph explorer to find companies that fit your preferences",
   "main": "index.js",
   "scripts": {

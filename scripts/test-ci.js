@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { spawn } = require('child_process');
+import { spawn } from 'child_process';
 
 // Run vitest with special handling for snapshot errors
 const test = spawn('npx', ['vitest', 'run', '--no-coverage'], {

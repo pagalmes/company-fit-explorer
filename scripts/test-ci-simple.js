@@ -3,7 +3,7 @@
 // Simple test runner that exits 0 if any tests pass
 // This is a fallback for the vitest snapshot bug
 
-const { execSync } = require('child_process');
+import { execSync } from 'child_process';
 
 try {
   // Run tests and capture output

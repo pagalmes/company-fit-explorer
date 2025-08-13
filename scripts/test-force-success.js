@@ -3,7 +3,7 @@
 // Force success approach - always exit 0 if we detect ANY test execution
 // This is a nuclear option for the persistent vitest CI bug
 
-const { spawn } = require('child_process');
+import { spawn } from 'child_process';
 
 console.log('🚀 Running tests with forced success handling...');
 

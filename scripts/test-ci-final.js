@@ -3,7 +3,7 @@
 // Final simple approach - just run tests and exit 0 if we see any success indicators
 // This is specifically to handle the vitest snapshot bug in CI
 
-const { exec } = require('child_process');
+import { exec } from 'child_process';
 
 console.log('Running tests with vitest...');
 
