@@ -263,8 +263,8 @@ export const getCytoscapeStyles = (): any[] => [
       'line-color': '#3B82F6',
       'opacity': 1,
       'transition-property': 'width, opacity',
-      'transition-duration': '0.2s',
-      'transition-timing-function': 'ease-in-out',
+      'transition-duration': '0.1s',
+      'transition-timing-function': 'ease-out',
       'z-index': 4
     }
   },
@@ -273,7 +273,7 @@ export const getCytoscapeStyles = (): any[] => [
     selector: 'node[type="company"].dimmed',
     style: {
       'opacity': 0.3,
-      'z-index': -1,
+      'z-index': -4,
       'transition-property': 'opacity',
       'transition-duration': '0.3s',
       'transition-timing-function': 'ease-in-out'
@@ -284,7 +284,7 @@ export const getCytoscapeStyles = (): any[] => [
     selector: 'node[type="company-name-label"].dimmed',
     style: {
       'opacity': 0.2,
-      'z-index': -1,
+      'z-index': -4,
       'transition-property': 'opacity',
       'transition-duration': '0.3s',
       'transition-timing-function': 'ease-in-out'
@@ -295,7 +295,7 @@ export const getCytoscapeStyles = (): any[] => [
     selector: 'node[type="company-percent-label"].dimmed',
     style: {
       'opacity': 0.2,
-      'z-index': -1,
+      'z-index': -4,
       'transition-property': 'opacity',
       'transition-duration': '0.3s',
       'transition-timing-function': 'ease-in-out'
@@ -363,7 +363,7 @@ export const getCytoscapeStyles = (): any[] => [
     selector: 'node[type="company"].view-hidden',
     style: {
       'opacity': 0,
-      'z-index': -1,
+      'z-index': -4,
       'transition-property': 'opacity',
       'transition-duration': '0.3s',
       'transition-timing-function': 'ease-in-out',
@@ -375,7 +375,7 @@ export const getCytoscapeStyles = (): any[] => [
     selector: 'node[type="company-name-label"].view-hidden',
     style: {
       'opacity': 0,
-      'z-index': -1,
+      'z-index': -4,
       'transition-property': 'opacity',
       'transition-duration': '0.3s',
       'transition-timing-function': 'ease-in-out',
@@ -387,7 +387,7 @@ export const getCytoscapeStyles = (): any[] => [
     selector: 'node[type="company-percent-label"].view-hidden',
     style: {
       'opacity': 0,
-      'z-index': -1,
+      'z-index': -4,
       'transition-property': 'opacity',
       'transition-duration': '0.3s',
       'transition-timing-function': 'ease-in-out',

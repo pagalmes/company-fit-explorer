@@ -70,11 +70,39 @@ npm install
 ```
 
 3. Start the development server:
+
+**Option A: Full Development Experience (Recommended)**
+```bash
+npm run dev:full
+```
+This runs both the React app AND the file server for automatic persistence.
+
+**Option B: React App Only**
 ```bash
 npm run dev
 ```
+Basic development without automatic file persistence.
+
+**Option C: Manual File Server**
+```bash
+# Terminal 1: Start React app
+npm run dev
+
+# Terminal 2: Start file server for automatic persistence
+npm run dev:file-server
+```
 
 4. Open your browser and navigate to `http://localhost:5173`
+
+### 💾 Development Persistence
+
+When using `npm run dev:full` or running the file server manually:
+- **Added companies** are automatically saved to `companies.ts`
+- **Watchlist changes** persist across browser refreshes
+- **Removed companies** are tracked and can be restored
+- **View mode preferences** are maintained
+
+Without the file server, changes are only saved to localStorage and won't persist across file edits.
 
 ## 🧪 Test-Driven Development
 
@@ -420,6 +448,43 @@ We use **Test-Driven Development** to ensure code quality. Please follow these g
 - **Component Tests**: UI interactions and rendering  
 - **Integration Tests**: End-to-end user workflows
 - **Data Validation**: Real dataset integrity checks
+
+## 🔧 Troubleshooting
+
+### Automatic Persistence Not Working
+
+If added companies, watchlist changes, or removals aren't being saved to `companies.ts`:
+
+**Problem**: Development file server isn't running
+**Solution**: 
+```bash
+# Option 1: Use the full development setup
+npm run dev:full
+
+# Option 2: Start the file server manually (if React app is already running)
+npm run dev:file-server
+```
+
+**Verify it's working**:
+- Check console for "💾 Automatically saved to companies.ts" messages
+- File server should show: "🚀 Development file server running on http://localhost:3001"
+- After starting the file server, refresh your browser tab
+
+**Alternative**: If file server isn't working, check the browser console for manual copy/paste instructions
+
+### Performance Issues
+
+**Slow hover/selection**: Check if too many companies are loaded
+**Graph rendering issues**: Try refreshing the page or clearing localStorage
+**LLM analysis slow**: Company analysis depends on external API response times
+
+### E2E Test Failures
+
+Visual regression tests may fail after UI changes:
+```bash
+# Update test snapshots after visual improvements
+npm run test:e2e -- --update-snapshots
+```
 
 ## 📝 License
 

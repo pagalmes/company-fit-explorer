@@ -792,7 +792,7 @@ const teeKProfile: UserExplorationState = {
   1003,
   1
 ],
-  lastSelectedCompanyId: undefined,
+  lastSelectedCompanyId: 11,
   viewMode: 'explore'
 };
 
