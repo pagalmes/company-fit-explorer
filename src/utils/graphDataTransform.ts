@@ -243,7 +243,7 @@ export const getCytoscapeStyles = (): any[] => [
       'events': 'no'
     }
   },
-  // Connection Lines - exact specs
+  // Connection Lines - hidden by default, only visible when highlighted
   {
     selector: 'edge',
     style: {
@@ -251,7 +251,7 @@ export const getCytoscapeStyles = (): any[] => [
       'line-color': '#E5E7EB',
       'target-arrow-shape': 'none',
       'curve-style': 'straight',
-      'opacity': 0.6,
+      'opacity': 0, // Hidden by default
       'z-index': 1
     }
   },
