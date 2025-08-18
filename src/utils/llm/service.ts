@@ -67,6 +67,13 @@ export class LLMService {
   }
 
   /**
+   * Get the current provider name
+   */
+  getCurrentProvider(): string {
+    return this.settings.provider;
+  }
+
+  /**
    * Analyze a company using the configured LLM provider
    */
   async analyzeCompany(request: CompanyAnalysisRequest): Promise<LLMResponse> {

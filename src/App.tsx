@@ -1,14 +1,16 @@
 import React from 'react';
-import CMFGraphExplorer from './components/CMFGraphExplorer';
-import { sampleUserCMF, sampleCompanies } from './data/companies';
+import CMFGraphExplorer from './components/CMFGraphExplorerNew';
+import { autoMigrate } from './utils/migrateLegacyState';
 
 const App: React.FC = () => {
+  // Check for legacy data and provide migration guidance
+  React.useEffect(() => {
+    autoMigrate();
+  }, []);
+
   return (
     <div className="App">
-      <CMFGraphExplorer 
-        userCMF={sampleUserCMF}
-        companies={sampleCompanies}
-      />
+      <CMFGraphExplorer />
     </div>
   );
 };

@@ -49,6 +49,18 @@ export interface GraphData {
   }>;
 }
 
+export interface UserExplorationState {
+  id: string;
+  name: string;
+  cmf: UserCMF;
+  baseCompanies: Company[];           // Original dataset
+  addedCompanies: Company[];          // Manually added companies  
+  removedCompanyIds: number[];        // IDs of removed companies
+  watchlistCompanyIds: number[];      // IDs of watchlisted companies
+  lastSelectedCompanyId?: number;     // Last selected company
+  viewMode: 'explore' | 'watchlist';  // Current view mode
+}
+
 // CMF Component Props
 export interface CMFGraphExplorerProps {
   userCMF: UserCMF;

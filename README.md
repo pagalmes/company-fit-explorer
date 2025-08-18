@@ -142,28 +142,32 @@ npx playwright show-report tests/reports # View test results and screenshots
 ```
 src/
 ├── components/           # React components
-│   ├── CMFGraphExplorer.tsx         # Main CMF graph explorer component
+│   ├── CMFGraphExplorerNew.tsx      # Main CMF graph explorer component with persistent state
 │   ├── CompanyGraph.tsx             # Cytoscape graph visualization
 │   ├── CompanyDetailPanel.tsx       # Company details sidebar
 │   ├── CollapsibleCMFPanel.tsx      # Collapsible CMF information panel
 │   ├── RemoveCompanyModal.tsx       # Company removal confirmation modal
-│   ├── AddCompanyModal.tsx          # Add/restore company modal
+│   ├── AddCompanyModal.tsx          # Add/restore company modal with LLM analysis
 │   ├── LLMSettingsModal.tsx         # AI settings configuration modal
 │   ├── __tests__/                   # Component tests
 │   └── index.ts                     # Component exports
 ├── data/                # Static data and configuration
-│   └── companies.ts                 # CMF profile and company dataset
-├── hooks/               # Custom React hooks
+│   └── companies.ts                 # Complete user exploration state with persistent data
+├── services/            # Business logic and state management
+│   ├── ExplorationStateManager.ts  # Centralized state management for exploration data
+│   └── __tests__/                   # Service tests
+├── hooks/               # Custom React hooks (legacy)
 │   ├── useCompanySelection.ts       # Company selection state hook
 │   ├── useWatchlist.ts              # Watchlist state management hook
 │   └── index.ts                     # Hook exports
 ├── styles/              # Styling and CSS
 │   └── index.css                    # Global styles and Tailwind imports
 ├── types/               # TypeScript type definitions
-│   ├── index.ts                     # CMF, Company, and graph type definitions
+│   ├── index.ts                     # CMF, Company, and UserExplorationState definitions
 │   ├── watchlist.ts                 # Watchlist interfaces and types
 │   └── __tests__/                   # Type validation tests
 ├── utils/               # Utility functions and configurations
+│   ├── devFileWriter.ts             # Development-only file writing for persistence
 │   ├── graphDataTransform.ts        # Graph positioning and styling logic
 │   ├── watchlistStorage.ts          # localStorage utilities with error handling
 │   ├── removedCompaniesStorage.ts   # Removed companies persistence utilities
@@ -178,9 +182,21 @@ src/
 
 ## 📊 Data Structure
 
-The application uses structured data for CMF profiles and companies:
+The application uses a comprehensive persistent state system for exploration data:
 
 ```typescript
+interface UserExplorationState {
+  id: string;                          // User identifier
+  name: string;                        // User display name
+  cmf: UserCMF;                        // Complete CMF profile
+  baseCompanies: Company[];            // Original dataset companies
+  addedCompanies: Company[];           // User-added companies with LLM analysis
+  removedCompanyIds: number[];         // IDs of companies removed by user
+  watchlistCompanyIds: number[];       // IDs of companies saved to watchlist
+  lastSelectedCompanyId?: number;      // Last selected company for restoration
+  viewMode: ViewMode;                  // Current view: 'explore' or 'watchlist'
+}
+
 interface UserCMF {
   id: string;
   name: string;
@@ -210,46 +226,59 @@ interface Company {
   angle?: number;             // Position angle around CMF center
   distance?: number;          // Distance from center based on match score
 }
-
-interface WatchlistData {
-  userId?: string;            // Optional user identifier for multi-user support
-  companyIds: number[];       // Array of saved company IDs
-  lastUpdated: string;        // ISO timestamp of last modification
-  version: number;            // Data format version for migrations
-}
 ```
 
 ## 🎨 Customization
 
 ### Updating Your CMF Profile
 
-Edit the `sampleUserCMF` object in `src/data/companies.ts`:
+Edit the user profile in `src/data/companies.ts`. The system now uses complete `UserExplorationState` objects:
 
 ```typescript
-const sampleUserCMF: UserCMF = {
+const yourProfile: UserExplorationState = {
   id: "your-id",
-  name: "Your Name", 
-  mustHaves: [
-    "Your critical requirements",
-    "Non-negotiable needs"
-  ],
-  wantToHave: [
-    "Nice-to-have preferences",
-    "Additional interests"
-  ],
-  experience: ["Your experience areas"],
-  targetRole: "Your desired role level",
-  targetCompanies: "Your company stage preference"
+  name: "Your Name",
+  cmf: {
+    id: "your-id",
+    name: "Your Name", 
+    mustHaves: [
+      "Your critical requirements",
+      "Non-negotiable needs"
+    ],
+    wantToHave: [
+      "Nice-to-have preferences",
+      "Additional interests"
+    ],
+    experience: ["Your experience areas"],
+    targetRole: "Your desired role level",
+    targetCompanies: "Your company stage preference"
+  },
+  baseCompanies: baseCompanies,    // Reference to main dataset
+  addedCompanies: [],              // Your custom companies
+  removedCompanyIds: [],           // Companies you've removed
+  watchlistCompanyIds: [],         // Your saved companies
+  lastSelectedCompanyId: undefined,
+  viewMode: 'explore'
 };
+
+// Switch active user by changing this line:
+export const activeUserProfile = yourProfile;
 ```
 
 ### Adding New Companies
 
-Add companies to the `sampleCompanies` array in `src/data/companies.ts`:
+**Option 1: Use the UI (Recommended)**
+- Click the "+" button in the application
+- Enter company name and let the LLM analyze it against your CMF
+- Companies are automatically added to your `addedCompanies` array
+- In development mode, changes are saved to `companies.ts` automatically
+
+**Option 2: Manual Addition**
+Add companies to the `baseCompanies` array in `src/data/companies.ts`:
 
 ```typescript
 {
-  id: 16,
+  id: 20, // Use next available ID
   name: "New Company",
   logo: "https://logo.clearbit.com/company.com",
   careerUrl: "https://company.com/careers",
@@ -263,9 +292,9 @@ Add companies to the `sampleCompanies` array in `src/data/companies.ts`:
   connections: [1, 3], // IDs of connected companies
   connectionTypes: { 1: "Competitor", 3: "Partner" },
   matchReasons: ["Reason why it matches your CMF"],
-  color: "#F59E0B", // Color based on match score
-  angle: 45,        // Position angle around center
-  distance: 100     // Distance from center
+  color: "#F59E0B", // Color based on match score (auto-calculated)
+  angle: 45,        // Position angle around center (auto-calculated)
+  distance: 100     // Distance from center (auto-calculated)
 }
 ```
 

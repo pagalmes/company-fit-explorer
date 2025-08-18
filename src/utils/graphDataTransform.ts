@@ -263,8 +263,8 @@ export const getCytoscapeStyles = (): any[] => [
       'line-color': '#3B82F6',
       'opacity': 1,
       'transition-property': 'width, opacity',
-      'transition-duration': '0.1s',
-      'transition-timing-function': 'ease-out',
+      'transition-duration': '0.2s',
+      'transition-timing-function': 'ease-in-out',
       'z-index': 4
     }
   },
@@ -275,8 +275,8 @@ export const getCytoscapeStyles = (): any[] => [
       'opacity': 0.3,
       'z-index': -1,
       'transition-property': 'opacity',
-      'transition-duration': '0.1s',
-      'transition-timing-function': 'ease-out'
+      'transition-duration': '0.3s',
+      'transition-timing-function': 'ease-in-out'
     }
   },
   // Dimmed company name label nodes
@@ -286,8 +286,8 @@ export const getCytoscapeStyles = (): any[] => [
       'opacity': 0.2,
       'z-index': -1,
       'transition-property': 'opacity',
-      'transition-duration': '0.1s',
-      'transition-timing-function': 'ease-out'
+      'transition-duration': '0.3s',
+      'transition-timing-function': 'ease-in-out'
     }
   },
   // Dimmed company percentage label nodes  
@@ -297,8 +297,8 @@ export const getCytoscapeStyles = (): any[] => [
       'opacity': 0.2,
       'z-index': -1,
       'transition-property': 'opacity',
-      'transition-duration': '0.1s',
-      'transition-timing-function': 'ease-out'
+      'transition-duration': '0.3s',
+      'transition-timing-function': 'ease-in-out'
     }
   },
   // Ensure zone nodes maintain their background z-index regardless of other rules
@@ -356,6 +356,79 @@ export const getCytoscapeStyles = (): any[] => [
       'transition-property': 'width, height, border-color',
       'transition-duration': '0.25s',
       'transition-timing-function': 'ease-out'
+    }
+  },
+  // Hidden company nodes for smooth view mode transitions
+  {
+    selector: 'node[type="company"].view-hidden',
+    style: {
+      'opacity': 0,
+      'z-index': -1,
+      'transition-property': 'opacity',
+      'transition-duration': '0.3s',
+      'transition-timing-function': 'ease-in-out',
+      'events': 'no'
+    }
+  },
+  // Hidden company name labels for smooth view mode transitions
+  {
+    selector: 'node[type="company-name-label"].view-hidden',
+    style: {
+      'opacity': 0,
+      'z-index': -1,
+      'transition-property': 'opacity',
+      'transition-duration': '0.3s',
+      'transition-timing-function': 'ease-in-out',
+      'events': 'no'
+    }
+  },
+  // Hidden company percent labels for smooth view mode transitions  
+  {
+    selector: 'node[type="company-percent-label"].view-hidden',
+    style: {
+      'opacity': 0,
+      'z-index': -1,
+      'transition-property': 'opacity',
+      'transition-duration': '0.3s',
+      'transition-timing-function': 'ease-in-out',
+      'events': 'no'
+    }
+  },
+  // Hidden edges for smooth view mode transitions
+  {
+    selector: 'edge.view-hidden',
+    style: {
+      'opacity': 0,
+      'z-index': -1,
+      'transition-property': 'opacity',
+      'transition-duration': '0.3s',
+      'transition-timing-function': 'ease-in-out'
+    }
+  },
+  // Disable transitions during view mode changes to prevent blinking
+  {
+    selector: 'node.no-transitions',
+    style: {
+      'transition-duration': '0s'
+    }
+  },
+  {
+    selector: 'edge.no-transitions', 
+    style: {
+      'transition-duration': '0s'
+    }
+  },
+  // Also disable transitions on labels to prevent name flashing
+  {
+    selector: 'node[type="company-name-label"].no-transitions',
+    style: {
+      'transition-duration': '0s'
+    }
+  },
+  {
+    selector: 'node[type="company-percent-label"].no-transitions',
+    style: {
+      'transition-duration': '0s'
     }
   },
 ];
