@@ -160,10 +160,14 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
 
     const cy = cyInstance.current;
 
-    // Restore previous view state if it exists
+    // Restore previous view state if it exists, otherwise fit with padding for UI
     if (viewStateRef.current) {
       cy.zoom(viewStateRef.current.zoom);
       cy.pan(viewStateRef.current.pan);
+    } else {
+      // First time load - fit based on the fixed background zones to maintain consistent centering
+      const zoneNodes = cy.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
+      cy.fit(zoneNodes, 120); // Fit to background zones with more padding for companies
     }
 
     // Basic initialization will be handled by separate useEffects

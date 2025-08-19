@@ -780,7 +780,8 @@ const teeKProfile: UserExplorationState = {
   17,
   19,
   1005,
-  1004
+  1004,
+  1003
 ],
   watchlistCompanyIds: [
   3,
@@ -789,7 +790,6 @@ const teeKProfile: UserExplorationState = {
   1001,
   2,
   12,
-  1003,
   1,
   11
 ],
