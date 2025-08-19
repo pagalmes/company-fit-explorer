@@ -74,6 +74,7 @@ export interface CompanyGraphProps {
   hoveredCompany: Company | null;
   onCompanySelect: (company: Company | null) => void;
   onCompanyHover: (company: Company | null) => void;
+  onCMFToggle?: () => void;
   watchlistCompanyIds?: Set<number>;
   viewMode?: import('./watchlist').ViewMode;
 }
