@@ -1,12 +1,12 @@
 # Testing Guide - Company Fit Explorer
 
-[![Tests](https://img.shields.io/badge/tests-71%20passing-brightgreen)](./TESTING.md)
+[![Tests](https://img.shields.io/badge/tests-212%20passing-brightgreen)](./TESTING.md)
 [![Coverage](https://img.shields.io/badge/coverage-85%25-green)](./TESTING.md#coverage-reports)
 [![TDD](https://img.shields.io/badge/development-TDD-blue)](./TESTING.md#test-driven-development-workflow)
 
 ## Overview
 
-This project uses a comprehensive **multi-layer testing approach** with **97+ unit tests plus E2E visual regression tests** to ensure code quality and prevent regressions. Every critical function, component, user workflow, and **visual interaction** is protected by automated tests.
+This project uses a comprehensive **multi-layer testing approach** with **206 unit tests plus 6 E2E visual regression tests** to ensure code quality and prevent regressions. Every critical function, component, user workflow, and **visual interaction** is protected by automated tests.
 
 ## Test Setup
 
@@ -221,7 +221,7 @@ Output example:
 🧪 Test Documentation Summary
 📁 src/utils/__tests__/index.test.ts - 11 tests
 📁 src/components/__tests__/CompanyDetailPanel.test.tsx - 16 tests  
-🎯 Total Tests: 97 unit tests + 6 E2E tests across 8 test files
+🎯 Total Tests: 206 unit tests + 6 E2E tests across 13 test files
 ```  
 
 ## Test-Driven Development Workflow

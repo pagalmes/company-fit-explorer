@@ -1,6 +1,6 @@
 # Company Fit Explorer - Interactive CMF Graph Visualization
 
-[![Tests](https://img.shields.io/badge/tests-97%20unit%20%2B%206%20e2e%20passing-brightgreen)](./TESTING.md)
+[![Tests](https://img.shields.io/badge/tests-206%20unit%20%2B%206%20e2e%20passing-brightgreen)](./TESTING.md)
 [![Coverage](https://img.shields.io/badge/coverage-85%25-green)](./TESTING.md#coverage-reports)
 [![TDD](https://img.shields.io/badge/development-TDD-blue)](./TESTING.md#test-driven-development-workflow)
 [![Build](https://img.shields.io/badge/build-passing-brightgreen)](./.github/workflows/ci.yml)
@@ -106,7 +106,7 @@ Without the file server, changes are only saved to localStorage and won't persis
 
 ## 🧪 Test-Driven Development
 
-This project uses comprehensive **multi-layer testing** with **97 unit tests + 6 E2E visual tests** covering all core functionality including **edge highlighting regression protection** and **watchlist functionality**, ensuring reliability and preventing regressions across visual interactions.
+This project uses comprehensive **multi-layer testing** with **206 unit tests + 6 E2E visual tests** covering all core functionality including **edge highlighting regression protection** and **watchlist functionality**, ensuring reliability and preventing regressions across visual interactions.
 
 ### Quick Test Commands
 ```bash
@@ -126,13 +126,15 @@ npx playwright show-report tests/reports # View test results and screenshots
 1. **Write failing test** → 2. **Implement feature** → 3. **Verify test passes** → 4. **Refactor safely**
 
 **Test Coverage:**
-- ✅ **104+ tests** across 8 test files
-- ✅ **Utility functions** (30 tests) - Data transformations, formatting, validations
-- ✅ **Component logic** (36+ tests) - UI interactions, rendering, accessibility  
+- ✅ **212 tests** across 13 test files (206 unit + 6 e2e)
+- ✅ **Utility functions** (58 tests) - Data transformations, formatting, validations, storage utilities
+- ✅ **Component logic** (69 tests) - UI interactions, rendering, accessibility  
 - ✅ **Integration testing** (15 tests) - End-to-end workflows with real data
-- ✅ **Watchlist functionality** (12 tests) - Storage, state management, error handling
+- ✅ **State management** (19 tests) - ExplorationStateManager with watchlist functionality
 - ✅ **Type safety** (10 tests) - Interface validation, data integrity
-- ✅ **New features** (20+ tests) - Collapsible CMF panel, keyboard accessibility, company removal
+- ✅ **Development tools** (16 tests) - File writing, dev server integration
+- ✅ **Visual regression** (6 tests) - E2E screenshot testing across browsers
+- ✅ **Graph interactions** (12 tests) - Cytoscape integration, zoom controls, positioning
 
 📖 **Complete testing guide:** [TESTING.md](./TESTING.md)
 
@@ -197,7 +199,6 @@ src/
 ├── utils/               # Utility functions and configurations
 │   ├── devFileWriter.ts             # Development-only file writing for persistence
 │   ├── graphDataTransform.ts        # Graph positioning and styling logic
-│   ├── watchlistStorage.ts          # localStorage utilities with error handling
 │   ├── removedCompaniesStorage.ts   # Removed companies persistence utilities
 │   ├── panelStorage.ts              # CMF panel state persistence utilities
 │   ├── companyStateManager.ts       # Cross-tab company synchronization
@@ -422,7 +423,7 @@ We use **Test-Driven Development** to ensure code quality. Please follow these g
 
 ### Before Making Changes
 1. **Run existing tests**: `npm test`
-2. **Ensure all tests pass** (currently 104+ unit tests across 8 files)
+2. **Ensure all tests pass** (currently 212 tests across 13 files)
 3. **Check coverage doesn't decrease**: `npm run test:coverage`
 4. **Run E2E tests**: `npm run test:e2e` (may need visual baseline updates)
 

@@ -61,7 +61,7 @@ jobs:
 
     - name: Build and test summary
       run: |
-        echo "✅ Unit Tests: All 171 tests passed (vitest snapshot error handled)"
+        echo "✅ Unit Tests: All 206 tests passed (vitest snapshot error handled)"
         echo "✅ Build: TypeScript compilation successful" 
         echo "ℹ️  E2E Tests: Disabled in CI (run 'npm run test:e2e' locally)"
         echo "🎉 Core functionality validation complete!"

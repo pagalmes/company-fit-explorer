@@ -10,7 +10,7 @@ at SnapshotState.save
 ## Root Cause
 - Vitest internal bug in snapshot handling system
 - Occurs even when no snapshots are used in tests
-- All tests pass successfully (171/171) but vitest exits with code 1
+- All tests pass successfully (206/206) but vitest exits with code 1
 - Affects CI/CD pipelines despite successful test execution
 
 ## Solution
@@ -40,7 +40,7 @@ Complex scripts available if simple solution fails in some environments:
 
 ## Verification
 Current solution provides:
-- ✅ 171 tests passed successfully
+- ✅ 206 tests passed successfully
 - ✅ 0 test failures
 - ✅ Vitest internal error safely ignored
 - ✅ Clean exit with code 0 for CI
