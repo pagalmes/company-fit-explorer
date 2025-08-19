@@ -7,7 +7,7 @@
 import { BaseLLMProvider, CompanyAnalysisRequest, LLMResponse, LLMSettings } from '../types';
 
 export class OpenAIProvider extends BaseLLMProvider {
-  private readonly baseUrl = 'http://localhost:3001/api/openai/chat/completions';
+  private readonly baseUrl = 'http://localhost:3002/api/openai/chat/completions';
 
   constructor(settings: LLMSettings) {
     super(settings);
