@@ -198,7 +198,24 @@ export const getCytoscapeStyles = (): any[] => [
       'color': 'white',
       'text-wrap': 'wrap',
       'text-max-width': '90px',
-      'z-index': 10
+      'z-index': 10,
+      'transition-property': 'width, height, border-color, border-width',
+      'transition-duration': '0.25s',
+      'transition-timing-function': 'ease-out'
+    }
+  },
+  // CMF Node Hover Style - similar to company nodes
+  {
+    selector: 'node[type="cmf"].hovered',
+    style: {
+      'width': 68,
+      'height': 68,
+      'border-width': 2,
+      'border-color': '#000000',
+      'z-index': 15,
+      'transition-property': 'width, height, border-color, border-width',
+      'transition-duration': '0.25s',
+      'transition-timing-function': 'ease-out'
     }
   },
   // Company Name Label Nodes - company names below each company

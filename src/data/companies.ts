@@ -774,6 +774,30 @@ const teeKProfile: UserExplorationState = {
     "angle": 318.41839614219543,
     "distance": 175,
     "careerUrl": "https://biodiversity.com/careers"
+  },
+  {
+    "id": 1006,
+    "name": "SpaceX",
+    "logo": "https://logo.clearbit.com/spacex.com",
+    "matchScore": 72,
+    "industry": "Aerospace/Space Technology",
+    "stage": "Late Stage Private",
+    "location": "Hawthorne, CA",
+    "employees": "12000+",
+    "remote": "Hybrid/In-Office",
+    "openRoles": 150,
+    "connections": [],
+    "connectionTypes": {},
+    "matchReasons": [
+      "Located in Los Angeles area matching location preferences",
+      "High velocity execution culture with ambitious goals",
+      "Strong growth environment with complex technical challenges",
+      "Opportunities for cross-functional collaboration across engineering teams"
+    ],
+    "color": "#3B82F6",
+    "angle": 347.95131191259,
+    "distance": 155,
+    "careerUrl": "https://spacex.com/careers"
   }
 ],
   removedCompanyIds: [
@@ -792,9 +816,10 @@ const teeKProfile: UserExplorationState = {
   2,
   12,
   1,
-  11
+  11,
+  8
 ],
-  lastSelectedCompanyId: undefined,
+  lastSelectedCompanyId: 8,
   viewMode: 'explore'
 };
 

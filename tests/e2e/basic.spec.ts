@@ -13,12 +13,12 @@ test.describe('Application Smoke Tests', () => {
     // Navigate to the application
     await page.goto('/');
     
-    // Wait for React app to load by checking for common elements
-    await page.waitForSelector('text=Company Details', { timeout: 10000 });
+    // Wait for React app to load by checking for the view mode toggle which is always present
+    await page.waitForSelector('text=Explore Companies', { timeout: 10000 });
     
     // Verify key UI elements are present
-    await expect(page.locator('text=Company Details')).toBeVisible();
-    await expect(page.locator('text=Click on a company node to see details')).toBeVisible();
+    await expect(page.locator('text=Explore Companies')).toBeVisible();
+    await expect(page.locator('text=Watchlist')).toBeVisible();
     
     // Basic screenshot to verify visual state
     await expect(page).toHaveScreenshot('app-loaded.png');
@@ -26,7 +26,7 @@ test.describe('Application Smoke Tests', () => {
 
   test('should allow company interaction', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('text=Company Details', { timeout: 10000 });
+    await page.waitForSelector('text=Explore Companies', { timeout: 10000 });
     await page.waitForTimeout(1000);
     
     // Find and click any company in the list

@@ -93,6 +93,7 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
   // hoveredCompany,
   onCompanySelect,
   onCompanyHover,
+  onCMFToggle,
   watchlistCompanyIds = new Set(),
   viewMode = 'explore'
 }) => {
@@ -100,12 +101,14 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
   const cyInstance = useRef<cytoscape.Core | null>(null);
   const onCompanySelectRef = useRef(onCompanySelect);
   const onCompanyHoverRef = useRef(onCompanyHover);
+  const onCMFToggleRef = useRef(onCMFToggle);
   const selectedCompanyRef = useRef(selectedCompany);
   const viewStateRef = useRef<{zoom: number; pan: {x: number; y: number}} | null>(null);
 
   // Keep refs updated
   onCompanySelectRef.current = onCompanySelect;
   onCompanyHoverRef.current = onCompanyHover;
+  onCMFToggleRef.current = onCMFToggle;
   selectedCompanyRef.current = selectedCompany;
 
   useEffect(() => {
@@ -329,10 +332,19 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       }
     });
 
-    // CMF center node styling
+    // CMF center node hover events - visual feedback for clickability
+    cy.on('mouseover', 'node[type="cmf"]', (event) => {
+      event.target.addClass('hovered');
+    });
+    
+    cy.on('mouseout', 'node[type="cmf"]', (event) => {
+      event.target.removeClass('hovered');
+    });
+
+    // CMF center node click - toggle CMF panel
     cy.on('tap', 'node[type="cmf"]', () => {
-      // Show CMF details or do nothing
-      console.log('CMF center clicked', cmf);
+      console.log('CMF center clicked - toggling panel');
+      onCMFToggleRef.current?.();
     });
 
     return () => {
