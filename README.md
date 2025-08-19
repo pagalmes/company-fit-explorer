@@ -75,7 +75,10 @@ npm install
 ```bash
 npm run dev:full
 ```
-This runs both the React app AND the file server for automatic persistence.
+This runs all three servers with color-coded output:
+- 🔵 **React app** (port 5173-5174) - Main application interface
+- 🟢 **File server** (port 3001) - Automatic companies.ts persistence  
+- 🟡 **LLM server** (port 3002) - AI functionality and company analysis
 
 **Option B: React App Only**
 ```bash
@@ -83,25 +86,34 @@ npm run dev
 ```
 Basic development without automatic file persistence.
 
-**Option C: Manual File Server**
+**Option C: Individual Servers**
 ```bash
-# Terminal 1: Start React app
-npm run dev
+# Individual server commands
+npm run dev              # React app only
+npm run dev:file-server  # File server only  
+npm run dev:llm-server   # LLM API server only
 
-# Terminal 2: Start file server for automatic persistence
-npm run dev:file-server
+# Manual multi-terminal setup
+# Terminal 1: React app
+npm run dev
+# Terminal 2: File server
+npm run dev:file-server  
+# Terminal 3: LLM server
+npm run dev:llm-server
 ```
 
-4. Open your browser and navigate to `http://localhost:5173`
+4. Open your browser and navigate to `http://localhost:5173` (or the port shown in the console)
 
 ### 💾 Development Persistence
 
-When using `npm run dev:full` or running the file server manually:
+When using `npm run dev:full` or running servers manually:
 - **Added companies** are automatically saved to `companies.ts`
 - **Watchlist changes** persist across browser refreshes
 - **Removed companies** are tracked and can be restored
 - **View mode preferences** are maintained
+- **LLM functionality** is available for company analysis and testing
 
+Without the LLM server, AI features like "Test Backend Connection" and company analysis won't work.
 Without the file server, changes are only saved to localStorage and won't persist across file edits.
 
 ## 🧪 Test-Driven Development
@@ -141,7 +153,10 @@ npx playwright show-report tests/reports # View test results and screenshots
 ## 🛠️ Available Scripts
 
 ### Development
-- `npm run dev` - Start development server
+- `npm run dev:full` - **🚀 Start all servers** (React + File + LLM with colors)
+- `npm run dev` - Start React development server only
+- `npm run dev:file-server` - Start file server for companies.ts updates
+- `npm run dev:llm-server` - Start LLM API server for AI features
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 - `npm start` - Alias for `npm run dev`
