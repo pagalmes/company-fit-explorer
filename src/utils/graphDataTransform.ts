@@ -338,7 +338,7 @@ export const getCytoscapeStyles = (): any[] => [
     style: {
       'width': 30,
       'height': 30,
-      'border-width': 2,
+      'border-width': 1.5,
       'border-color': 'black',
       'z-index': 20,
       'transition-property': 'width, height, border-color',
@@ -352,7 +352,7 @@ export const getCytoscapeStyles = (): any[] => [
     style: {
       'width': 30,
       'height': 30,
-      'border-width': 2,
+      'border-width': 1.5,
       'border-color': 'black',
       'z-index': 15,
       'transition-property': 'width, height, border-color',

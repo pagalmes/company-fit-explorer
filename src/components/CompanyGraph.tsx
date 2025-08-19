@@ -470,7 +470,12 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       <div className="absolute top-4 right-4 flex flex-col space-y-2" style={{ zIndex: 10 }}>
         <button 
           className="bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow"
-          onClick={() => cyInstance.current?.fit()}
+          onClick={() => {
+            if (cyInstance.current) {
+              const zoneNodes = cyInstance.current.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
+              cyInstance.current.fit(zoneNodes, 120);
+            }
+          }}
           title="Fit to view"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
