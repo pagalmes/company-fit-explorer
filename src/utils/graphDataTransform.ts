@@ -322,8 +322,9 @@ export const getCytoscapeStyles = (): any[] => [
       'background-position': 'center center',
       'background-repeat': 'no-repeat',
       'background-color': 'white',
-      'border-width': 1.5,
+      'border-width': 0.5,
       'border-color': '#E5E7EB',
+      //'border-color': 'black',
       'label': '', // Remove text label since we're using logos
       'z-index': 5,
       'transition-property': 'width, height, border-color',
@@ -337,6 +338,7 @@ export const getCytoscapeStyles = (): any[] => [
     style: {
       'width': 30,
       'height': 30,
+      'border-width': 2,
       'border-color': 'black',
       'z-index': 20,
       'transition-property': 'width, height, border-color',
@@ -350,6 +352,7 @@ export const getCytoscapeStyles = (): any[] => [
     style: {
       'width': 30,
       'height': 30,
+      'border-width': 2,
       'border-color': 'black',
       'z-index': 15,
       'transition-property': 'width, height, border-color',
