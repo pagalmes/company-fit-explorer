@@ -308,24 +308,23 @@ export const getCytoscapeStyles = (): any[] => [
       'z-index': -8
     }
   },
-  // Base Company Nodes - white border by default (placed near end for proper cascading)
+  // Base Company Nodes - company logos with fallback to colored background
   {
     selector: 'node[type="company"]',
     style: {
       'width': 25,
       'height': 25,
-      'background-color': (ele: any) => ele.data('company')?.color || '#6B7280',
-      'border-width': 1.5,
-      'border-color': 'white',
-      'label': (ele: any) => {
+      'background-image': (ele: any) => {
         const company = ele.data('company');
-        return company ? company.name.substring(0, 2).toUpperCase() : '';
+        return company?.logo ? `url(${company.logo})` : 'none';
       },
-      'text-valign': 'center',
-      'text-halign': 'center',
-      'font-size': 6,
-      'font-weight': 'bold',
-      'color': 'white',
+      'background-fit': 'contain',
+      'background-position': 'center center',
+      'background-repeat': 'no-repeat',
+      'background-color': 'white',
+      'border-width': 1.5,
+      'border-color': '#E5E7EB',
+      'label': '', // Remove text label since we're using logos
       'z-index': 5,
       'transition-property': 'width, height, border-color',
       'transition-duration': '0.25s',

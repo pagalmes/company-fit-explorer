@@ -614,11 +614,11 @@ const baseCompanies: Company[] = [
 
 // User profiles with complete exploration state
 const teeKProfile: UserExplorationState = {
-  id: "tee-k",
-  name: "Tee K.",
+  id: "theresa-k",
+  name: "Theresa K.",
   cmf: {
-  "id": "tee-k",
-  "name": "Tee K.",
+  "id": "theresa-k",
+  "name": "Theresa K.",
   "mustHaves": [
     "High Velocity of Execution",
     "Growth-Oriented Environment",
@@ -790,9 +790,10 @@ const teeKProfile: UserExplorationState = {
   2,
   12,
   1003,
-  1
+  1,
+  11
 ],
-  lastSelectedCompanyId: 11,
+  lastSelectedCompanyId: undefined,
   viewMode: 'explore'
 };
 
