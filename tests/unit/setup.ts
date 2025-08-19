@@ -46,6 +46,10 @@ vi.mock('cytoscape', () => {
         removeClass: vi.fn().mockReturnThis(),
       })
     }),
+    boundingBox: vi.fn().mockReturnValue({
+      x1: 100, y1: 100, x2: 300, y2: 300,
+      w: 200, h: 200
+    }),
     length: 1,
   }
 
@@ -74,7 +78,12 @@ vi.mock('cytoscape', () => {
       on: vi.fn(),
       getElementById: vi.fn().mockReturnValue(mockElement),
       fit: vi.fn(),
-      zoom: vi.fn().mockReturnValue(1),
+      zoom: vi.fn().mockImplementation((options) => {
+        if (typeof options === 'object' && options.level) {
+          return options.level
+        }
+        return 1
+      }),
       pan: vi.fn().mockReturnValue({ x: 0, y: 0 }),
       destroy: vi.fn(),
       // Mock the core cytoscape instance for background clicks

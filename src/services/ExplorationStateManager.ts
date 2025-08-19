@@ -354,7 +354,10 @@ export class ExplorationStateManager {
    */
   async writeToFile(): Promise<boolean> {
     if (process.env.NODE_ENV !== 'development') {
-      console.warn('File writing only available in development mode');
+      // Only log warnings in non-test environments to avoid cluttering test output
+      if (!process.env.VITEST) {
+        console.warn('File writing only available in development mode');
+      }
       return false;
     }
 

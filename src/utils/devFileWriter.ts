@@ -52,7 +52,10 @@ export async function writeStateToDisk(
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error('Failed to write to companies.ts:', error);
+    // Only log errors in non-test environments to avoid cluttering test output
+    if (!process.env.VITEST) {
+      console.error('Failed to write to companies.ts:', error);
+    }
     return {
       success: false,
       message: 'Failed to write to file',
