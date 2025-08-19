@@ -486,7 +486,20 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
         
         <button 
           className="bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow"
-          onClick={() => cyInstance.current?.zoom(cyInstance.current.zoom() * 1.2)}
+          onClick={() => {
+            if (cyInstance.current) {
+              const zoneNodes = cyInstance.current.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
+              const centerPosition = zoneNodes.boundingBox();
+              const centerPoint = {
+                x: centerPosition.x1 + (centerPosition.w / 2),
+                y: centerPosition.y1 + (centerPosition.h / 2)
+              };
+              cyInstance.current.zoom({
+                level: cyInstance.current.zoom() * 1.2,
+                position: centerPoint
+              });
+            }
+          }}
           title="Zoom in"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -497,7 +510,20 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
         
         <button 
           className="bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow"
-          onClick={() => cyInstance.current?.zoom(cyInstance.current.zoom() * 0.8)}
+          onClick={() => {
+            if (cyInstance.current) {
+              const zoneNodes = cyInstance.current.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
+              const centerPosition = zoneNodes.boundingBox();
+              const centerPoint = {
+                x: centerPosition.x1 + (centerPosition.w / 2),
+                y: centerPosition.y1 + (centerPosition.h / 2)
+              };
+              cyInstance.current.zoom({
+                level: cyInstance.current.zoom() * 0.8,
+                position: centerPoint
+              });
+            }
+          }}
           title="Zoom out"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
