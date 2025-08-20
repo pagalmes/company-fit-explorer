@@ -1,0 +1,34 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="16" cy="16" r="15" fill="#3B82F6"/>
+  
+  <!-- Center node (representing user/CMF) -->
+  <circle cx="16" cy="16" r="4" fill="#FFFFFF"/>
+  
+  <!-- Company nodes around the center - evenly distributed at 60-degree intervals -->
+  <!-- Top (0°) -->
+  <circle cx="16" cy="6" r="2.5" fill="#FFFFFF"/>
+  
+  <!-- Top-right (60°) -->
+  <circle cx="24.7" cy="11" r="2.5" fill="#FFFFFF"/>
+  
+  <!-- Bottom-right (120°) -->
+  <circle cx="24.7" cy="21" r="2.5" fill="#FFFFFF"/>
+  
+  <!-- Bottom (180°) -->
+  <circle cx="16" cy="26" r="2.5" fill="#FFFFFF"/>
+  
+  <!-- Bottom-left (240°) -->
+  <circle cx="7.3" cy="21" r="2.5" fill="#FFFFFF"/>
+  
+  <!-- Top-left (300°) -->
+  <circle cx="7.3" cy="11" r="2.5" fill="#FFFFFF"/>
+  
+  <!-- Connection lines from center to company nodes only - hub and spoke pattern -->
+  <line x1="16" y1="12" x2="16" y2="8.5" stroke="#FFFFFF" stroke-width="1.5" opacity="0.7"/>
+  <line x1="19.5" y1="13.5" x2="22.2" y2="12.3" stroke="#FFFFFF" stroke-width="1.5" opacity="0.7"/>
+  <line x1="19.5" y1="18.5" x2="22.2" y2="19.7" stroke="#FFFFFF" stroke-width="1.5" opacity="0.7"/>
+  <line x1="16" y1="20" x2="16" y2="23.5" stroke="#FFFFFF" stroke-width="1.5" opacity="0.7"/>
+  <line x1="12.5" y1="18.5" x2="9.8" y2="19.7" stroke="#FFFFFF" stroke-width="1.5" opacity="0.7"/>
+  <line x1="12.5" y1="13.5" x2="9.8" y2="12.3" stroke="#FFFFFF" stroke-width="1.5" opacity="0.7"/>
+</svg>

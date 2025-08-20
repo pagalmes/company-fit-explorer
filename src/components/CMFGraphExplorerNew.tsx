@@ -313,6 +313,7 @@ const CMFGraphExplorer: React.FC = () => {
           hoveredCompany={hoveredCompany}
           onCompanySelect={handleCompanySelect}
           onCompanyHover={handleCompanyHover}
+          onCMFToggle={toggleCMFPanel}
           watchlistCompanyIds={new Set(stateManager.getCurrentState().watchlistCompanyIds)}
           viewMode={viewMode}
         />
