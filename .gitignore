@@ -113,3 +113,6 @@ temp/
 
 # Local Netlify folder
 .netlify
+
+# Company data (contains user-specific exploration state)
+src/data/companies.ts

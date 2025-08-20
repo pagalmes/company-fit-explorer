@@ -231,13 +231,15 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
                 >
                   <div className="flex items-center space-x-3">
                     <div className="relative">
-                      <img
-                        src={company.logo}
-                        alt={`${company.name} logo`}
-                        className="w-6 h-6 rounded"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = '/api/placeholder/24/24';
+                      <div
+                        className="w-6 h-6 rounded bg-white border border-gray-200"
+                        style={{
+                          backgroundImage: `url(${company.logo})`,
+                          backgroundSize: 'contain',
+                          backgroundPosition: 'center',
+                          backgroundRepeat: 'no-repeat'
                         }}
+                        aria-label={`${company.name} logo`}
                       />
                       {isInWatchlist && isInWatchlist(company.id) && (
                         <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full flex items-center justify-center shadow-sm border border-white">
