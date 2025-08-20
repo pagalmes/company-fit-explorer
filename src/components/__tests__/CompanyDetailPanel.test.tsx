@@ -174,10 +174,10 @@ describe('CompanyDetailPanel', () => {
         />
       )
 
-      const logos = screen.getAllByAltText(/logo/)
+      const logos = screen.getAllByLabelText(/logo/)
       expect(logos).toHaveLength(3)
-      expect(logos[0]).toHaveAttribute('alt', 'OpenAI logo')
-      expect(logos[0]).toHaveAttribute('src', 'https://logo.clearbit.com/openai.com')
+      expect(logos[0]).toHaveAttribute('aria-label', 'OpenAI logo')
+      expect(logos[0].style.backgroundImage).toContain('openai.com')
     })
   })
 
@@ -382,12 +382,13 @@ describe('CompanyDetailPanel', () => {
         />
       )
 
-      const logo = screen.getByAltText('OpenAI logo') as HTMLImageElement
+      const logo = screen.getByLabelText('OpenAI logo') as HTMLElement
       
-      // Simulate error event
-      fireEvent.error(logo)
-      
-      expect(logo.src).toBe('http://localhost:3000/api/placeholder/48/48')
+      // Logo is now rendered as background image, so we verify it exists and has proper styling
+      // This test has a selected company, so it shows the larger header logo (w-12 h-12)
+      expect(logo).toBeInTheDocument()
+      expect(logo).toHaveClass('w-12', 'h-12', 'rounded', 'bg-white', 'border', 'border-gray-200')
+      expect(logo.style.backgroundImage).toContain('openai.com')
     })
   })
 

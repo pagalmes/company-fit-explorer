@@ -124,12 +124,12 @@ describe('Integration Tests - CompanyDetailPanel with Real Data', () => {
         />
       )
 
-      const logo = screen.getByAltText(`${testCompany.name} logo`) as HTMLImageElement
-      expect(logo.src).toBe(testCompany.logo)
+      const logo = screen.getByLabelText(`${testCompany.name} logo`) as HTMLElement
+      expect(logo.style.backgroundImage).toContain(testCompany.logo)
       
-      // Test error handling
-      fireEvent.error(logo)
-      expect(logo.src).toContain('api/placeholder')
+      // Logo is now rendered as background image, so we can verify it exists
+      expect(logo).toBeInTheDocument()
+      expect(logo).toHaveClass('w-8', 'h-8', 'rounded')
     })
   })
 

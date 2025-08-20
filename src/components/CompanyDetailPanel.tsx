@@ -61,13 +61,15 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
               >
                 <div className="flex items-center space-x-3">
                   <div className="relative">
-                    <img
-                      src={company.logo}
-                      alt={`${company.name} logo`}
-                      className="w-8 h-8 rounded"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/api/placeholder/32/32';
+                    <div
+                      className="w-8 h-8 rounded bg-white border border-gray-200"
+                      style={{
+                        backgroundImage: `url(${company.logo})`,
+                        backgroundSize: 'contain',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat'
                       }}
+                      aria-label={`${company.name} logo`}
                     />
                     {isInWatchlist && isInWatchlist(company.id) && (
                       <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center shadow-sm border border-white">
@@ -114,13 +116,15 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <img
-              src={selectedCompany.logo}
-              alt={`${selectedCompany.name} logo`}
-              className="w-12 h-12 rounded"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/api/placeholder/48/48';
+            <div
+              className="w-12 h-12 rounded bg-white border border-gray-200"
+              style={{
+                backgroundImage: `url(${selectedCompany.logo})`,
+                backgroundSize: 'contain',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
               }}
+              aria-label={`${selectedCompany.name} logo`}
             />
             <div>
               <h2 className="text-xl font-bold text-gray-900">
