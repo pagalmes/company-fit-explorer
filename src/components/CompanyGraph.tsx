@@ -511,7 +511,7 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
         }}
       >
         <div 
-          className="relative bg-gradient-to-br from-orange-300 via-pink-400 to-purple-500 rounded-full shadow-2xl cursor-pointer pointer-events-auto"
+          className="relative bg-gradient-to-br from-orange-300 via-pink-400 to-purple-500 rounded-full shadow-2xl cursor-pointer pointer-events-auto transition-all duration-300 ease-out hover:scale-110"
           style={{
             width: `${62.5 * zoomLevel}px`,
             height: `${62.5 * zoomLevel}px`

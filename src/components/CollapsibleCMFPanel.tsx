@@ -44,48 +44,67 @@ const CollapsibleCMFPanel: React.FC<CollapsibleCMFPanelProps> = ({
     }
   };
 
+  
   return (
     <div 
       ref={panelRef}
-      className="absolute top-4 left-4 z-20 bg-white rounded-lg shadow-lg border border-gray-200 transition-all duration-300 ease-in-out w-80 max-w-[calc(100vw-2rem)]"
+      className={`absolute top-4 left-6 z-20 transition-all duration-300 ease-in-out ${
+        isCollapsed 
+          ? 'w-12 h-12' 
+          : 'w-80 max-w-[calc(100vw-2rem)] bg-white rounded-lg shadow-lg border border-gray-200'
+      }`}
     >
-      {/* Header - Always Visible */}
-      <div 
-        className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-all duration-200 rounded-t-lg group focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset min-h-[44px] touch-manipulation"
-        onClick={onToggle}
-        onKeyDown={handleKeyDown}
-        tabIndex={0}
-        role="button"
-        aria-expanded={!isCollapsed}
-        aria-label={`${isCollapsed ? 'Expand' : 'Collapse'} CMF details panel`}
-      >
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
-            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          </div>
-          <div>
-            <h3 className="font-semibold text-gray-900 text-sm">
-              {userCMF.name}
-            </h3>
-            <p className="text-xs text-gray-500 transition-colors duration-200">
-              {isCollapsed ? 'Click to view CMF criteria' : 'Your Candidate Market Fit'}
-            </p>
-          </div>
-        </div>
-        <button className="p-1 hover:bg-gray-100 rounded transition-all duration-200 group-hover:scale-110">
-          {isCollapsed ? (
-            <svg className="w-4 h-4 text-gray-600 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          ) : (
-            <svg className="w-4 h-4 text-gray-600 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-            </svg>
-          )}
+      {isCollapsed ? (
+        /* Collapsed State - Just Icon */
+        <button
+          className="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          onClick={onToggle}
+          onKeyDown={handleKeyDown}
+          tabIndex={0}
+          aria-expanded={false}
+          aria-label="Expand CMF details panel"
+          title={`${userCMF.name} - Click to view CMF criteria`}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
         </button>
-      </div>
+      ) : (
+        /* Expanded State - Full Panel */
+        <>
+          {/* Header - When Expanded */}
+          <div 
+            className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-all duration-200 rounded-t-lg group focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset min-h-[44px] touch-manipulation"
+            onClick={onToggle}
+            onKeyDown={handleKeyDown}
+            tabIndex={0}
+            role="button"
+            aria-expanded={true}
+            aria-label="Collapse CMF details panel"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 text-sm">
+                  {userCMF.name}
+                </h3>
+                <p className="text-xs text-gray-500 transition-colors duration-200">
+                  Your Candidate Market Fit
+                </p>
+              </div>
+            </div>
+            <button className="p-1 hover:bg-gray-100 rounded transition-all duration-200 group-hover:scale-110">
+              <svg className="w-4 h-4 text-gray-600 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+              </svg>
+            </button>
+          </div>
+        </>
+      )}
 
       {/* Collapsible Content */}
       <div 

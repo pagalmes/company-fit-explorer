@@ -55,8 +55,8 @@ const CMFGraphExplorer: React.FC = () => {
   const [showRemoveConfirmation, setShowRemoveConfirmation] = useState(false);
   const [companyToRemove, setCompanyToRemove] = useState<Company | null>(null);
   
-  // Panel state
-  const [isCMFPanelCollapsed, setIsCMFPanelCollapsed] = useState<boolean>(false);
+  // Panel state - default to collapsed for cleaner UI
+  const [isCMFPanelCollapsed, setIsCMFPanelCollapsed] = useState<boolean>(true);
   
   // Force re-render trigger for state changes
   const [stateVersion, setStateVersion] = useState(0);
@@ -293,15 +293,7 @@ const CMFGraphExplorer: React.FC = () => {
     <div className="flex h-screen bg-transparent">
       {/* Main Graph Area */}
       <div className="flex-1 relative">
-        {/* Development indicator */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="absolute top-4 left-4 z-10 bg-blue-500 text-white px-3 py-1 rounded text-sm">
-            User: {activeUserProfile.name} ({activeUserProfile.id})
-            <div className="text-xs mt-1">
-              Total: {allCompanies.length} | Watchlist: {watchlistStats.totalCompanies} | View: {viewMode}
-            </div>
-          </div>
-        )}
+        {/* Development indicator disabled to avoid conflict with CMF panel */}
 
 
         {/* View Mode Toggle */}

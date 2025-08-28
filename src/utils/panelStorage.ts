@@ -3,7 +3,7 @@
  * Handles persistence of UI panel states like CMF collapse/expand
  */
 
-const CMF_PANEL_STORAGE_KEY = 'cmf-explorer-panel-state';
+const CMF_PANEL_STORAGE_KEY = 'cmf-explorer-panel-state-v2'; // Updated to reset existing state
 
 export interface PanelState {
   cmfCollapsed: boolean;
@@ -35,7 +35,7 @@ export const loadPanelState = (): PanelState => {
   }
   
   return {
-    cmfCollapsed: false,
+    cmfCollapsed: true,
     lastUpdated: new Date().toISOString()
   };
 };
