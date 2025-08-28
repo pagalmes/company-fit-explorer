@@ -37,7 +37,7 @@ describe('panelStorage', () => {
       savePanelState(newState)
 
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        'cmf-explorer-panel-state',
+        'cmf-explorer-panel-state-v2',
         expect.stringContaining('"cmfCollapsed":true')
       )
     })
@@ -99,7 +99,7 @@ describe('panelStorage', () => {
       const result = loadPanelState()
       
       expect(result).toEqual(mockState)
-      expect(mockLocalStorage.getItem).toHaveBeenCalledWith('cmf-explorer-panel-state')
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith('cmf-explorer-panel-state-v2')
     })
 
     it('should return default state when no stored data exists', () => {
@@ -107,7 +107,7 @@ describe('panelStorage', () => {
       
       const result = loadPanelState()
       
-      expect(result.cmfCollapsed).toBe(false)
+      expect(result.cmfCollapsed).toBe(true)
       expect(result.lastUpdated).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/)
     })
 
@@ -116,7 +116,7 @@ describe('panelStorage', () => {
       
       const result = loadPanelState()
       
-      expect(result.cmfCollapsed).toBe(false)
+      expect(result.cmfCollapsed).toBe(true)
       expect(result.lastUpdated).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/)
     })
 
@@ -129,7 +129,7 @@ describe('panelStorage', () => {
 
       const result = loadPanelState()
       
-      expect(result.cmfCollapsed).toBe(false)
+      expect(result.cmfCollapsed).toBe(true)
       expect(result.lastUpdated).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/)
       expect(consoleSpy).toHaveBeenCalledWith('Failed to load panel state:', error)
       
@@ -142,7 +142,7 @@ describe('panelStorage', () => {
 
       const result = loadPanelState()
       
-      expect(result.cmfCollapsed).toBe(false)
+      expect(result.cmfCollapsed).toBe(true)
       expect(result.lastUpdated).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/)
       expect(consoleSpy).toHaveBeenCalledWith('Failed to load panel state:', expect.any(Error))
       
@@ -175,7 +175,7 @@ describe('panelStorage', () => {
 
       const result = loadPanelState()
       
-      expect(result.cmfCollapsed).toBe(false)
+      expect(result.cmfCollapsed).toBe(true)
       expect(consoleSpy).toHaveBeenCalledWith('Failed to load panel state:', securityError)
       
       consoleSpy.mockRestore()
@@ -210,7 +210,7 @@ describe('panelStorage', () => {
       expect(() => loadPanelState()).not.toThrow()
       
       const result = loadPanelState()
-      expect(result.cmfCollapsed).toBe(false)
+      expect(result.cmfCollapsed).toBe(true)
       
       consoleSpy.mockRestore()
     })

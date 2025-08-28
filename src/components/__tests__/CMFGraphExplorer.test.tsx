@@ -244,10 +244,11 @@ describe('CMFGraphExplorer', () => {
     it('should position overlays correctly', () => {
       const { container } = render(<CMFGraphExplorer userCMF={mockUserCMF} companies={mockCompanies} />)
 
-      // CMF info overlay (top-left)
-      const cmfOverlay = container.querySelector('.absolute.top-4.left-4')
+      // CMF info overlay (top-left) - now uses left-6 for alignment with settings
+      const cmfOverlay = container.querySelector('.absolute.top-4.left-6')
       expect(cmfOverlay).toBeInTheDocument()
-      expect(cmfOverlay).toHaveClass('bg-white', 'rounded-lg', 'shadow-lg')
+      // In collapsed state, it only shows the blue icon, not the white panel
+      expect(cmfOverlay).toHaveClass('z-20', 'transition-all')
 
       // Legend overlay (bottom-left)
       const legendOverlay = container.querySelector('.absolute.bottom-4.left-4')

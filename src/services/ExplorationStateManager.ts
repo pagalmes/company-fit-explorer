@@ -316,15 +316,16 @@ export class ExplorationStateManager {
    * Log current state information for development
    */
   private logStateInfo(): void {
-    if (process.env.NODE_ENV === 'development') {
-      console.group(`🔍 Exploration State Loaded: ${this.currentState.name}`);
-      console.log('User ID:', this.currentState.id);
-      console.log('View Mode:', this.currentState.viewMode);
-      console.log('Statistics:', this.getExplorationStats());
-      console.log('Watchlist:', this.getWatchlistStats());
-      console.log('Selected Company:', this.getSelectedCompany()?.name || 'None');
-      console.groupEnd();
-    }
+    // Development logging commented out to reduce console noise
+    // if (process.env.NODE_ENV === 'development') {
+    //   console.group(`🔍 Exploration State Loaded: ${this.currentState.name}`);
+    //   console.log('User ID:', this.currentState.id);
+    //   console.log('View Mode:', this.currentState.viewMode);
+    //   console.log('Statistics:', this.getExplorationStats());
+    //   console.log('Watchlist:', this.getWatchlistStats());
+    //   console.log('Selected Company:', this.getSelectedCompany()?.name || 'None');
+    //   console.groupEnd();
+    // }
   }
 
   /**

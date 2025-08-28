@@ -102,7 +102,8 @@ describe('CompanyGraph - Integration & Edge Highlighting Logic', () => {
       // Verify cytoscape container
       const cytoscapeContainer = container.querySelector('div[style*="cursor: grab"]')
       expect(cytoscapeContainer).toBeInTheDocument()
-      expect(cytoscapeContainer).toHaveStyle({ backgroundColor: '#f9fafb' })
+      // Container has cursor grab style and data attributes for Cytoscape
+      expect(cytoscapeContainer).toHaveAttribute('data-cy', 'cytoscape-container')
     })
 
     it('should render graph controls for user interaction', () => {

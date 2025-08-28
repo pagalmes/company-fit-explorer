@@ -84,14 +84,15 @@ const CMFGraphExplorer: React.FC = () => {
     
     setIsLoading(false);
     
-    console.log('🚀 Loaded exploration state from companies.ts:', {
-      userId: activeUserProfile.id,
-      userName: activeUserProfile.name,
-      stats: stateManager.getExplorationStats(),
-      watchlistStats: stateManager.getWatchlistStats(),
-      lastSelected: lastSelected?.name,
-      viewMode: lastViewMode
-    });
+    // Development logging commented out to reduce console noise
+    // console.log('🚀 Loaded exploration state from companies.ts:', {
+    //   userId: activeUserProfile.id,
+    //   userName: activeUserProfile.name,
+    //   stats: stateManager.getExplorationStats(),
+    //   watchlistStats: stateManager.getWatchlistStats(),
+    //   lastSelected: lastSelected?.name,
+    //   viewMode: lastViewMode
+    // });
   }, [stateManager]);
 
   // Get companies for display based on view mode - include stateVersion to trigger updates

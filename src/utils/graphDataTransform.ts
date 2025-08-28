@@ -327,7 +327,6 @@ export const getCytoscapeStyles = (): any[] => [
         return company?.logo ? `url(${company.logo})` : 'none';
       },
       'background-fit': 'contain',
-      'background-position': 'center center',
       'background-repeat': 'no-repeat',
       'background-color': 'white',
       'border-width': 0.5,

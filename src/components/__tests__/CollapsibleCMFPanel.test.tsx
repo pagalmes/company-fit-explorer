@@ -55,8 +55,10 @@ describe('CollapsibleCMFPanel', () => {
         />
       )
 
-      expect(screen.getByText('John Smith')).toBeInTheDocument()
-      expect(screen.getByText('Click to view CMF criteria')).toBeInTheDocument()
+      // In collapsed state, only shows icon button with tooltip
+      const button = screen.getByRole('button', { name: /expand cmf details panel/i })
+      expect(button).toBeInTheDocument()
+      expect(button).toHaveAttribute('title', 'John Smith - Click to view CMF criteria')
       
       // Content is in DOM but visually hidden with maxHeight: 0px
       const collapsibleContainer = container.querySelector('.overflow-hidden')
@@ -276,7 +278,7 @@ describe('CollapsibleCMFPanel', () => {
       
       expect(header).toHaveAttribute('aria-expanded', 'false')
       expect(header).toHaveAttribute('tabIndex', '0')
-      expect(header).toHaveAttribute('role', 'button')
+      // Button element has implicit role="button" - no need to test explicit attribute
     })
 
     it('should have proper ARIA attributes when expanded', () => {
@@ -292,7 +294,7 @@ describe('CollapsibleCMFPanel', () => {
       
       expect(header).toHaveAttribute('aria-expanded', 'true')
       expect(header).toHaveAttribute('tabIndex', '0')
-      expect(header).toHaveAttribute('role', 'button')
+      // Button element has implicit role="button" - no need to test explicit attribute
     })
 
     it('should be focusable', () => {
@@ -312,7 +314,7 @@ describe('CollapsibleCMFPanel', () => {
   })
 
   describe('icon display', () => {
-    it('should show down chevron when collapsed', () => {
+    it('should show person icon when collapsed', () => {
       render(
         <CollapsibleCMFPanel
           userCMF={mockUserCMF}
@@ -321,9 +323,9 @@ describe('CollapsibleCMFPanel', () => {
         />
       )
 
-      // Look for the down chevron SVG path
-      const downChevron = document.querySelector('path[d*="19 9l-7 7-7-7"]')
-      expect(downChevron).toBeInTheDocument()
+      // Look for the person icon SVG path  
+      const personIcon = document.querySelector('path[d*="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"]')
+      expect(personIcon).toBeInTheDocument()
     })
 
     it('should show up chevron when expanded', () => {
