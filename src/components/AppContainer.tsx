@@ -141,11 +141,42 @@ const AppContainer: React.FC = () => {
     );
   }
 
+  // Floating stars component for cosmic background
+  const FloatingStars = () => (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {[...Array(12)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute animate-pulse opacity-30"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            animationDelay: `${Math.random() * 3}s`,
+            animationDuration: `${2 + Math.random() * 2}s`
+          }}
+        >
+          <div className="w-1 h-1 bg-blue-300 rounded-full" />
+        </div>
+      ))}
+    </div>
+  );
+
   // Show the main graph explorer for returning users or after completion
   if (userProfile && hasChecked) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 transition-all duration-1000">
-        <CMFGraphExplorerNew />
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden transition-all duration-1000">
+        <FloatingStars />
+        
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)',
+            backgroundSize: '50px 50px'
+          }} />
+        </div>
+
+        <div className="relative">
+          <CMFGraphExplorerNew />
+        </div>
       </div>
     );
   }

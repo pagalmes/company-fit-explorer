@@ -232,7 +232,7 @@ export const getCytoscapeStyles = (): any[] => [
       'text-halign': 'center',
       'font-size': 5,
       'font-weight': 'bold',
-      'color': '#1f2937', // Darker color for company name
+      'color': '#dbeafe', // Light blue to match onboarding text (text-blue-100)
       'text-wrap': 'wrap',
       'text-max-width': '55px',
       'z-index': 5,

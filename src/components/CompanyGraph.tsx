@@ -474,7 +474,7 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       <div 
         ref={cyRef} 
         className="w-full h-full"
-        style={{ cursor: 'grab', backgroundColor: '#f9fafb' }}
+        style={{ cursor: 'grab', backgroundColor: 'transparent' }}
         data-cy="cytoscape-container"
       />
       

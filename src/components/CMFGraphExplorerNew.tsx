@@ -290,7 +290,7 @@ const CMFGraphExplorer: React.FC = () => {
   const userCMF = stateManager.getUserCMF();
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-transparent">
       {/* Main Graph Area */}
       <div className="flex-1 relative">
         {/* Development indicator */}
