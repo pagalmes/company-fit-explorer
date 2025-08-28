@@ -1,5 +1,5 @@
 import React from 'react';
-import CMFGraphExplorer from './components/CMFGraphExplorerNew';
+import AppContainer from './components/AppContainer';
 import { autoMigrate } from './utils/migrateLegacyState';
 
 const App: React.FC = () => {
@@ -10,7 +10,7 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
-      <CMFGraphExplorer />
+      <AppContainer />
     </div>
   );
 };
