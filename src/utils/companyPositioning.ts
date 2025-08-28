@@ -376,6 +376,35 @@ const levenshteinDistance = (str1: string, str2: string): number => {
 };
 
 /**
+ * Check if the existing companies have significant positioning errors
+ * Returns true if relocation would improve overall positioning
+ */
+export const shouldTriggerRelocation = (
+  existingCompanies: Company[],
+  threshold: number = 30
+): boolean => {
+  let totalError = 0;
+  let companiesWithError = 0;
+  
+  for (const company of existingCompanies) {
+    const targetDistance = calculateDistanceFromScore(company.matchScore);
+    const currentDistance = company.distance || 0;
+    const error = Math.abs(targetDistance - currentDistance);
+    
+    if (error > threshold) {
+      totalError += error;
+      companiesWithError++;
+    }
+  }
+  
+  // Trigger relocation if more than 30% of companies are significantly mispositioned
+  const errorRate = companiesWithError / existingCompanies.length;
+  const averageError = companiesWithError > 0 ? totalError / companiesWithError : 0;
+  
+  return errorRate > 0.3 || averageError > 60;
+};
+
+/**
  * Get color for company based on match score
  */
 export const getColorForScore = (score: number): string => {

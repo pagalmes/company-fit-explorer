@@ -158,6 +158,40 @@ const CMFGraphExplorer: React.FC = () => {
     }
   }, [stateManager, forceUpdate, handleCompanySelect]);
 
+  const handleBatchUpdateCompanies = useCallback(async (updatedCompanies: Company[]) => {
+    try {
+      console.log('🎯 Performing batch company update with smart repositioning');
+      
+      // Update all companies in the state manager
+      updatedCompanies.forEach(company => {
+        if (stateManager.getAllCompanies().find(c => c.id === company.id)) {
+          // Update existing company
+          stateManager.updateCompany(company);
+        } else {
+          // Add new company
+          stateManager.addCompany(company);
+        }
+      });
+      
+      forceUpdate(); // Force re-render to show repositioned companies
+      
+      // Auto-select the newest company (highest ID, likely the one just added)
+      const newestCompany = updatedCompanies.reduce((newest, company) => 
+        company.id > newest.id ? company : newest
+      );
+      
+      // Auto-select the new company after animations complete
+      setTimeout(() => {
+        handleCompanySelect(newestCompany);
+      }, 1500); // Slightly longer delay to allow animations to finish
+      
+      console.log(`📊 Batch update completed: ${updatedCompanies.length} companies repositioned`);
+    } catch (error) {
+      console.error('Failed to batch update companies:', error);
+      throw error; // Re-throw to let modal handle the error
+    }
+  }, [stateManager, forceUpdate, handleCompanySelect]);
+
   const removeCompany = useCallback((companyId: number) => {
     stateManager.removeCompany(companyId);
     
@@ -402,6 +436,7 @@ const CMFGraphExplorer: React.FC = () => {
           isOpen={showAddCompanyModal}
           onClose={() => setShowAddCompanyModal(false)}
           onAddCompany={handleAddCompany}
+          onBatchUpdateCompanies={handleBatchUpdateCompanies}
           existingCompanies={allCompanies}
           onCheckForRemovedCompany={checkForRemovedCompany}
           onRestoreRemovedCompany={restoreRemovedCompany}

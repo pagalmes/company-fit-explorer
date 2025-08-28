@@ -9,6 +9,7 @@ interface AddCompanyModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddCompany: (company: Company) => Promise<void>;
+  onBatchUpdateCompanies?: (companies: Company[]) => Promise<void>; // New: for smart relocation
   onCheckForRemovedCompany?: (companyName: string) => Company | null;
   onRestoreRemovedCompany?: (company: Company) => void;
   userCMF: UserCMF;
@@ -30,6 +31,7 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
   isOpen,
   onClose,
   onAddCompany,
+  onBatchUpdateCompanies,
   onCheckForRemovedCompany,
   onRestoreRemovedCompany,
   userCMF,
@@ -233,11 +235,9 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
         careerUrl: generateCareerUrl(companyData.name, companyPreview.domain)
       };
 
-      // Import positioning utilities dynamically to avoid circular dependencies
-      const { findOptimalPosition, mapConnectionsToExistingCompanies } = await import('../utils/companyPositioning');
-      
-      // Find optimal position with collision detection
-      const optimalPosition = findOptimalPosition(baseCompany, existingCompanies);
+      // Import positioning utilities
+      const { mapConnectionsToExistingCompanies } = await import('../utils/companyPositioning');
+      const { findSmartPositioningSolution, isPositioningSolutionBeneficial } = await import('../utils/smartPositioning');
       
       // Map connections to existing companies (use LLM connections if available)
       const connectionsToMap = companyData.connections || [];
@@ -253,16 +253,38 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
         connectionTypes: connectionTypesForMapping
       }, existingCompanies);
       
-      // Final company with positioning and connections
-      const finalCompany: Company = {
+      // Create base company with connections
+      const companyWithConnections: Company = {
         ...baseCompany,
-        angle: optimalPosition.angle,
-        distance: optimalPosition.distance,
         connections: connectionMapping.connections,
         connectionTypes: connectionMapping.connectionTypes
       };
 
-      await onAddCompany(finalCompany);
+      // Find smart positioning solution
+      const positioningSolution = findSmartPositioningSolution(companyWithConnections, existingCompanies);
+      
+      console.log(`📍 Positioning solution: ${positioningSolution.reason}`);
+      
+      // Check if we should use batch update (when relocating multiple companies) or simple addition
+      const shouldUseBatchUpdate = positioningSolution.relocatedCompanies.length > 1 && 
+                                   isPositioningSolutionBeneficial(positioningSolution) &&
+                                   onBatchUpdateCompanies;
+      
+      if (shouldUseBatchUpdate) {
+        console.log(`🎯 Using smart positioning: ${positioningSolution.relocatedCompanies.length} companies positioned`);
+        
+        // Update all companies (new + relocated)
+        const allUpdatedCompanies = [
+          ...positioningSolution.stableCompanies,
+          ...positioningSolution.relocatedCompanies
+        ];
+        
+        await onBatchUpdateCompanies(allUpdatedCompanies);
+      } else {
+        console.log('📍 Using simple addition for new company only');
+        await onAddCompany(positioningSolution.newCompany);
+      }
+      
       onClose();
       resetModal();
     } catch (err) {

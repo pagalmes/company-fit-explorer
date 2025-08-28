@@ -91,6 +91,33 @@ export class ExplorationStateManager {
   }
 
   /**
+   * Update an existing company in the exploration
+   */
+  updateCompany(updatedCompany: Company): Company {
+    // Find and update in base companies
+    const baseIndex = this.currentState.baseCompanies.findIndex(c => c.id === updatedCompany.id);
+    if (baseIndex !== -1) {
+      this.currentState.baseCompanies[baseIndex] = { ...updatedCompany };
+      this.persistState();
+      console.log(`Updated base company: ${updatedCompany.name} (ID: ${updatedCompany.id})`);
+      return this.currentState.baseCompanies[baseIndex];
+    }
+    
+    // Find and update in added companies
+    const addedIndex = this.currentState.addedCompanies.findIndex(c => c.id === updatedCompany.id);
+    if (addedIndex !== -1) {
+      this.currentState.addedCompanies[addedIndex] = { ...updatedCompany };
+      this.persistState();
+      console.log(`Updated added company: ${updatedCompany.name} (ID: ${updatedCompany.id})`);
+      return this.currentState.addedCompanies[addedIndex];
+    }
+    
+    // If company doesn't exist, add it as a new company
+    console.log(`Company not found for update, adding as new: ${updatedCompany.name} (ID: ${updatedCompany.id})`);
+    return this.addCompany(updatedCompany);
+  }
+
+  /**
    * Remove a company from exploration
    */
   removeCompany(companyId: number): void {
