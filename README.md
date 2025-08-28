@@ -11,6 +11,7 @@ An interactive CMF (Candidate Market Fit) visualization tool that helps you disc
 
 ## ✨ Features
 
+- **🌟 Dreamy First Contact**: Magical onboarding experience for first-time users with cosmic animations and file upload
 - **CMF-Centered Graph**: Your Candidate Market Fit profile sits at the center with companies positioned around it based on match scores
 - **Collapsible CMF Panel**: Space-saving CMF information panel in the top-left corner:
   - **Click to Collapse/Expand**: Toggle between full details and compact header
@@ -85,6 +86,25 @@ This runs all three servers with color-coded output:
 npm run dev
 ```
 Basic development without automatic file persistence.
+
+### 🌟 First-Time Experience
+
+For new users, the app shows a magical "Dreamy First Contact" onboarding flow:
+1. **Cosmic Welcome**: Animated spark with floating stars
+2. **Universe Awakening**: Explosion transition animation  
+3. **File Upload**: Upload resume and career fit document
+4. **Profile Processing**: Files are processed to customize your CMF profile
+5. **Universe Generation**: Cosmic loading screen before launching into the main app
+
+**Test URLs:**
+- First-time experience: `http://localhost:5174/` 
+- Skip intro (for testing): `http://localhost:5174/?skip-intro=true`
+- Reset experience: Clear localStorage and revisit
+
+**File Processing:**
+- Uploaded files are analyzed to extract skills, experience, preferences
+- Creates personalized CMF profile based on your documents
+- Fallback to default profile if processing fails
 
 **Option C: Individual Servers**
 ```bash
