@@ -60,17 +60,18 @@ describe('CollapsibleCMFPanel', () => {
       expect(button).toBeInTheDocument()
       expect(button).toHaveAttribute('title', 'John Smith - Click to view CMF criteria')
       
-      // Content is in DOM but visually hidden with maxHeight: 0px
-      const collapsibleContainer = container.querySelector('.overflow-hidden')
-      expect(collapsibleContainer).toHaveStyle('max-height: 0px')
+      // Panel should be hidden with opacity and scale
+      const panel = container.querySelector('.opacity-0.scale-95')
+      expect(panel).toBeInTheDocument()
+      expect(panel).toHaveClass('pointer-events-none')
       
-      // Content should exist in DOM but be hidden
+      // Content should exist in DOM but be visually hidden
       expect(screen.getByText('Target Role')).toBeInTheDocument()
       expect(screen.getByText('Senior AI Engineer')).toBeInTheDocument()
     })
 
     it('should render in expanded state', () => {
-      render(
+      const { container } = render(
         <CollapsibleCMFPanel
           userCMF={mockUserCMF}
           isCollapsed={false}
@@ -78,6 +79,16 @@ describe('CollapsibleCMFPanel', () => {
         />
       )
 
+      // Fixed icon should always be visible
+      const button = screen.getByRole('button', { name: /collapse cmf details panel/i })
+      expect(button).toBeInTheDocument()
+      
+      // Panel should be visible with full opacity
+      const panel = container.querySelector('.opacity-100.scale-100')
+      expect(panel).toBeInTheDocument()
+      expect(panel).not.toHaveClass('pointer-events-none')
+      
+      // Panel header should contain user info
       expect(screen.getByText('John Smith')).toBeInTheDocument()
       expect(screen.getByText('Your Candidate Market Fit')).toBeInTheDocument()
       
@@ -328,7 +339,7 @@ describe('CollapsibleCMFPanel', () => {
       expect(personIcon).toBeInTheDocument()
     })
 
-    it('should show up chevron when expanded', () => {
+    it('should show close icon when expanded', () => {
       render(
         <CollapsibleCMFPanel
           userCMF={mockUserCMF}
@@ -337,9 +348,9 @@ describe('CollapsibleCMFPanel', () => {
         />
       )
 
-      // Look for the up chevron SVG path
-      const upChevron = document.querySelector('path[d*="5 15l7-7 7 7"]')
-      expect(upChevron).toBeInTheDocument()
+      // Look for the close (X) icon SVG path in the panel header
+      const closeIcon = document.querySelector('path[d*="M6 18L18 6M6 6l12 12"]')
+      expect(closeIcon).toBeInTheDocument()
     })
   })
 

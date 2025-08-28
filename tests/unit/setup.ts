@@ -34,6 +34,129 @@ Object.defineProperty(window, 'open', {
   value: vi.fn(),
 })
 
+// Mock companies.ts data to ensure consistent test data
+vi.mock('../../src/data/companies', () => ({
+  activeUserProfile: {
+    id: 'test-user-1',
+    name: 'John Smith',
+    targetRole: 'Senior AI Engineer',
+    targetCompanies: 'AI/ML companies with strong ethics focus',
+    mustHaves: [
+      'Remote-friendly culture',
+      'Strong AI safety principles', 
+      'High technical standards'
+    ],
+    wantToHave: ['Competitive salary', 'Stock options'],
+    experience: ['5+ years ML experience', 'Python expertise']
+  },
+  allCompanies: [
+    {
+      id: 1,
+      name: 'OpenAI',
+      logo: 'https://logo.clearbit.com/openai.com',
+      careerUrl: 'https://openai.com/careers',
+      matchScore: 95,
+      industry: 'AI/ML',
+      stage: 'Late Stage',
+      location: 'San Francisco, CA',
+      employees: '~1500',
+      remote: 'In-office',
+      openRoles: 3,
+      connections: [2, 3],
+      connectionTypes: { 2: 'competitor', 3: 'partner' },
+      angle: 0,
+      distance: 80
+    },
+    {
+      id: 2,
+      name: 'Anthropic',
+      logo: 'https://logo.clearbit.com/anthropic.com',
+      careerUrl: 'https://anthropic.com/careers',
+      matchScore: 88,
+      industry: 'AI/ML',
+      stage: 'Late Stage',
+      location: 'San Francisco, CA',
+      employees: '~500',
+      remote: 'Hybrid',
+      openRoles: 5,
+      connections: [1, 3],
+      connectionTypes: { 1: 'competitor', 3: 'partner' },
+      angle: 120,
+      distance: 100
+    },
+    {
+      id: 3,
+      name: 'Scale AI',
+      logo: 'https://logo.clearbit.com/scale.com',
+      careerUrl: 'https://scale.com/careers',
+      matchScore: 82,
+      industry: 'AI/ML',
+      stage: 'Late Stage',
+      location: 'San Francisco, CA', 
+      employees: '~1000',
+      remote: 'Hybrid',
+      openRoles: 2,
+      connections: [1, 2],
+      connectionTypes: { 1: 'partner', 2: 'partner' },
+      angle: 240,
+      distance: 120
+    }
+  ],
+  sampleCompanies: [
+    {
+      id: 1,
+      name: 'OpenAI',
+      logo: 'https://logo.clearbit.com/openai.com',
+      careerUrl: 'https://openai.com/careers',
+      matchScore: 95,
+      industry: 'AI/ML',
+      stage: 'Late Stage',
+      location: 'San Francisco, CA',
+      employees: '~1500',
+      remote: 'In-office',
+      openRoles: 3,
+      connections: [2, 3],
+      connectionTypes: { 2: 'competitor', 3: 'partner' },
+      angle: 0,
+      distance: 80
+    },
+    {
+      id: 2,
+      name: 'Anthropic',
+      logo: 'https://logo.clearbit.com/anthropic.com',
+      careerUrl: 'https://anthropic.com/careers',
+      matchScore: 88,
+      industry: 'AI/ML',
+      stage: 'Late Stage',
+      location: 'San Francisco, CA',
+      employees: '~500',
+      remote: 'Hybrid',
+      openRoles: 5,
+      connections: [1, 3],
+      connectionTypes: { 1: 'competitor', 3: 'partner' },
+      angle: 120,
+      distance: 100
+    },
+    {
+      id: 3,
+      name: 'Scale AI',
+      logo: 'https://logo.clearbit.com/scale.com',
+      careerUrl: 'https://scale.com/careers',
+      matchScore: 82,
+      industry: 'AI/ML',
+      stage: 'Late Stage',
+      location: 'San Francisco, CA', 
+      employees: '~1000',
+      remote: 'Hybrid',
+      openRoles: 2,
+      connections: [1, 2],
+      connectionTypes: { 1: 'partner', 2: 'partner' },
+      angle: 240,
+      distance: 120
+    }
+  ]
+}))
+
 // Mock Cytoscape for component tests
 vi.mock('cytoscape', () => {
   const mockNodes = {
