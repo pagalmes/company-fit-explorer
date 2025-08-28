@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import cytoscape from 'cytoscape';
 import { CompanyGraphProps } from '../types';
 import { transformToGraphData, getCytoscapeStyles } from '../utils/graphDataTransform';
@@ -104,6 +104,10 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
   const onCMFToggleRef = useRef(onCMFToggle);
   const selectedCompanyRef = useRef(selectedCompany);
   const viewStateRef = useRef<{zoom: number; pan: {x: number; y: number}} | null>(null);
+  
+  // State to track center node screen position and zoom level
+  const [centerNodePosition, setCenterNodePosition] = useState({ x: 0, y: 0 });
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   // Keep refs updated
   onCompanySelectRef.current = onCompanySelect;
@@ -347,6 +351,24 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       onCMFToggleRef.current?.();
     });
 
+    // Function to update center node position and zoom level
+    const updateCenterNodePosition = () => {
+      const centerNode = cy.getElementById('cmf-center');
+      if (centerNode.length > 0) {
+        const renderedPosition = centerNode.renderedPosition();
+        setCenterNodePosition({ x: renderedPosition.x, y: renderedPosition.y });
+        setZoomLevel(cy.zoom());
+      }
+    };
+
+    // Listen for viewport changes to update center node position
+    cy.on('viewport', updateCenterNodePosition);
+    cy.on('zoom', updateCenterNodePosition);
+    cy.on('pan', updateCenterNodePosition);
+    
+    // Initial position update
+    updateCenterNodePosition();
+
     return () => {
       // Clean up any pending timeouts
       if (hoverTimeout) {
@@ -477,6 +499,58 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
         style={{ cursor: 'grab', backgroundColor: 'transparent' }}
         data-cy="cytoscape-container"
       />
+      
+      {/* Custom Spark Center Node - positioned to match Cytoscape center */}
+      <div 
+        className="absolute pointer-events-none"
+        style={{ 
+          left: `${centerNodePosition.x}px`, 
+          top: `${centerNodePosition.y}px`, 
+          transform: 'translate(-50%, -50%)',
+          zIndex: 15
+        }}
+      >
+        <div 
+          className="relative bg-gradient-to-br from-orange-300 via-pink-400 to-purple-500 rounded-full shadow-2xl cursor-pointer pointer-events-auto"
+          style={{
+            width: `${62.5 * zoomLevel}px`,
+            height: `${62.5 * zoomLevel}px`
+          }}
+          onClick={() => onCMFToggle && onCMFToggle()}
+          title={cmf.name}
+        >
+          <div 
+            className="absolute bg-gradient-to-br from-yellow-200 via-orange-300 to-pink-400 rounded-full"
+            style={{
+              top: `${3.75 * zoomLevel}px`,
+              left: `${3.75 * zoomLevel}px`,
+              right: `${3.75 * zoomLevel}px`,
+              bottom: `${3.75 * zoomLevel}px`
+            }}
+          />
+          <div 
+            className="absolute bg-gradient-to-br from-yellow-100 via-orange-200 to-yellow-300 rounded-full"
+            style={{
+              top: `${7.5 * zoomLevel}px`,
+              left: `${7.5 * zoomLevel}px`,
+              right: `${7.5 * zoomLevel}px`,
+              bottom: `${7.5 * zoomLevel}px`
+            }}
+          />
+          
+          {/* User name inside the spark */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <span 
+              className="text-white font-bold text-center drop-shadow-lg"
+              style={{
+                fontSize: `${5 * zoomLevel}px`
+              }}
+            >
+              {cmf.name}
+            </span>
+          </div>
+        </div>
+      </div>
       
       {/* Graph Controls */}
       <div className="absolute top-4 right-4 flex flex-col space-y-2" style={{ zIndex: 10 }}>

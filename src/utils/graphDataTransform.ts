@@ -181,27 +181,18 @@ export const getCytoscapeStyles = (): any[] => [
       'events': 'no'
     }
   },
-  // Central CMF Node - exact specs
+  // Central CMF Node - hidden (we'll use custom HTML element instead)
   {
     selector: 'node[type="cmf"]',
     style: {
       'width': 60,
       'height': 60,
-      'background-color': '#3B82F6',
-      'border-width': 1,
-      'border-color': 'white',
-      'label': 'data(label)',
-      'text-valign': 'center',
-      'text-halign': 'center',
-      'font-size': 6,
-      'font-weight': 'bold',
-      'color': 'white',
-      'text-wrap': 'wrap',
-      'text-max-width': '90px',
-      'z-index': 10,
-      'transition-property': 'width, height, border-color, border-width',
-      'transition-duration': '0.25s',
-      'transition-timing-function': 'ease-out'
+      'background-color': 'transparent',
+      'background-opacity': 0,
+      'border-width': 0,
+      'label': '',
+      'events': 'yes',
+      'z-index': 10
     }
   },
   // CMF Node Hover Style - similar to company nodes
