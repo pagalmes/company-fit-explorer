@@ -77,9 +77,7 @@ const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) =
 
         <div className="relative flex flex-col items-center justify-center min-h-screen px-4">
           <div 
-            className={`relative mb-8 cursor-pointer transition-transform duration-300 ${
-              showInteraction ? 'hover:scale-110' : ''
-            }`}
+            className="relative mb-8 cursor-pointer transition-transform duration-300"
             onClick={handleFlameClick}
           >
             {/* Explosion rings - shown behind the spark when clicked */}
@@ -99,38 +97,38 @@ const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) =
                     animation: `explosionRing 1.5s ease-out ${i * 0.1}s 1 forwards`,
                     opacity: 0,
                     transformOrigin: 'center center',
-                    zIndex: -1
+                    zIndex: 1
                   }}
                 />
               );
             })}
             
-            <div className="absolute inset-0 scale-150 opacity-20">
+            <div className="absolute inset-0 scale-150 opacity-20 pointer-events-none" style={{ transform: 'translateZ(0)', willChange: 'opacity' }}>
               <div className="w-32 h-32 bg-gradient-to-r from-orange-400 via-purple-500 to-blue-500 rounded-full animate-pulse" />
             </div>
             
-            <div className="absolute inset-0 scale-125 opacity-40">
+            <div className="absolute inset-0 scale-125 opacity-40 pointer-events-none" style={{ transform: 'translateZ(0)', willChange: 'opacity' }}>
               <div className="w-32 h-32 bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 rounded-full animate-pulse" 
                    style={{ animationDelay: '0.5s', animationDuration: '3s' }} />
             </div>
             
             <div className="relative w-32 h-32 bg-gradient-to-br from-orange-300 via-pink-400 to-purple-500 rounded-full shadow-2xl z-10">
-              <div className="absolute inset-2 bg-gradient-to-br from-yellow-200 via-orange-300 to-pink-400 rounded-full animate-pulse" style={{ animationDuration: '2s' }} />
-              <div className="absolute inset-4 bg-gradient-to-br from-yellow-100 via-orange-200 to-yellow-300 rounded-full animate-pulse" style={{ animationDelay: '1s', animationDuration: '4s' }} />
+              <div className="absolute inset-2 bg-gradient-to-br from-yellow-200 via-orange-300 to-pink-400 rounded-full animate-pulse pointer-events-none" style={{ animationDuration: '2s', transform: 'translateZ(0)', willChange: 'opacity' }} />
+              <div className="absolute inset-4 bg-gradient-to-br from-yellow-100 via-orange-200 to-yellow-300 rounded-full animate-pulse pointer-events-none" style={{ animationDelay: '1s', animationDuration: '4s', transform: 'translateZ(0)', willChange: 'opacity' }} />
               
-              <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
+              <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 pointer-events-none">
                 <Sparkles className="w-6 h-6 text-yellow-200 animate-bounce" style={{ animationDelay: '2s' }} />
               </div>
-              <div className="absolute -right-2 top-1/3">
+              <div className="absolute -right-2 top-1/3 pointer-events-none">
                 <Sparkles className="w-4 h-4 text-pink-200 animate-bounce" style={{ animationDelay: '1s' }} />
               </div>
-              <div className="absolute -left-2 bottom-1/3">
+              <div className="absolute -left-2 bottom-1/3 pointer-events-none">
                 <Sparkles className="w-3 h-3 text-purple-200 animate-bounce" style={{ animationDelay: '3s' }} />
               </div>
             </div>
             
             {showInteraction && !sparkClicked && (
-              <div className="absolute inset-0 rounded-full animate-ping opacity-20 bg-gradient-to-r from-orange-400 to-purple-500" />
+              <div className="absolute inset-0 rounded-full animate-ping opacity-20 bg-gradient-to-r from-orange-400 to-purple-500 pointer-events-none" />
             )}
             
             {/* Explosion particles - shown on the same screen */}
@@ -142,7 +140,7 @@ const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) =
               return (
                 <div
                   key={`particle-${i}`}
-                  className="absolute w-1 h-1 bg-yellow-300 rounded-full animate-bounce"
+                  className="absolute w-1 h-1 bg-yellow-300 rounded-full animate-bounce pointer-events-none"
                   style={{
                     left: '50%',
                     top: '50%',
@@ -226,9 +224,7 @@ const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) =
 
         <div className="relative flex flex-col items-center justify-center min-h-screen px-4">
           {/* Explosion using EXACT same structure and positioning as the spark */}
-          <div className={`relative mb-8 cursor-pointer transition-transform duration-300 ${
-            showInteraction ? 'hover:scale-110' : ''
-          }`}>
+          <div className="relative mb-8 cursor-pointer transition-transform duration-300">
             {/* Copy exact glow structure from welcome screen for perfect positioning */}
             <div className="absolute inset-0 scale-150 opacity-0">
               <div className="w-32 h-32 bg-gradient-to-r from-orange-400 via-purple-500 to-blue-500 rounded-full" />
@@ -275,7 +271,7 @@ const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) =
               return (
                 <div
                   key={`particle-${i}`}
-                  className="absolute w-1 h-1 bg-yellow-300 rounded-full animate-bounce"
+                  className="absolute w-1 h-1 bg-yellow-300 rounded-full animate-bounce pointer-events-none"
                   style={{
                     left: '50%',
                     top: '50%',
