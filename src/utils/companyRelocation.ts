@@ -104,7 +104,7 @@ export const createRelocationPlan = (
 const findOptimalPositionForCompany = (
   company: Company,
   targetDistance: number,
-  usedPositions: Set<string>,
+  _usedPositions: Set<string>,
   otherCompanies: Company[]
 ): { angle: number; distance: number } => {
   const attempts = 36; // Try every 10 degrees for better spacing

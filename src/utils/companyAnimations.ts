@@ -17,6 +17,8 @@ interface AnimationState {
   phase: 'phase-out' | 'relocating' | 'phase-in';
 }
 
+type AnimationCallback = (companyId: number, position: { angle: number; distance: number }, phase: string) => void;
+
 type EasingFunction = (t: number) => number;
 
 /**
@@ -24,7 +26,7 @@ type EasingFunction = (t: number) => number;
  */
 export class CompanyAnimationManager {
   private activeAnimations = new Map<number, AnimationState>();
-  private animationCallbacks = new Map<number, (company: Company) => void>();
+  private animationCallbacks = new Map<number, AnimationCallback>();
   private isRunning = false;
   private animationFrame?: number;
 
@@ -32,7 +34,7 @@ export class CompanyAnimationManager {
    * Start animations for multiple companies with staggered delays
    */
   public startRelocationAnimations(
-    companies: Company[],
+    _companies: Company[],
     relocations: Array<{
       companyId: number;
       currentPosition: { angle: number; distance: number };
@@ -84,12 +86,9 @@ export class CompanyAnimationManager {
     startPosition: { angle: number; distance: number },
     endPosition: { angle: number; distance: number },
     duration: number,
-    callback: (companyId: number, position: { angle: number; distance: number }, phase: string) => void
+    callback: AnimationCallback
   ): void {
-    // Create three-phase animation: phase-out -> relocate -> phase-in
-    const phaseOutDuration = duration * 0.2; // 20% for phase-out
-    const relocateDuration = duration * 0.6;  // 60% for actual movement
-    const phaseInDuration = duration * 0.2;   // 20% for phase-in
+    // Animation uses three-phase approach: phase-out -> relocate -> phase-in
 
     const animationState: AnimationState = {
       companyId,

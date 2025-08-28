@@ -1,27 +1,6 @@
 import { UserCMF } from '../types';
 
 // Simple text analysis to extract information from files
-const extractSkillsFromText = (text: string): string[] => {
-  const skillPatterns = [
-    // Technical skills
-    /\b(react|vue|angular|javascript|typescript|python|java|node|css|html|sql|aws|docker|kubernetes)\b/gi,
-    // PM skills
-    /\b(product management|scrum|agile|roadmap|strategy|analytics|a\/b testing|user research)\b/gi,
-    // General skills
-    /\b(leadership|project management|data analysis|communication|collaboration)\b/gi
-  ];
-  
-  const skills = new Set<string>();
-  skillPatterns.forEach(pattern => {
-    const matches = text.match(pattern);
-    if (matches) {
-      matches.forEach(match => skills.add(match.toLowerCase()));
-    }
-  });
-  
-  return Array.from(skills).slice(0, 10); // Limit to top 10
-};
-
 const extractExperienceFromText = (text: string): string[] => {
   const experiencePatterns = [
     /\b(\d+)\+?\s*years?\s+(?:of\s+)?experience/gi,
@@ -142,7 +121,6 @@ export const processResumeFile = async (file: File): Promise<Partial<UserCMF>> =
         const lowerText = text.toLowerCase();
         
         // Extract information from resume
-        const skills = extractSkillsFromText(lowerText);
         const experience = extractExperienceFromText(text);
         const targetRole = extractRoleFromText(lowerText);
         
