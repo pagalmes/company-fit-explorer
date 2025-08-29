@@ -64,6 +64,12 @@ vi.mock('../../src/data/companies', () => ({
       openRoles: 3,
       connections: [2, 3],
       connectionTypes: { 2: 'competitor', 3: 'partner' },
+      matchReasons: [
+        'Cutting-edge AI research environment',
+        'Remote-friendly culture', 
+        'Strong technical standards'
+      ],
+      color: '#10B981',
       angle: 0,
       distance: 80
     },
@@ -81,6 +87,12 @@ vi.mock('../../src/data/companies', () => ({
       openRoles: 5,
       connections: [1, 3],
       connectionTypes: { 1: 'competitor', 3: 'partner' },
+      matchReasons: [
+        'AI safety principles alignment',
+        'Hybrid work environment',
+        'Strong ethics focus'
+      ],
+      color: '#F59E0B',
       angle: 120,
       distance: 100
     },
@@ -98,8 +110,37 @@ vi.mock('../../src/data/companies', () => ({
       openRoles: 2,
       connections: [1, 2],
       connectionTypes: { 1: 'partner', 2: 'partner' },
+      matchReasons: [
+        'Data labeling platform experience',
+        'ML pipeline development',
+        'Technical excellence culture'
+      ],
+      color: '#F59E0B',
       angle: 240,
       distance: 120
+    },
+    {
+      id: 4,
+      name: 'TestCorp',
+      logo: 'https://logo.clearbit.com/testcorp.com',
+      careerUrl: 'https://testcorp.com/careers',
+      matchScore: 75,
+      industry: 'Technology',
+      stage: 'Early Stage',
+      location: 'Austin, TX',
+      employees: '~200',
+      remote: 'Remote',
+      openRoles: 1,
+      connections: [1, 2],
+      connectionTypes: { 1: 'partner', 2: 'competitor' },
+      matchReasons: [
+        'Growing tech company',
+        'Remote work opportunities',
+        'Early stage potential'
+      ],
+      color: '#6B7280',
+      angle: 300,
+      distance: 140
     }
   ],
   sampleCompanies: [
@@ -117,6 +158,12 @@ vi.mock('../../src/data/companies', () => ({
       openRoles: 3,
       connections: [2, 3],
       connectionTypes: { 2: 'competitor', 3: 'partner' },
+      matchReasons: [
+        'Cutting-edge AI research environment',
+        'Remote-friendly culture', 
+        'Strong technical standards'
+      ],
+      color: '#10B981',
       angle: 0,
       distance: 80
     },
@@ -134,6 +181,12 @@ vi.mock('../../src/data/companies', () => ({
       openRoles: 5,
       connections: [1, 3],
       connectionTypes: { 1: 'competitor', 3: 'partner' },
+      matchReasons: [
+        'AI safety principles alignment',
+        'Hybrid work environment',
+        'Strong ethics focus'
+      ],
+      color: '#F59E0B',
       angle: 120,
       distance: 100
     },
@@ -151,8 +204,37 @@ vi.mock('../../src/data/companies', () => ({
       openRoles: 2,
       connections: [1, 2],
       connectionTypes: { 1: 'partner', 2: 'partner' },
+      matchReasons: [
+        'Data labeling platform experience',
+        'ML pipeline development',
+        'Technical excellence culture'
+      ],
+      color: '#F59E0B',
       angle: 240,
       distance: 120
+    },
+    {
+      id: 4,
+      name: 'TestCorp',
+      logo: 'https://logo.clearbit.com/testcorp.com',
+      careerUrl: 'https://testcorp.com/careers',
+      matchScore: 75,
+      industry: 'Technology',
+      stage: 'Early Stage',
+      location: 'Austin, TX',
+      employees: '~200',
+      remote: 'Remote',
+      openRoles: 1,
+      connections: [1, 2],
+      connectionTypes: { 1: 'partner', 2: 'competitor' },
+      matchReasons: [
+        'Growing tech company',
+        'Remote work opportunities',
+        'Early stage potential'
+      ],
+      color: '#6B7280',
+      angle: 300,
+      distance: 140
     }
   ]
 }))

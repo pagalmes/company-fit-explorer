@@ -207,7 +207,7 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
             Why This Match?
           </h3>
           <ul className="space-y-2">
-            {selectedCompany.matchReasons.map((reason, index) => (
+            {(selectedCompany.matchReasons || []).map((reason, index) => (
               <li key={index} className="flex items-start space-x-2 text-sm">
                 <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
                 <span className="text-gray-700">{reason}</span>

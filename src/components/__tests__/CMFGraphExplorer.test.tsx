@@ -104,7 +104,7 @@ describe('CMFGraphExplorer', () => {
     it('should render CMF info overlay with user details', () => {
       render(<CMFGraphExplorer userCMF={mockUserCMF} companies={mockCompanies} />)
 
-      expect(screen.getByText("John Smith")).toBeInTheDocument()
+      expect(screen.getAllByText("John Smith")).toHaveLength(2) // One in center node, one in CMF panel
       expect(screen.getByText('Target Role')).toBeInTheDocument()
       expect(screen.getByText('Senior AI Engineer')).toBeInTheDocument()
       expect(screen.getByText('AI/ML companies with strong ethics focus')).toBeInTheDocument()
@@ -134,7 +134,7 @@ describe('CMFGraphExplorer', () => {
       // CompanyGraph should receive all necessary props
       // We can't easily test the graph rendering due to Cytoscape mocking,
       // but we can verify the container structure exists
-      const graphContainer = screen.getByText("John Smith").closest('.flex')
+      const graphContainer = screen.getAllByText("John Smith")[0].closest('.flex')
       expect(graphContainer).toBeInTheDocument()
     })
   })
