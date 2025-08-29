@@ -36,7 +36,7 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
     return (
       <div className="h-full flex flex-col">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="panel-header p-6 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-900">
             {viewMode === 'watchlist' ? 'Your Watchlist' : 'Company Details'}
           </h2>
@@ -49,7 +49,7 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
         </div>
 
         {/* Company List */}
-        <div className="flex-1 overflow-auto p-6">
+        <div className="panel-content flex-1 overflow-auto p-6">
           <div className="space-y-3">
             {allCompanies
               .sort((a, b) => b.matchScore - a.matchScore)
@@ -113,11 +113,11 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="panel-header p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div
-              className="w-12 h-12 rounded bg-white border border-gray-200"
+              className="company-logo w-12 h-12 rounded bg-white border border-gray-200"
               style={{
                 backgroundImage: `url(${selectedCompany.logo})`,
                 backgroundSize: 'contain',
@@ -127,7 +127,7 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
               aria-label={`${selectedCompany.name} logo`}
             />
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="company-title text-xl font-bold text-gray-900">
                 {selectedCompany.name}
               </h2>
               <p className="text-sm text-gray-600">{selectedCompany.industry}</p>
@@ -171,10 +171,10 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
 
 
       {/* Content */}
-      <div className="flex-1 overflow-auto p-6 space-y-6">
+      <div className="panel-content flex-1 overflow-auto p-6 space-y-6">
         {/* Company Info */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">
+          <h3 className="section-title text-lg font-semibold text-gray-900 mb-3">
             Company Info
           </h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -203,7 +203,7 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
 
         {/* Match Reasons */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">
+          <h3 className="section-title text-lg font-semibold text-gray-900 mb-3">
             Why This Match?
           </h3>
           <ul className="space-y-2">
@@ -219,7 +219,7 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
         {/* Connected Companies */}
         {connectedCompanies.length > 0 && (
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+            <h3 className="section-title text-lg font-semibold text-gray-900 mb-3">
               Related Companies ({connectedCompanies.length})
             </h3>
             <div className="space-y-2">
