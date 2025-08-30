@@ -354,7 +354,7 @@ const CMFGraphExplorer: React.FC = () => {
               transition-all duration-200 ease-in-out
               flex items-center justify-center
               hover:scale-105 active:scale-95
-              focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50"
+              focus:outline-none"
             title="Add Company"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
@@ -367,7 +367,7 @@ const CMFGraphExplorer: React.FC = () => {
         <div className="absolute bottom-6 left-6 z-10 flex items-center space-x-2">
           <button
             onClick={() => setShowLLMSettings(true)}
-            className={`w-12 h-12 rounded-full transition-colors flex items-center justify-center shadow-lg ${
+            className={`w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center hover:scale-105 active:scale-95 focus:outline-none ${
               llmConfigured
                 ? 'bg-blue-600 text-white hover:bg-blue-700'
                 : 'bg-orange-500 text-white hover:bg-orange-600'

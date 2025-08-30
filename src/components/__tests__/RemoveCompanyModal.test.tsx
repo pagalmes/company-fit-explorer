@@ -122,7 +122,7 @@ describe('RemoveCompanyModal', () => {
     )
 
     // Find the close button by its className (the X button)
-    const closeButton = document.querySelector('.text-gray-400.hover\\:text-gray-600')
+    const closeButton = document.querySelector('.text-gray-400.hover\\:text-slate-600')
     expect(closeButton).toBeInTheDocument()
     fireEvent.click(closeButton as Element)
 
@@ -238,7 +238,7 @@ describe('RemoveCompanyModal', () => {
       
       // Check that buttons have appropriate styling classes for contrast
       expect(removeButton).toHaveClass('border')
-      expect(cancelButton).toHaveClass('bg-gray-600')
+      expect(cancelButton).toHaveClass('bg-slate-600')
       expect(cancelButton).toHaveClass('text-white')
     })
 
@@ -256,7 +256,7 @@ describe('RemoveCompanyModal', () => {
       expect(screen.getByText('OpenAI')).toBeInTheDocument()
       
       // Find the paragraph containing the removal message
-      const removalText = document.querySelector('p.text-gray-700.mb-4')
+      const removalText = document.querySelector('p.text-slate-700.mb-4')
       expect(removalText).toBeInTheDocument()
       expect(removalText?.textContent).toContain('Remove')
       expect(removalText?.textContent).toContain('OpenAI')
@@ -321,7 +321,7 @@ describe('RemoveCompanyModal', () => {
         />
       )
 
-      const modalContainer = document.querySelector('.bg-white.rounded-lg')
+      const modalContainer = document.querySelector('.bg-gradient-to-br.rounded-lg')
       const removeButton = screen.getByRole('button', { name: 'Remove Company' })
       const cancelButton = screen.getByText('Cancel')
       

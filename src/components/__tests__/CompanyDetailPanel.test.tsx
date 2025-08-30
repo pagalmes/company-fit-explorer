@@ -387,7 +387,7 @@ describe('CompanyDetailPanel', () => {
       // Logo is now rendered as background image, so we verify it exists and has proper styling
       // This test has a selected company, so it shows the larger header logo (w-12 h-12)
       expect(logo).toBeInTheDocument()
-      expect(logo).toHaveClass('w-12', 'h-12', 'rounded', 'bg-white', 'border', 'border-gray-200')
+      expect(logo).toHaveClass('company-logo', 'w-12', 'h-12', 'rounded', 'bg-white/80', 'border', 'border-blue-200/60', 'shadow-sm')
       expect(logo.style.backgroundImage).toContain('openai.com')
     })
   })
