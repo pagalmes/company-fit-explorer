@@ -319,7 +319,7 @@ const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) =
       type: 'resume' | 'cmf';
       title: string;
       description: string;
-      icon: React.ComponentType<any>;
+      icon: React.ComponentType<React.ComponentProps<'svg'>>;
       file: File | null;
       color: 'blue' | 'purple';
     }) => {

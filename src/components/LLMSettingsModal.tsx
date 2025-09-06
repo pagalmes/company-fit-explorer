@@ -40,7 +40,7 @@ const LLMSettingsModal: React.FC<LLMSettingsModalProps> = ({
         }));
       }
     }
-  }, [settings.provider]);
+  }, [settings.provider, settings.model]);
 
   const handleProviderChange = (provider: LLMProvider) => {
     const providerConfig = provider !== 'none' ? LLM_PROVIDERS[provider] : null;
@@ -79,7 +79,7 @@ const LLMSettingsModal: React.FC<LLMSettingsModalProps> = ({
       if (!isValid) {
         setError('Backend connection failed. Make sure the server is running and API key is configured in server/.env');
       }
-    } catch (err) {
+    } catch {
       setValidationResult('invalid');
       setError('Failed to connect to backend. Make sure the LLM API server is running on port 3001.');
     } finally {
@@ -110,7 +110,7 @@ const LLMSettingsModal: React.FC<LLMSettingsModalProps> = ({
       } else {
         setError('Failed to save settings. Make sure the backend server is running and properly configured.');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to save settings. Please check the backend connection.');
     } finally {
       setIsSaving(false);

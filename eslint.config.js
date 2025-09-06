@@ -7,7 +7,7 @@ import react from 'eslint-plugin-react';
 
 export default [
   {
-    ignores: ['dist', 'node_modules', 'coverage', '*.config.js', '*.config.ts', 'dev-server.cjs'],
+    ignores: ['dist', 'node_modules', 'coverage', '*.config.js', '*.config.ts', 'dev-server.cjs', '.next/**', 'out/**', '**/*.d.ts'],
   },
   {
     files: ['**/*.{ts,tsx}'],
@@ -45,6 +45,8 @@ export default [
         clearTimeout: 'readonly',
         setInterval: 'readonly',
         clearInterval: 'readonly',
+        confirm: 'readonly',
+        alert: 'readonly',
         
         // DOM Types
         HTMLElement: 'readonly',

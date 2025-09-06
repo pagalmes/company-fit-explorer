@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import cytoscape from 'cytoscape';
-import { CompanyGraphProps } from '../types';
+import { CompanyGraphProps, Company } from '../types';
 import { transformToGraphData, getCytoscapeStyles } from '../utils/graphDataTransform';
 
 // Helper function to apply selection highlighting
-const applySelectionHighlighting = (cy: cytoscape.Core, selectedCompany: any) => {
+const applySelectionHighlighting = (cy: cytoscape.Core, selectedCompany: Company | null) => {
   // Clear previous selections
   cy.nodes().removeClass('selected dimmed');
   cy.edges().removeClass('highlighted');
@@ -191,8 +191,8 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
 
     // Company hover events - with CSS transitions for smooth movement
     let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
-    let currentHoveredCompany: any = null;
-    let currentHoveredNode: any = null;
+    let currentHoveredCompany: Company | null = null;
+    let currentHoveredNode: cytoscape.NodeSingular | null = null;
     
     cy.on('mouseover', 'node[type="company"]', (event) => {
       const company = event.target.data('company');
@@ -379,7 +379,7 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
         cyInstance.current.destroy();
       }
     };
-  }, [cmf, companies]);
+  }, [cmf, companies, watchlistCompanyIds]);
 
   // Handle watchlist changes without recreating the graph
   useEffect(() => {

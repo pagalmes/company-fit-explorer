@@ -77,7 +77,28 @@ cd company-fit-explorer
 npm install
 ```
 
-3. Start the development server:
+3. **Set up Supabase Database (Optional but Recommended)**
+
+For full functionality with user data persistence:
+
+```bash
+# Copy environment template
+cp .env.example .env.local
+
+# Edit .env.local with your Supabase credentials
+# Get these from your Supabase project dashboard → Settings → API
+```
+
+Then run the automated setup:
+```bash
+npm run setup:supabase
+```
+
+**📖 Detailed Setup Guide**: See [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) for complete instructions.
+
+**⚡ Skip Database Setup**: The app works perfectly without Supabase - it will use default company data and localStorage for persistence.
+
+4. Start the development server:
 
 **Option A: Full Development Experience (Recommended)**
 ```bash

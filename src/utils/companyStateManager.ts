@@ -98,7 +98,7 @@ export const loadCustomCompanies = (): {
     // Clear corrupted data
     try {
       localStorage.removeItem(STORAGE_KEY);
-    } catch (e) {
+    } catch {
       // Ignore cleanup errors
     }
     
@@ -266,7 +266,7 @@ export const getStorageStats = (): {
       companiesCount: companies.length,
       usagePercentage: (usedBytes / availableBytes) * 100
     };
-  } catch (error) {
+  } catch {
     return {
       used: 0,
       available: 5 * 1024 * 1024,

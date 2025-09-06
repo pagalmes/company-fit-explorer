@@ -14,7 +14,7 @@ const CollapsibleCMFPanel: React.FC<CollapsibleCMFPanelProps> = ({
   onToggle,
   isLoading = false
 }) => {
-  const iconRef = useRef<any>(null);
+  const iconRef = useRef<HTMLElement>(null);
 
   // Focus management for accessibility
   useEffect(() => {
