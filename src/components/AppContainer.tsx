@@ -11,11 +11,61 @@ const AppContainer: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [userProfile, setUserProfile] = useState<UserExplorationState | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [dataLoading, setDataLoading] = useState(true);
 
-  // Initialize with default profile once checked
+  // Load user data from database
   useEffect(() => {
+    const loadUserData = async () => {
+      if (!hasChecked) return;
+
+      try {
+        // Load data directly from API (no client-side auth for now)
+        const response = await fetch('/api/user/data');
+        const userData = await response.json();
+
+        if (userData.hasData && userData.companyData) {
+          // Create user profile from database data
+          const dbUserProfile = userData.companyData.user_profile;
+          const dbCompanies = userData.companyData.companies;
+
+          console.log('🔧 Loading personalized data:', {
+            name: dbUserProfile?.name,
+            companyCount: dbCompanies?.length,
+            hasWatchlist: userData.preferences?.watchlist_company_ids?.length > 0
+          });
+
+          const customProfile: UserExplorationState = {
+            ...activeUserProfile, // Use as base structure
+            id: userData.companyData.user_id,
+            name: dbUserProfile?.name || 'User',
+            cmf: dbUserProfile,
+            // IMPORTANT: Replace baseCompanies with user's personalized companies
+            baseCompanies: dbCompanies || [],
+            // Clear added companies since user has their own base set
+            addedCompanies: [],
+            // Override with preferences if available
+            watchlistCompanyIds: userData.preferences?.watchlist_company_ids || [],
+            removedCompanyIds: userData.preferences?.removed_company_ids || [],
+            viewMode: userData.preferences?.view_mode || 'explore'
+          };
+
+          console.log('🚀 Created custom profile:', customProfile);
+          setUserProfile(customProfile);
+        } else {
+          // No data available, use default
+          setUserProfile(activeUserProfile);
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        // Fallback to default profile
+        setUserProfile(activeUserProfile);
+      } finally {
+        setDataLoading(false);
+      }
+    };
+
     if (hasChecked && !isFirstTime) {
-      setUserProfile(activeUserProfile);
+      loadUserData();
     }
   }, [hasChecked, isFirstTime]);
 
@@ -175,7 +225,19 @@ const AppContainer: React.FC = () => {
         </div>
 
         <div className="relative">
-          <CMFGraphExplorerNew />
+          <CMFGraphExplorerNew userProfile={userProfile} />
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while fetching user data
+  if (dataLoading && hasChecked && !isFirstTime) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-orange-300 to-purple-400 rounded-full mx-auto animate-pulse shadow-2xl mb-4" />
+          <p className="text-white text-lg">Loading your personalized data...</p>
         </div>
       </div>
     );

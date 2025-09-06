@@ -124,11 +124,18 @@ export class LLMService {
   clearSettings(): void {
     this.settings = { ...DEFAULT_LLM_SETTINGS };
     this.provider = null;
-    localStorage.removeItem(LLMService.STORAGE_KEY);
+    if (typeof window !== 'undefined' && localStorage) {
+      localStorage.removeItem(LLMService.STORAGE_KEY);
+    }
   }
 
   private loadSettings(): void {
     try {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined' || !localStorage) {
+        return;
+      }
+      
       const stored = localStorage.getItem(LLMService.STORAGE_KEY);
       if (stored) {
         const parsedSettings = JSON.parse(stored);
@@ -143,7 +150,9 @@ export class LLMService {
 
   private saveSettings(): void {
     try {
-      localStorage.setItem(LLMService.STORAGE_KEY, JSON.stringify(this.settings));
+      if (typeof window !== 'undefined' && localStorage) {
+        localStorage.setItem(LLMService.STORAGE_KEY, JSON.stringify(this.settings));
+      }
     } catch (error) {
       console.error('Failed to save LLM settings:', error);
     }

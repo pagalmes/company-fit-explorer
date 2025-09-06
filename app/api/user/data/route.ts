@@ -1,0 +1,153 @@
+import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
+
+// Get user's company data and preferences
+export async function GET() {
+  // Check if Supabase is configured
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.log('🔧 Supabase not configured, returning no data (will use defaults)');
+    return NextResponse.json({
+      hasData: false,
+      companyData: null,
+      preferences: {
+        watchlist_company_ids: [],
+        removed_company_ids: [],
+        view_mode: 'explore'
+      }
+    });
+  }
+
+  // Use admin client to bypass RLS issues for now
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+  
+  // For now, just return the first user's data to test
+  // In production, you'd properly authenticate and get the specific user
+
+  try {
+    // Get the first user's company data (for testing)
+    const { data: companyData, error: companyError } = await supabase
+      .from('user_company_data')
+      .select('*')
+      .limit(1)
+
+    if (companyError) {
+      console.error('Error fetching company data:', companyError)
+      return NextResponse.json({ hasData: false, error: companyError.message }, { status: 500 })
+    }
+
+    if (!companyData || companyData.length === 0) {
+      return NextResponse.json({
+        hasData: false,
+        companyData: null,
+        preferences: {
+          watchlist_company_ids: [],
+          removed_company_ids: [],
+          view_mode: 'explore'
+        }
+      })
+    }
+
+    const userData = companyData[0]
+
+    // Get user preferences for this user
+    const { data: preferences } = await supabase
+      .from('user_preferences')
+      .select('*')
+      .eq('user_id', userData.user_id)
+      .single()
+
+    return NextResponse.json({
+      hasData: true,
+      companyData: userData,
+      preferences: preferences || {
+        watchlist_company_ids: [],
+        removed_company_ids: [],
+        view_mode: 'explore'
+      }
+    })
+
+  } catch (error) {
+    console.error('API error:', error)
+    return NextResponse.json({ hasData: false, error: 'Failed to fetch data' }, { status: 500 })
+  }
+}
+
+// Save user data and preferences
+export async function POST(request: Request) {
+  // Check if Supabase is configured
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.log('🔧 Supabase not configured, persistence disabled (data will use localStorage)');
+    return NextResponse.json({
+      message: 'Data saved to localStorage (Supabase not configured)',
+      success: true
+    });
+  }
+
+  // Use admin client to bypass RLS for now
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  try {
+    const body = await request.json()
+    const { userId, userProfile, companies, preferences } = body
+
+    console.log('💾 Saving user data for user:', userId)
+
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID required' }, { status: 400 })
+    }
+
+    // Update user company data
+    if (userProfile && companies) {
+      const { error: dataError } = await supabase
+        .from('user_company_data')
+        .upsert({
+          user_id: userId,
+          user_profile: userProfile,
+          companies: companies,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        })
+
+      if (dataError) {
+        console.error('Error updating company data:', dataError)
+        return NextResponse.json({ error: dataError.message }, { status: 500 })
+      }
+    }
+
+    // Update user preferences
+    if (preferences) {
+      const { error: prefError } = await supabase
+        .from('user_preferences')
+        .upsert({
+          user_id: userId,
+          watchlist_company_ids: preferences.watchlist_company_ids || [],
+          removed_company_ids: preferences.removed_company_ids || [],
+          view_mode: preferences.view_mode || 'explore',
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        })
+
+      if (prefError) {
+        console.error('Error updating preferences:', prefError)
+        return NextResponse.json({ error: prefError.message }, { status: 500 })
+      }
+    }
+
+    return NextResponse.json({ 
+      message: 'User data saved successfully',
+      success: true
+    })
+
+  } catch (error) {
+    console.error('Error saving user data:', error)
+    return NextResponse.json({ error: 'Failed to save user data' }, { status: 500 })
+  }
+}

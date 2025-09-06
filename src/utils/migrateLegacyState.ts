@@ -211,7 +211,7 @@ export const autoMigrate = (): boolean => {
 };
 
 // Export utility functions for console usage
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
   (window as any).migrationUtils = {
     hasLegacyState,
     migrateLegacyState,

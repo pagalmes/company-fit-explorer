@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { ViewMode, Company } from '../types';
+import { ViewMode, Company, UserExplorationState } from '../types';
 import { ExplorationStateManager } from '../services/ExplorationStateManager';
 import { activeUserProfile } from '../data/companies';
 import CompanyGraph from './CompanyGraph';
@@ -31,16 +31,28 @@ const GearIcon = () => (
 );
 
 
+interface CMFGraphExplorerProps {
+  userProfile?: UserExplorationState | null;
+}
+
 /**
  * CMFGraphExplorer - Enhanced with persistent exploration state
  * 
  * Uses ExplorationStateManager for centralized state management.
  * All exploration data (added companies, watchlist, removed companies) 
- * is loaded from companies.ts and persisted across sessions.
+ * is loaded from provided userProfile or defaults to companies.ts.
  */
-const CMFGraphExplorer: React.FC = () => {
-  // Initialize state manager from companies.ts
-  const [stateManager] = useState(() => new ExplorationStateManager(activeUserProfile, 'teeKProfile'));
+const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
+  // Initialize state manager from provided profile or default
+  const [stateManager, setStateManager] = useState(() => new ExplorationStateManager(userProfile || activeUserProfile, 'teeKProfile'));
+  
+  // Update state manager when userProfile changes
+  useEffect(() => {
+    if (userProfile) {
+      console.log('🔄 Updating state manager with new user profile:', userProfile);
+      setStateManager(new ExplorationStateManager(userProfile, 'teeKProfile'));
+    }
+  }, [userProfile]);
   
   // UI state
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);

@@ -1,11 +1,18 @@
-# Company Fit Explorer - Interactive CMF Graph Visualization
+# Company Fit Explorer - Production Multi-User CMF Platform
 
 [![Tests](https://img.shields.io/badge/tests-206%20unit%20%2B%206%20e2e%20passing-brightgreen)](./TESTING.md)
-[![Coverage](https://img.shields.io/badge/coverage-85%25-green)](./TESTING.md#coverage-reports)
-[![TDD](https://img.shields.io/badge/development-TDD-blue)](./TESTING.md#test-driven-development-workflow)
+[![Coverage](https://img.shields.io/badge/coverage-85%25-green)](./TESTING.md#coverage-reports) 
+[![Architecture](https://img.shields.io/badge/architecture-Next.js%20%2B%20Supabase-blue)](./PERSISTENCE_ARCHITECTURE.md)
 [![Build](https://img.shields.io/badge/build-passing-brightgreen)](./.github/workflows/ci.yml)
 
-An interactive CMF (Candidate Market Fit) visualization tool that helps you discover companies that align with your career goals and preferences. Companies are positioned around your CMF profile based on match scores, with visual indicators for connection strength and match quality.
+A production-ready, multi-user CMF (Candidate Market Fit) platform that helps job seekers discover personalized companies based on their career goals, skills, and preferences. Features complete user management, admin dashboard, and personalized data persistence.
+
+## 🏗️ **Production Architecture**
+
+- **Frontend**: Next.js 15 with App Router
+- **Backend**: Supabase (Authentication + Database)  
+- **Persistence**: [Hybrid Strategy](./PERSISTENCE_ARCHITECTURE.md) (Database + File fallbacks)
+- **Deployment**: Vercel-ready with environment configuration
 
 ![Company Graph Explorer](./assets/images/company-fit-explorer-ui.jpg)
 

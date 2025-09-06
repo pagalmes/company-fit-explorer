@@ -329,35 +329,127 @@ export class ExplorationStateManager {
   }
 
   /**
-   * Persist state changes to localStorage and optionally to disk
+   * Persist state changes using hybrid strategy:
+   * - Production: Always save to database
+   * - Development: Database-first with file fallback for rapid iteration
    */
   private async persistState(): Promise<void> {
     try {
-      // Save to localStorage as backup
+      // Always save to localStorage as backup
       localStorage.setItem('cmf-exploration-state', JSON.stringify(this.currentState));
       
-      // Development: Try to write to companies.ts file
-      if (process.env.NODE_ENV === 'development') {
-        if (this.devServerAvailable) {
-          try {
-            const result = await writeStateToDisk(this.profileName, this.currentState);
-            if (result.success) {
-              console.log('💾 Automatically saved to companies.ts');
-            } else {
-              console.warn('Failed to write to companies.ts:', result.message);
-              this.fallbackToConsoleLog();
-            }
-          } catch (error) {
-            console.warn('File write failed, falling back to console logging:', error);
-            this.devServerAvailable = false; // Disable for subsequent calls
-            this.fallbackToConsoleLog();
-          }
-        } else {
-          this.fallbackToConsoleLog();
-        }
+      const persistenceMode = this.getPersistenceMode();
+      console.log(`🔧 Persistence mode: ${persistenceMode}`);
+      
+      if (persistenceMode === 'file-only') {
+        // Development file-only mode (rapid iteration)
+        await this.saveToFileOnly();
+      } else {
+        // Database-first mode (production + development default)
+        await this.saveDatabaseFirst();
       }
     } catch (error) {
       console.error('Failed to persist exploration state:', error);
+    }
+  }
+
+  /**
+   * Get persistence mode based on environment configuration
+   */
+  private getPersistenceMode(): 'database-first' | 'file-only' {
+    if (process.env.NODE_ENV === 'production') {
+      return 'database-first'; // Production always uses database
+    }
+    
+    // Development: Check environment variable
+    const devMode = process.env.NEXT_PUBLIC_DEV_PERSISTENCE_MODE || 'database-first';
+    return devMode as 'database-first' | 'file-only';
+  }
+
+  /**
+   * Database-first persistence with file fallback
+   */
+  private async saveDatabaseFirst(): Promise<void> {
+    try {
+      // Primary: Save to database (tests production flow)
+      await this.saveToDatabase();
+    } catch (databaseError) {
+      console.warn('📡 Database save failed, falling back to file system');
+      
+      // Fallback: Save to files for development continuity
+      if (process.env.NODE_ENV === 'development') {
+        await this.saveToFileOnly();
+      } else {
+        throw databaseError; // In production, fail fast
+      }
+    }
+  }
+
+  /**
+   * File-only persistence for rapid development iteration
+   */
+  private async saveToFileOnly(): Promise<void> {
+    if (process.env.NODE_ENV === 'development') {
+      if (this.devServerAvailable) {
+        try {
+          const result = await writeStateToDisk(this.profileName, this.currentState);
+          if (result.success) {
+            console.log('💾 File-only mode: Saved to companies.ts');
+          } else {
+            console.warn('Failed to write to companies.ts:', result.message);
+            this.fallbackToConsoleLog();
+          }
+        } catch (error) {
+          console.error('Error writing to file:', error);
+          this.fallbackToConsoleLog();
+        }
+      } else {
+        console.log('📝 Dev server not available, using console fallback');
+        this.fallbackToConsoleLog();
+      }
+    }
+  }
+
+  /**
+   * Save user state to database via API (Production & Development)
+   */
+  private async saveToDatabase(): Promise<void> {
+    try {
+      // In test environment, skip database calls
+      if (process.env.VITEST || process.env.NODE_ENV === 'test') {
+        throw new Error('Database calls disabled in test environment');
+      }
+
+      const response = await fetch('/api/user/data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userId: this.currentState.id,
+          userProfile: this.currentState.cmf,
+          companies: [
+            ...this.currentState.baseCompanies,
+            ...this.currentState.addedCompanies
+          ],
+          preferences: {
+            watchlist_company_ids: this.currentState.watchlistCompanyIds,
+            removed_company_ids: this.currentState.removedCompanyIds,
+            view_mode: this.currentState.viewMode
+          }
+        })
+      });
+
+      if (response.ok) {
+        console.log('💾 Successfully saved user data to database');
+      } else {
+        const errorText = await response.text();
+        console.warn('⚠️ Failed to save user data to database:', errorText);
+        throw new Error(`Database save failed: ${errorText}`);
+      }
+    } catch (error) {
+      console.error('❌ Error saving to database:', error);
+      throw error; // Re-throw for fallback handling
     }
   }
 
