@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { createClientComponentClient } from '../../src/lib/supabase'
 import { useRouter } from 'next/navigation'
 import AuthWrapper from '../../src/components/AuthWrapper'
-import { Users, Plus, Upload, LogOut, Settings, Database, Trash2, FileUp } from 'lucide-react'
+import { Users, Plus, LogOut, Settings, Database, Trash2, FileUp } from 'lucide-react'
 
 export default function AdminPage() {
   const [users, setUsers] = useState([])
@@ -217,7 +217,7 @@ export default function AdminPage() {
         setMessageType('error')
       }
     } catch (error) {
-      setMessage('Failed to import companies data: ' + error.message)
+      setMessage('Failed to import companies data: ' + (error instanceof Error ? error.message : 'Unknown error'))
       setMessageType('error')
     } finally {
       setImportLoading(false)

@@ -89,7 +89,7 @@ export const createUserProfile = async (
     case 'empty':
       return createEmptyUserProfile(context.userId, context.userName);
     
-    case 'import':
+    case 'import': {
       // Use local companies.ts fallback (development only)
       const { activeUserProfile } = await import('../data/companies');
       return {
@@ -97,6 +97,7 @@ export const createUserProfile = async (
         id: context.userId,
         name: context.userName || activeUserProfile.name
       };
+    }
     
     case 'agentic':
       // TODO: Future agentic workflow integration point
@@ -124,7 +125,7 @@ export const createUserProfile = async (
  */
 export const determineProfileCreationMethod = (
   context: ProfileCreationContext,
-  isNewUser: boolean = true
+  _isNewUser: boolean = true
 ): ProfileCreationMethod => {
   
   // Check for local fallback environment variable (development override)

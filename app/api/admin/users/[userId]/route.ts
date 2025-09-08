@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
 // Delete user (admin only)
-export async function DELETE(request: Request, { params }: { params: Promise<{ userId: string }> }) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ userId: string }> }) {
   const { userId } = await params
   
   // Create admin client with service role key
