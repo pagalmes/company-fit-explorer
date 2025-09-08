@@ -77,6 +77,7 @@ export interface CompanyGraphProps {
   onCMFToggle?: () => void;
   watchlistCompanyIds?: Set<number>;
   viewMode?: import('./watchlist').ViewMode;
+  hideCenter?: boolean; // Hide center node when modals are open
 }
 
 export interface CompanyDetailPanelProps {

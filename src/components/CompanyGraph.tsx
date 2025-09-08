@@ -95,7 +95,8 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
   onCompanyHover,
   onCMFToggle,
   watchlistCompanyIds = new Set(),
-  viewMode = 'explore'
+  viewMode = 'explore',
+  hideCenter = false
 }) => {
   const cyRef = useRef<HTMLDivElement>(null);
   const cyInstance = useRef<cytoscape.Core | null>(null);
@@ -501,56 +502,58 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       />
       
       {/* Custom Spark Center Node - positioned to match Cytoscape center */}
-      <div 
-        className="absolute pointer-events-none"
-        style={{ 
-          left: `${centerNodePosition.x}px`, 
-          top: `${centerNodePosition.y}px`, 
-          transform: 'translate(-50%, -50%)',
-          zIndex: 15
-        }}
-      >
+      {!hideCenter && (
         <div 
-          className="relative bg-gradient-to-br from-orange-300 via-pink-400 to-purple-500 rounded-full shadow-2xl cursor-pointer pointer-events-auto transition-all duration-300 ease-out hover:scale-110"
-          style={{
-            width: `${62.5 * zoomLevel}px`,
-            height: `${62.5 * zoomLevel}px`
+          className="absolute pointer-events-none"
+          style={{ 
+            left: `${centerNodePosition.x}px`, 
+            top: `${centerNodePosition.y}px`, 
+            transform: 'translate(-50%, -50%)',
+            zIndex: 15
           }}
-          onClick={() => onCMFToggle && onCMFToggle()}
-          title={cmf.name}
         >
           <div 
-            className="absolute bg-gradient-to-br from-yellow-200 via-orange-300 to-pink-400 rounded-full"
+            className="relative bg-gradient-to-br from-orange-300 via-pink-400 to-purple-500 rounded-full shadow-2xl cursor-pointer pointer-events-auto transition-all duration-300 ease-out hover:scale-110"
             style={{
-              top: `${3.75 * zoomLevel}px`,
-              left: `${3.75 * zoomLevel}px`,
-              right: `${3.75 * zoomLevel}px`,
-              bottom: `${3.75 * zoomLevel}px`
+              width: `${62.5 * zoomLevel}px`,
+              height: `${62.5 * zoomLevel}px`
             }}
-          />
-          <div 
-            className="absolute bg-gradient-to-br from-yellow-100 via-orange-200 to-yellow-300 rounded-full"
-            style={{
-              top: `${7.5 * zoomLevel}px`,
-              left: `${7.5 * zoomLevel}px`,
-              right: `${7.5 * zoomLevel}px`,
-              bottom: `${7.5 * zoomLevel}px`
-            }}
-          />
-          
-          {/* User name inside the spark */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <span 
-              className="text-white font-bold text-center drop-shadow-lg"
+            onClick={() => onCMFToggle && onCMFToggle()}
+            title={cmf.name}
+          >
+            <div 
+              className="absolute bg-gradient-to-br from-yellow-200 via-orange-300 to-pink-400 rounded-full"
               style={{
-                fontSize: `${5 * zoomLevel}px`
+                top: `${3.75 * zoomLevel}px`,
+                left: `${3.75 * zoomLevel}px`,
+                right: `${3.75 * zoomLevel}px`,
+                bottom: `${3.75 * zoomLevel}px`
               }}
-            >
-              {cmf.name}
-            </span>
+            />
+            <div 
+              className="absolute bg-gradient-to-br from-yellow-100 via-orange-200 to-yellow-300 rounded-full"
+              style={{
+                top: `${7.5 * zoomLevel}px`,
+                left: `${7.5 * zoomLevel}px`,
+                right: `${7.5 * zoomLevel}px`,
+                bottom: `${7.5 * zoomLevel}px`
+              }}
+            />
+            
+            {/* User name inside the spark */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <span 
+                className="text-white font-bold text-center drop-shadow-lg"
+                style={{
+                  fontSize: `${5 * zoomLevel}px`
+                }}
+              >
+                {cmf.name}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
       
       {/* Graph Controls */}
       <div className="absolute top-4 right-4 flex flex-col space-y-2" style={{ zIndex: 10 }}>
