@@ -5,6 +5,7 @@ import { useFirstTimeExperience } from '../hooks/useFirstTimeExperience';
 import { createUserProfileFromFiles } from '../utils/fileProcessing';
 import { UserCMF, UserExplorationState } from '../types';
 import { activeUserProfile } from '../data/companies';
+import { createProfileForUser } from '../utils/userProfileCreation';
 
 const AppContainer: React.FC = () => {
   const { isFirstTime, hasChecked, markAsVisited } = useFirstTimeExperience();
@@ -12,19 +13,34 @@ const AppContainer: React.FC = () => {
   const [userProfile, setUserProfile] = useState<UserExplorationState | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
-  // Load user data from database
+  // Check authentication FIRST, before any other logic
   useEffect(() => {
-    const loadUserData = async () => {
+    const checkAuthAndLoadData = async () => {
       if (!hasChecked) return;
 
       try {
-        // Load data directly from API (no client-side auth for now)
+        // Always check authentication first, regardless of first-time status
         const response = await fetch('/api/user/data');
         const userData = await response.json();
 
+        // Check if user is authenticated using the authenticated field
+        const userIsAuthenticated = userData.authenticated !== false;
+        setIsAuthenticated(userIsAuthenticated);
+
+        if (!userIsAuthenticated) {
+          // User is not authenticated, redirect to login
+          console.log('🔐 User not authenticated, redirecting to login');
+          window.location.href = '/login';
+          return;
+        }
+
+        // User is authenticated - now handle data loading
+        console.log('🔐 User authenticated, proceeding with data loading');
+
         if (userData.hasData && userData.companyData) {
-          // Create user profile from database data
+          // Existing user with data
           const dbUserProfile = userData.companyData.user_profile;
           const dbCompanies = userData.companyData.companies;
 
@@ -52,22 +68,47 @@ const AppContainer: React.FC = () => {
           console.log('🚀 Created custom profile:', customProfile);
           setUserProfile(customProfile);
         } else {
-          // No data available, use default
-          setUserProfile(activeUserProfile);
+          // Authenticated but no data - new user (will show first-time experience)
+          console.log('🔧 Authenticated user with no data - determining profile creation method');
+          
+          // Use the real user ID from the API response
+          const realUserId = userData.userId;
+          console.log('🔐 Using authenticated user ID:', realUserId);
+          
+          // Clear localStorage only if NOT using local fallback
+          if (process.env.NEXT_PUBLIC_USE_LOCAL_FALLBACK !== 'true') {
+            console.log('🧹 Clearing localStorage for clean new user experience');
+            localStorage.removeItem('cmf-exploration-state');
+            localStorage.removeItem('cmf-explorer-watchlist');
+            localStorage.removeItem('cmf-explorer-custom-companies');
+            localStorage.removeItem('cmf-explorer-removed-companies');
+            localStorage.removeItem('cmf-watchlist-state');
+            localStorage.removeItem('cmf-removed-companies');
+          } else {
+            console.log('🔧 Preserving localStorage (using local fallback mode)');
+          }
+          
+          const newProfile = await createProfileForUser({
+            userId: realUserId, // Use real Supabase user ID
+            userName: 'New User'
+          }, true);
+          
+          setUserProfile(newProfile);
         }
       } catch (error) {
-        console.error('Error loading user data:', error);
-        // Fallback to default profile
-        setUserProfile(activeUserProfile);
+        console.error('Error during auth check and data loading:', error);
+        
+        // On error, redirect to login for safety
+        console.log('🔧 Error occurred, redirecting to login for safety');
+        window.location.href = '/login';
       } finally {
         setDataLoading(false);
       }
     };
 
-    if (hasChecked && !isFirstTime) {
-      loadUserData();
-    }
-  }, [hasChecked, isFirstTime]);
+    // Always check authentication, regardless of first-time status
+    checkAuthAndLoadData();
+  }, [hasChecked]);
 
   const handleFirstTimeComplete = async (resumeFile: File, cmfFile: File) => {
     setIsLoading(true);

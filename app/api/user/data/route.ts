@@ -1,10 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
-import { NextResponse } from 'next/server'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
+import { cookies } from 'next/headers'
 
 // Get user's company data and preferences
-export async function GET() {
+export async function GET(request: NextRequest) {
   // Check if Supabase is configured
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     console.log('🔧 Supabase not configured, returning no data (will use defaults)');
     return NextResponse.json({
       hasData: false,
@@ -17,21 +19,52 @@ export async function GET() {
     });
   }
 
-  // Use admin client to bypass RLS issues for now
-  const supabase = createClient(
+  const cookieStore = await cookies()
+
+  // Create a Supabase client configured to use cookies for auth
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          // Server components can't set cookies, so we skip this
+        },
+        remove(name: string, options: CookieOptions) {
+          // Server components can't remove cookies, so we skip this
+        },
+      },
+    }
   )
+
+  // Get the authenticated user
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
   
-  // For now, just return the first user's data to test
-  // In production, you'd properly authenticate and get the specific user
+  if (authError || !user) {
+    console.log('🔐 No authenticated user found, returning unauthenticated status');
+    return NextResponse.json({
+      authenticated: false,
+      hasData: false,
+      companyData: null,
+      preferences: {
+        watchlist_company_ids: [],
+        removed_company_ids: [],
+        view_mode: 'explore'
+      }
+    });
+  }
+
+  console.log('🔐 Authenticated user found:', user.email);
 
   try {
-    // Get the first user's company data (for testing)
+    // Get THIS user's company data
     const { data: companyData, error: companyError } = await supabase
       .from('user_company_data')
       .select('*')
-      .limit(1)
+      .eq('user_id', user.id)
 
     if (companyError) {
       console.error('Error fetching company data:', companyError)
@@ -40,7 +73,9 @@ export async function GET() {
 
     if (!companyData || companyData.length === 0) {
       return NextResponse.json({
+        authenticated: true,
         hasData: false,
+        userId: user.id, // Include real Supabase user ID for profile creation
         companyData: null,
         preferences: {
           watchlist_company_ids: [],
@@ -60,6 +95,7 @@ export async function GET() {
       .single()
 
     return NextResponse.json({
+      authenticated: true,
       hasData: true,
       companyData: userData,
       preferences: preferences || {

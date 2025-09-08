@@ -7,6 +7,7 @@ import CompanyDetailPanel from './CompanyDetailPanel';
 import AddCompanyModal from './AddCompanyModal';
 import LLMSettingsModal from './LLMSettingsModal';
 import { RemoveCompanyModal } from './RemoveCompanyModal';
+import EmptyWatchlistModal from './EmptyWatchlistModal';
 import { llmService } from '../utils/llm/service';
 import { loadPanelState, savePanelState } from '../utils/panelStorage';
 import CollapsibleCMFPanel from './CollapsibleCMFPanel';
@@ -355,6 +356,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
           onCMFToggle={toggleCMFPanel}
           watchlistCompanyIds={new Set(stateManager.getCurrentState().watchlistCompanyIds)}
           viewMode={viewMode}
+          hideCenter={viewMode === 'watchlist' && stateManager.getCurrentState().watchlistCompanyIds.length === 0}
         />
 
         {/* Add Company Button */}
@@ -397,28 +399,6 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
           )}
         </div>
 
-        {/* Empty state for watchlist */}
-        {viewMode === 'watchlist' && displayedCompanies.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center z-10">
-            <div className="text-center p-8 bg-white rounded-lg shadow-lg max-w-md">
-              <div className="w-16 h-16 mx-auto text-gray-300 mb-4">
-                <HeartIcon />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                No Companies in Watchlist
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Start building your watchlist by saving companies you're interested in.
-              </p>
-              <button
-                onClick={() => handleViewModeChange('explore')}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Explore Companies
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Side Panel */}
@@ -465,6 +445,11 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
           onCancel={handleRemoveCancel}
         />
       )}
+
+      <EmptyWatchlistModal
+        isOpen={viewMode === 'watchlist' && stateManager.getCurrentState().watchlistCompanyIds.length === 0}
+        onGoToExplore={() => handleViewModeChange('explore')}
+      />
     </div>
   );
 };
