@@ -125,8 +125,8 @@ For new users, the app shows a magical "Dreamy First Contact" onboarding flow:
 5. **Universe Generation**: Cosmic loading screen before launching into the main app
 
 **Test URLs:**
-- First-time experience: `http://localhost:5174/` 
-- Skip intro (for testing): `http://localhost:5174/?skip-intro=true`
+- First-time experience: `http://localhost:3000/` 
+- Skip intro (for testing): `http://localhost:3000/?skip-intro=true`
 - Reset experience: Clear localStorage and revisit
 
 **File Processing:**
@@ -150,7 +150,7 @@ npm run dev:file-server
 npm run dev:llm-server
 ```
 
-4. Open your browser and navigate to `http://localhost:5173` (or the port shown in the console)
+4. Open your browser and navigate to `http://localhost:3000` (or the port shown in the console)
 
 ### 💾 Development Persistence
 

@@ -52,7 +52,7 @@ npm run dev
 
 ## 🧪 Testing
 
-1. **Open the app**: http://localhost:5173
+1. **Open the app**: http://localhost:3000
 2. **Configure LLM**: Click the gear icon → Add your provider (Anthropic works best)
 3. **Test validation**: Click "Validate API Key" (should connect to real API)
 4. **Add company**: Try adding a company - it will use real Claude analysis!

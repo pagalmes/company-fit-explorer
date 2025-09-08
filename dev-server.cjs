@@ -20,7 +20,7 @@ const ENABLE_BACKUPS = process.env.DEV_ENABLE_BACKUPS === 'true' || false;
 
 // Enable CORS for development
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
   methods: ['GET', 'POST'],
   credentials: true
 }));
@@ -157,7 +157,7 @@ export const sampleCompanies = activeUserProfile.baseCompanies;
 const server = app.listen(PORT, () => {
   console.log(`🚀 Development file server running on http://localhost:${PORT}`);
   console.log(`📁 Ready to write to companies.ts`);
-  console.log(`🔧 Make sure your React app is running on localhost:5173-5175`);
+  console.log(`🔧 Make sure your React app is running on localhost:3000 (Next.js) or 5173-5175 (Vite)`);
   console.log(`📋 Backups: ${ENABLE_BACKUPS ? 'ENABLED' : 'DISABLED'} (set DEV_ENABLE_BACKUPS=true to enable)`);
   
   // Test that routes are working
