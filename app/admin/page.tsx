@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { createClientComponentClient } from '../../src/lib/supabase'
 import { useRouter } from 'next/navigation'
 import AuthWrapper from '../../src/components/AuthWrapper'
-import { Users, Plus, Upload, LogOut, Settings, Database, Trash2 } from 'lucide-react'
+import { Users, Plus, Upload, LogOut, Settings, Database, Trash2, FileUp } from 'lucide-react'
 
 export default function AdminPage() {
   const [users, setUsers] = useState([])
@@ -13,6 +13,9 @@ export default function AdminPage() {
   const [inviteLoading, setInviteLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState<'success' | 'error'>('success')
+  const [importFile, setImportFile] = useState<File | null>(null)
+  const [selectedUserId, setSelectedUserId] = useState('')
+  const [importLoading, setImportLoading] = useState(false)
 
   const supabase = createClientComponentClient()
   const router = useRouter()
@@ -165,6 +168,62 @@ export default function AdminPage() {
     }
   }
 
+  const handleImportCompanies = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!importFile || !selectedUserId) {
+      setMessage('Please select a file and user')
+      setMessageType('error')
+      return
+    }
+
+    setImportLoading(true)
+    setMessage('')
+
+    try {
+      // Read the file content
+      const fileContent = await importFile.text()
+      
+      // Try to parse as JSON first (simplest approach)
+      let companiesData
+      try {
+        companiesData = JSON.parse(fileContent)
+      } catch (parseError) {
+        setMessage('Invalid JSON format. Please provide a valid JSON file with userProfile and companies fields.')
+        setMessageType('error')
+        setImportLoading(false)
+        return
+      }
+
+      const response = await fetch('/api/admin/import-user-companies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: selectedUserId,
+          companiesData: companiesData
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setMessage(data.message)
+        setMessageType('success')
+        setImportFile(null)
+        setSelectedUserId('')
+        fetchUsers()
+      } else {
+        setMessage(data.error)
+        setMessageType('error')
+      }
+    } catch (error) {
+      setMessage('Failed to import companies data: ' + error.message)
+      setMessageType('error')
+    } finally {
+      setImportLoading(false)
+    }
+  }
+
   return (
     <AuthWrapper requireAdmin={true}>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -235,6 +294,63 @@ export default function AdminPage() {
                 className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50"
               >
                 {inviteLoading ? 'Sending...' : 'Send Invite'}
+              </button>
+            </form>
+          </div>
+
+          {/* Import Companies Data */}
+          <div className="bg-white/60 backdrop-blur-sm rounded-xl shadow-lg border border-blue-200/40 p-6">
+            <div className="flex items-center space-x-3 mb-6">
+              <FileUp className="w-6 h-6 text-green-600" />
+              <h2 className="text-xl font-semibold text-slate-900">Import Companies Data</h2>
+            </div>
+            
+            <form onSubmit={handleImportCompanies} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Select User
+                  </label>
+                  <select
+                    value={selectedUserId}
+                    onChange={(e) => setSelectedUserId(e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/90"
+                    required
+                  >
+                    <option value="">Choose a user...</option>
+                    {users.map((user: any) => (
+                      <option key={user.id} value={user.id}>
+                        {user.email} ({user.full_name || 'No name'})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Companies JSON File
+                  </label>
+                  <input
+                    type="file"
+                    accept=".json,.ts,.js"
+                    onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/90 file:mr-4 file:py-1 file:px-4 file:rounded-lg file:border-0 file:text-sm file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100"
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg">
+                <p className="font-medium mb-1">Expected JSON format:</p>
+                <code className="block">{"{"}"userProfile": {"{"}"name": "...", ...{"}"}, "companies": [...], "watchlistCompanyIds": [...], "removedCompanyIds": [...], "viewMode": "explore"{"}"}</code>
+              </div>
+              
+              <button
+                type="submit"
+                disabled={importLoading}
+                className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50"
+              >
+                {importLoading ? 'Importing...' : 'Import Data'}
               </button>
             </form>
           </div>
