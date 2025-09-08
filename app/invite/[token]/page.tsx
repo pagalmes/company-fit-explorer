@@ -57,8 +57,11 @@ export default function InvitePage() {
     }
 
     try {
-      // Create the account
-      const { data, error: signupError } = await supabase.auth.signUp({
+      // Create the account with timeout handling
+      console.log('Starting signup for:', invitation.email)
+      
+      // Add a timeout wrapper around the signup call
+      const signupPromise = supabase.auth.signUp({
         email: invitation.email,
         password: password,
         options: {
@@ -68,12 +71,39 @@ export default function InvitePage() {
         }
       })
 
+      // Set a 30-second timeout
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Signup request timed out')), 30000)
+      })
+
+      const { data, error: signupError } = await Promise.race([signupPromise, timeoutPromise])
+
+      console.log('Signup response:', { data, error: signupError })
+
       if (signupError) {
-        setError(signupError.message)
+        console.error('Signup error:', signupError)
+        
+        // Enhanced error handling with specific messages
+        let errorMessage = signupError.message
+        
+        if (signupError.message.includes('timeout') || signupError.message.includes('network')) {
+          errorMessage = 'The signup process is taking too long. This may be due to email service rate limits or network issues. Please wait a few minutes and try again, or contact support if the problem persists.'
+        } else if (signupError.message.includes('rate') || signupError.message.includes('limit')) {
+          errorMessage = 'Too many signup attempts. Please wait an hour before trying again, or contact an administrator to disable email confirmation temporarily.'
+        } else if (signupError.message.includes('email') && signupError.message.includes('invalid')) {
+          errorMessage = 'The email address format is invalid. Please check the email address and try again.'
+        } else if (signupError.message.includes('email') && signupError.message.includes('exists')) {
+          errorMessage = 'An account with this email already exists. Please try signing in instead, or use a different email address.'
+        } else if (signupError.message.includes('password')) {
+          errorMessage = 'Password does not meet requirements. Please ensure your password is at least 6 characters long.'
+        }
+        
+        setError(errorMessage)
         setCreating(false)
         return
       }
 
+      console.log('Signup successful, marking invitation as used')
       // Mark invitation as used
       await fetch(`/api/invite/${token}/accept`, {
         method: 'POST'
@@ -87,7 +117,19 @@ export default function InvitePage() {
       }, 3000)
 
     } catch (error) {
-      setError('Failed to create account')
+      console.error('Catch block error:', error)
+      
+      let errorMessage = 'Failed to create account'
+      
+      if (error.message === 'Signup request timed out') {
+        errorMessage = 'The signup process timed out. This is often caused by email service rate limits (4 emails per hour). Please wait an hour and try again, or contact an administrator to temporarily disable email confirmation for testing.'
+      } else if (error.message.includes('fetch') || error.message.includes('network')) {
+        errorMessage = 'Network error occurred during signup. Please check your internet connection and try again.'
+      } else if (error.message) {
+        errorMessage = `Signup failed: ${error.message}`
+      }
+      
+      setError(errorMessage)
       setCreating(false)
     }
   }
@@ -180,8 +222,20 @@ export default function InvitePage() {
           </div>
 
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
-              {error}
+            <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+              <div className="flex items-start space-x-2">
+                <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium mb-1">Account creation failed</p>
+                  <p className="text-sm">{error}</p>
+                  {error.includes('rate limit') || error.includes('4 emails per hour') ? (
+                    <div className="mt-2 text-xs text-red-600 bg-red-100 p-2 rounded">
+                      <p className="font-medium">Developer Note:</p>
+                      <p>You can disable email confirmation in Supabase Dashboard → Authentication → Settings → Email to bypass this limit during development.</p>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
             </div>
           )}
 

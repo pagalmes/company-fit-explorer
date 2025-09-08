@@ -32,9 +32,19 @@ export class AnthropicProvider extends BaseLLMProvider {
 
     } catch (error) {
       console.error('Anthropic API error:', error);
+      
+      // Handle connection refused or network errors gracefully
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('ECONNREFUSED')) {
+        return {
+          success: false,
+          error: 'LLM backend server not available - using fallback company data'
+        };
+      }
+      
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to analyze company with Claude'
+        error: `Claude API error: ${errorMessage}`
       };
     }
   }
@@ -57,6 +67,7 @@ export class AnthropicProvider extends BaseLLMProvider {
 
     } catch (error) {
       console.error('API key validation error:', error);
+      // Always return false when backend is not available
       return false;
     }
   }

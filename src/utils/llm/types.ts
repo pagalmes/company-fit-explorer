@@ -37,6 +37,7 @@ export interface CompanyAnalysisRequest {
     experience?: string[];
     targetCompanies?: string;
   };
+  isNewUser?: boolean; // Flag to indicate if user has empty CMF profile
 }
 
 export interface CompanyAnalysisResponse {

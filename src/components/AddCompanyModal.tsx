@@ -186,15 +186,23 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
       // Try LLM analysis first if configured
       if (llmService.isConfigured()) {
         try {
+          // Check if CMF is empty and adjust the request accordingly
+          const isCMFEmpty = (!userCMF.experience || userCMF.experience.length === 0) &&
+                             (!userCMF.mustHaves || userCMF.mustHaves.length === 0) &&
+                             (!userCMF.wantToHave || userCMF.wantToHave.length === 0) &&
+                             (!userCMF.targetRole || userCMF.targetRole.trim() === '') &&
+                             (!userCMF.targetCompanies || userCMF.targetCompanies.trim() === '');
+          
           const llmResponse = await llmService.analyzeCompany({
             companyName: companyPreview.name,
             userCMF: {
-              targetRole: userCMF.targetRole,
-              mustHaves: userCMF.mustHaves,
-              wantToHave: userCMF.wantToHave,
-              experience: userCMF.experience,
-              targetCompanies: userCMF.targetCompanies
-            }
+              targetRole: userCMF.targetRole || (isCMFEmpty ? 'Exploring career opportunities' : ''),
+              mustHaves: userCMF.mustHaves || [],
+              wantToHave: userCMF.wantToHave || [],
+              experience: userCMF.experience || [],
+              targetCompanies: userCMF.targetCompanies || (isCMFEmpty ? 'Open to exploring various companies and industries' : '')
+            },
+            isNewUser: isCMFEmpty
           });
 
           if (llmResponse.success && llmResponse.data) {
@@ -296,23 +304,38 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
 
   // Enhanced mock data generation when LLM is not available
   const generateEnhancedMockData = (preview: CompanyPreview, userCMF: UserCMF) => {
-    // More sophisticated mock score based on user criteria
-    const baseScore = 70;
-    let matchScore = baseScore;
+    // Check if CMF is empty (new user)
+    const isCMFEmpty = (!userCMF.experience || userCMF.experience.length === 0) &&
+                       (!userCMF.mustHaves || userCMF.mustHaves.length === 0) &&
+                       (!userCMF.wantToHave || userCMF.wantToHave.length === 0) &&
+                       (!userCMF.targetRole || userCMF.targetRole.trim() === '') &&
+                       (!userCMF.targetCompanies || userCMF.targetCompanies.trim() === '');
+
+    let matchScore;
     
-    // Boost score if company industry aligns with user experience
-    if (userCMF.experience.some(exp => preview.industry?.toLowerCase().includes(exp.toLowerCase()))) {
-      matchScore += 10;
+    if (isCMFEmpty) {
+      // For empty CMF, generate neutral but encouraging scores
+      // Most companies should be 70-85 to encourage exploration
+      matchScore = 70 + Math.floor(Math.random() * 16); // 70-85 range
+    } else {
+      // More sophisticated mock score based on user criteria
+      const baseScore = 70;
+      matchScore = baseScore;
+      
+      // Boost score if company industry aligns with user experience
+      if (userCMF.experience && userCMF.experience.some(exp => preview.industry?.toLowerCase().includes(exp.toLowerCase()))) {
+        matchScore += 10;
+      }
+      
+      // Boost score if company industry matches target companies pattern
+      if (userCMF.targetCompanies?.toLowerCase().includes(preview.industry?.toLowerCase() || '')) {
+        matchScore += 5;
+      }
+      
+      // Add some randomness but keep it reasonable
+      matchScore += Math.floor(Math.random() * 15) - 5; // -5 to +10 variation
+      matchScore = Math.min(95, Math.max(60, matchScore)); // Clamp between 60-95
     }
-    
-    // Boost score if company industry matches target companies pattern
-    if (userCMF.targetCompanies?.toLowerCase().includes(preview.industry?.toLowerCase() || '')) {
-      matchScore += 5;
-    }
-    
-    // Add some randomness but keep it reasonable
-    matchScore += Math.floor(Math.random() * 15) - 5; // -5 to +10 variation
-    matchScore = Math.min(95, Math.max(60, matchScore)); // Clamp between 60-95
 
     return {
       name: preview.name,
@@ -323,7 +346,7 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
       remote: 'Remote-Friendly',
       openRoles: Math.floor(Math.random() * 15) + 5,
       matchScore,
-      matchReasons: generateMatchReasons(preview, userCMF),
+      matchReasons: generateMatchReasons(preview, userCMF, isCMFEmpty),
       connections: [], // Will be populated by positioning logic
       connectionTypes: {},
       description: preview.description || `${preview.name} is a technology company focused on innovation.`
@@ -350,37 +373,74 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
   };
 
   // Helper function to generate contextual match reasons
-  const generateMatchReasons = (preview: CompanyPreview, userCMF: UserCMF): string[] => {
+  const generateMatchReasons = (preview: CompanyPreview, userCMF: UserCMF, isCMFEmpty: boolean = false): string[] => {
     const reasons: string[] = [];
     
-    // Add role-specific reasons
-    if (userCMF.targetRole) {
-      reasons.push(`Strong alignment with your ${userCMF.targetRole} background`);
+    if (isCMFEmpty) {
+      // Generate exploration-focused reasons for new users
+      const explorationReasons = [
+        `${preview.name} is well-regarded in the ${preview.industry || 'tech'} industry`,
+        'Great company to explore career opportunities',
+        'Strong company reputation and growth potential',
+        'Good starting point for your career exploration',
+        'Company offers diverse learning opportunities',
+        'Well-known for positive work culture',
+        'Good opportunities for professional development'
+      ];
+      
+      // Add industry-specific reason if available
+      if (preview.industry) {
+        reasons.push(`Excellent reputation in the ${preview.industry} sector`);
+      }
+      
+      // Add 2-3 exploration reasons
+      const shuffledExploration = explorationReasons.sort(() => 0.5 - Math.random());
+      reasons.push(...shuffledExploration.slice(0, 3));
+      
+    } else {
+      // Generate personalized reasons based on CMF data
+      
+      // Add role-specific reasons
+      if (userCMF.targetRole && userCMF.targetRole.trim()) {
+        reasons.push(`Strong alignment with your ${userCMF.targetRole} background`);
+      }
+      
+      // Add industry-specific reasons
+      if (preview.industry) {
+        reasons.push(`Excellent fit in the ${preview.industry} industry`);
+      }
+      
+      // Add must-have aligned reasons
+      if (userCMF.mustHaves && userCMF.mustHaves.length > 0) {
+        const randomMustHave = userCMF.mustHaves[Math.floor(Math.random() * userCMF.mustHaves.length)];
+        reasons.push(`Company culture aligns with your requirement: ${randomMustHave}`);
+      }
+      
+      // Add experience-based reasons
+      if (userCMF.experience && userCMF.experience.length > 0) {
+        const matchingExp = userCMF.experience.find(exp => 
+          preview.industry?.toLowerCase().includes(exp.toLowerCase())
+        );
+        if (matchingExp) {
+          reasons.push(`Your ${matchingExp} experience is highly valued here`);
+        }
+      }
+      
+      // Add some generic positive reasons if we need more
+      if (reasons.length < 3) {
+        const genericReasons = [
+          'Technology stack matches your experience',
+          'Company growth trajectory looks promising',
+          'Strong team and engineering culture',
+          'Innovative approach to solving problems',
+          'Good work-life balance and benefits'
+        ];
+        
+        const needed = 4 - reasons.length;
+        const shuffledGeneric = genericReasons.sort(() => 0.5 - Math.random());
+        reasons.push(...shuffledGeneric.slice(0, needed));
+      }
     }
-    
-    // Add industry-specific reasons
-    if (preview.industry) {
-      reasons.push(`Excellent fit in the ${preview.industry} industry`);
-    }
-    
-    // Add must-have aligned reasons
-    if (userCMF.mustHaves && userCMF.mustHaves.length > 0) {
-      const randomMustHave = userCMF.mustHaves[Math.floor(Math.random() * userCMF.mustHaves.length)];
-      reasons.push(`Company culture aligns with your requirement: ${randomMustHave}`);
-    }
-    
-    // Add some generic positive reasons
-    const genericReasons = [
-      'Technology stack matches your experience',
-      'Company growth trajectory looks promising',
-      'Strong team and engineering culture',
-      'Innovative approach to solving problems',
-      'Good work-life balance and benefits'
-    ];
-    
-    // Add 1-2 random generic reasons
-    const shuffledGeneric = genericReasons.sort(() => 0.5 - Math.random());
-    reasons.push(...shuffledGeneric.slice(0, 2));
     
     return reasons.slice(0, 4); // Limit to 4 reasons
   };
@@ -475,6 +535,7 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
                             src={suggestion.logo} 
                             alt={`${suggestion.name} logo`}
                             className="w-8 h-8 rounded flex-shrink-0"
+                            crossOrigin="anonymous"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
                               if (!target.src.includes('ui-avatars.com')) {
@@ -555,6 +616,7 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
                       src={companyPreview.logo} 
                       alt={`${companyPreview.name} logo`}
                       className="w-12 h-12 rounded flex-shrink-0"
+                      crossOrigin="anonymous"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         if (!target.src.includes('ui-avatars.com')) {
