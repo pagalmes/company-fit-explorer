@@ -13,12 +13,15 @@ const AppContainer: React.FC = () => {
   const [userProfile, setUserProfile] = useState<UserExplorationState | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
   const [_isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   // Check authentication FIRST, before any other logic
   useEffect(() => {
     const checkAuthAndLoadData = async () => {
-      if (!hasChecked) return;
+      if (!hasChecked) {
+        return;
+      }
 
       try {
         // Always check authentication first, regardless of first-time status
@@ -31,24 +34,18 @@ const AppContainer: React.FC = () => {
 
         if (!userIsAuthenticated) {
           // User is not authenticated, redirect to login
-          console.log('🔐 User not authenticated, redirecting to login');
+          console.log('🚨 SECURITY: User not authenticated, redirecting to login');
+          setAuthLoading(false);
           window.location.href = '/login';
           return;
         }
 
         // User is authenticated - now handle data loading
-        console.log('🔐 User authenticated, proceeding with data loading');
 
         if (userData.hasData && userData.companyData) {
           // Existing user with data
           const dbUserProfile = userData.companyData.user_profile;
           const dbCompanies = userData.companyData.companies;
-
-          console.log('🔧 Loading personalized data:', {
-            name: dbUserProfile?.name,
-            companyCount: dbCompanies?.length,
-            hasWatchlist: userData.preferences?.watchlist_company_ids?.length > 0
-          });
 
           const customProfile: UserExplorationState = {
             ...activeUserProfile, // Use as base structure
@@ -65,27 +62,21 @@ const AppContainer: React.FC = () => {
             viewMode: userData.preferences?.view_mode || 'explore'
           };
 
-          console.log('🚀 Created custom profile:', customProfile);
           setUserProfile(customProfile);
         } else {
           // Authenticated but no data - new user (will show first-time experience)
-          console.log('🔧 Authenticated user with no data - determining profile creation method');
           
           // Use the real user ID from the API response
           const realUserId = userData.userId;
-          console.log('🔐 Using authenticated user ID:', realUserId);
           
           // Clear localStorage only if NOT using local fallback
           if (process.env.NEXT_PUBLIC_USE_LOCAL_FALLBACK !== 'true') {
-            console.log('🧹 Clearing localStorage for clean new user experience');
             localStorage.removeItem('cmf-exploration-state');
             localStorage.removeItem('cmf-explorer-watchlist');
             localStorage.removeItem('cmf-explorer-custom-companies');
             localStorage.removeItem('cmf-explorer-removed-companies');
             localStorage.removeItem('cmf-watchlist-state');
             localStorage.removeItem('cmf-removed-companies');
-          } else {
-            console.log('🔧 Preserving localStorage (using local fallback mode)');
           }
           
           const newProfile = await createProfileForUser({
@@ -99,10 +90,10 @@ const AppContainer: React.FC = () => {
         console.error('Error during auth check and data loading:', error);
         
         // On error, redirect to login for safety
-        console.log('🔧 Error occurred, redirecting to login for safety');
         window.location.href = '/login';
       } finally {
         setDataLoading(false);
+        setAuthLoading(false);
       }
     };
 
@@ -252,8 +243,20 @@ const AppContainer: React.FC = () => {
     </div>
   );
 
+  // Show loading screen while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full mx-auto animate-pulse shadow-2xl mb-4" />
+          <p className="text-slate-600 text-lg">Verifying authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Show the main graph explorer for returning users or after completion
-  if (userProfile && hasChecked) {
+  if (userProfile && hasChecked && !authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden transition-all duration-1000">
         <FloatingStars />
@@ -272,8 +275,8 @@ const AppContainer: React.FC = () => {
     );
   }
 
-  // Show loading while fetching user data
-  if (dataLoading && hasChecked && !isFirstTime) {
+  // Show loading while fetching user data (only after auth is verified)
+  if (dataLoading && hasChecked && !isFirstTime && !authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
         <div className="text-center">
@@ -284,12 +287,19 @@ const AppContainer: React.FC = () => {
     );
   }
 
-  // Loading state while checking first-time status
+  // Loading state while checking first-time status (avoid blue background if auth is still loading)
+  
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+    <div className={`min-h-screen flex items-center justify-center ${
+      authLoading 
+        ? 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50' 
+        : 'bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900'
+    }`}>
       <div className="text-center">
         <div className="w-16 h-16 bg-gradient-to-br from-orange-300 to-purple-400 rounded-full mx-auto animate-pulse shadow-2xl mb-4" />
-        <p className="text-white text-lg">Initializing...</p>
+        <p className={`text-lg ${authLoading ? 'text-slate-600' : 'text-white'}`}>
+          {authLoading ? 'Verifying authentication...' : 'Initializing...'}
+        </p>
       </div>
     </div>
   );
