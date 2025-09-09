@@ -124,7 +124,7 @@ export const createUserProfile = async (
  * Based on environment, user state, and available data
  */
 export const determineProfileCreationMethod = (
-  context: ProfileCreationContext,
+  _context: ProfileCreationContext,
   _isNewUser: boolean = true
 ): ProfileCreationMethod => {
   

@@ -13,7 +13,7 @@ const AppContainer: React.FC = () => {
   const [userProfile, setUserProfile] = useState<UserExplorationState | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [_isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   // Check authentication FIRST, before any other logic
   useEffect(() => {

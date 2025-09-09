@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
 
 // Get user's company data and preferences
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   // Check if Supabase is configured
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     console.log('🔧 Supabase not configured, returning no data (will use defaults)');
@@ -30,10 +30,10 @@ export async function GET(request: NextRequest) {
         get(name: string) {
           return cookieStore.get(name)?.value
         },
-        set(name: string, value: string, options: CookieOptions) {
+        set(_name: string, _value: string, _options: CookieOptions) {
           // Server components can't set cookies, so we skip this
         },
-        remove(name: string, options: CookieOptions) {
+        remove(_name: string, _options: CookieOptions) {
           // Server components can't remove cookies, so we skip this
         },
       },

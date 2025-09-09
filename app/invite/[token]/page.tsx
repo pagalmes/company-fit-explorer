@@ -76,7 +76,8 @@ export default function InvitePage() {
         setTimeout(() => reject(new Error('Signup request timed out')), 30000)
       })
 
-      const { data, error: signupError } = await Promise.race([signupPromise, timeoutPromise])
+      const result = await Promise.race([signupPromise, timeoutPromise])
+      const { data, error: signupError } = result as any
 
       console.log('Signup response:', { data, error: signupError })
 
@@ -121,12 +122,14 @@ export default function InvitePage() {
       
       let errorMessage = 'Failed to create account'
       
-      if (error.message === 'Signup request timed out') {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+      
+      if (errorMsg === 'Signup request timed out') {
         errorMessage = 'The signup process timed out. This is often caused by email service rate limits (4 emails per hour). Please wait an hour and try again, or contact an administrator to temporarily disable email confirmation for testing.'
-      } else if (error.message.includes('fetch') || error.message.includes('network')) {
+      } else if (errorMsg.includes('fetch') || errorMsg.includes('network')) {
         errorMessage = 'Network error occurred during signup. Please check your internet connection and try again.'
-      } else if (error.message) {
-        errorMessage = `Signup failed: ${error.message}`
+      } else if (errorMsg) {
+        errorMessage = `Signup failed: ${errorMsg}`
       }
       
       setError(errorMessage)

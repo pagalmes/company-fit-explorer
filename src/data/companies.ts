@@ -5,10 +5,10 @@ const baseCompanies: Company[] = [];
 
 // User profiles with complete exploration state
 const teeKProfile: UserExplorationState = {
-  id: "template-user",
+  id: "9d49907c-a057-4f3b-9cfc-a6e2769b44cd",
   name: "New User",
   cmf: {
-  "id": "template-user",
+  "id": "9d49907c-a057-4f3b-9cfc-a6e2769b44cd",
   "name": "New User",
   "targetRole": "",
   "mustHaves": [],
@@ -21,7 +21,7 @@ const teeKProfile: UserExplorationState = {
   removedCompanyIds: [],
   watchlistCompanyIds: [],
   lastSelectedCompanyId: undefined,
-  viewMode: 'watchlist'
+  viewMode: 'explore'
 };
 
 // Export the current active user (manually switch by changing this line)

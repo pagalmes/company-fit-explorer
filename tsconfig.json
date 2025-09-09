@@ -35,5 +35,5 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/**/*", "tests/**/*", "app/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "vite.config.ts", "vitest.config.ts", "*.config.js", "*.config.ts", "dev-server.cjs"]
 }

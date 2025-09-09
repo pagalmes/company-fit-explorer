@@ -1,5 +1,14 @@
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Explicitly set the output file tracing root to this directory
+  // This fixes the multiple lockfiles warning by telling Next.js this is the project root
+  outputFileTracingRoot: __dirname,
+  
   // Enable experimental features if needed
   experimental: {
     // Enable app directory (already default in Next.js 15)

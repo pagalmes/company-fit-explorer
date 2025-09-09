@@ -9,6 +9,11 @@ const applySelectionHighlighting = (cy: cytoscape.Core, selectedCompany: Company
   cy.nodes().removeClass('selected dimmed');
   cy.edges().removeClass('highlighted');
 
+  // If no company is selected, just return after clearing
+  if (!selectedCompany) {
+    return;
+  }
+
   // Get selected node
   const selectedNode = cy.getElementById(`company-${selectedCompany.id}`);
   const allCompanyNodes = cy.nodes('[type="company"]');

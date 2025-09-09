@@ -16,7 +16,7 @@ export default function AuthWrapper({
 }: AuthWrapperProps) {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<User | null>(null)
-  const [userRole, setUserRole] = useState<string | null>(null)
+  const [_userRole, setUserRole] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClientComponentClient()
 
@@ -76,7 +76,7 @@ export default function AuthWrapper({
     checkUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (event, _session) => {
         if (event === 'SIGNED_OUT') {
           router.push('/login')
         }

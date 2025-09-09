@@ -11,12 +11,6 @@ export async function GET() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  // Create user client to verify authentication
-  const userSupabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-
   // Get cookies to extract the auth token
   const cookieStore = await cookies()
   const authToken = cookieStore.get('sb-access-token') || cookieStore.get('supabase-auth-token')

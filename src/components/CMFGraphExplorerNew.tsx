@@ -220,7 +220,6 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
     forceUpdate(); // Force re-render to update UI
   }, [stateManager, selectedCompany, handleCompanySelect, forceUpdate]);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleRemoveRequest = useCallback((company: Company) => {
     setCompanyToRemove(company);
     setShowRemoveConfirmation(true);

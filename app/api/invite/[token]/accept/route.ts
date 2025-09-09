@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
 // Accept invitation (mark as used)
-export async function POST(request: Request, { params }: { params: Promise<{ token: string }> }) {
+export async function POST(_request: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
   
   const supabase = createClient(
