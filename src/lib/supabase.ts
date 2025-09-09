@@ -1,6 +1,5 @@
 import { createBrowserClient, createServerClient as createSSRServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
 
 // Client-side Supabase client
 export const createClientComponentClient = () => {
@@ -45,17 +44,9 @@ export const createServerComponentClient = ({ cookies }: { cookies: () => any })
   
   return createSSRServerClient(url, key, {
     cookies: {
-      getAll() {
-        return cookieStore.getAll()
-      },
-      get(name: string) {
-        return cookieStore.get(name)?.value
-      },
-      set() {
-        // Read-only in server components, cookies cannot be modified
-      },
-      remove() {
-        // Read-only in server components, cookies cannot be modified
+      getAll: () => cookieStore.getAll(),
+      setAll: () => {
+        // Read-only in server components
       }
     }
   })

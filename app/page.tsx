@@ -8,6 +8,12 @@ export default async function HomePage() {
   try {
     const cookieStore = await cookies()
     const supabase = createServerComponentClient({ cookies: () => cookieStore })
+    
+    if (!supabase) {
+      console.log('🚨 SECURITY: Supabase client not available, redirecting to login')
+      redirect('/login')
+    }
+    
     const { data: { user }, error } = await supabase.auth.getUser()
     
     // If no user or auth error, redirect immediately (no client-side loading)
