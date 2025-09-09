@@ -3,6 +3,7 @@
 [![Tests](https://img.shields.io/badge/tests-206%20unit%20%2B%206%20e2e%20passing-brightgreen)](./TESTING.md)
 [![Coverage](https://img.shields.io/badge/coverage-85%25-green)](./TESTING.md#coverage-reports) 
 [![Architecture](https://img.shields.io/badge/architecture-Next.js%20%2B%20Supabase-blue)](./PERSISTENCE_ARCHITECTURE.md)
+[![Security](https://img.shields.io/badge/security-RLS%20%2B%20Auth%20hardened-green)](./SECURITY.md)
 [![Build](https://img.shields.io/badge/build-passing-brightgreen)](./.github/workflows/ci.yml)
 
 A production-ready, multi-user CMF (Candidate Market Fit) platform that helps job seekers discover personalized companies based on their career goals, skills, and preferences. Features complete user management, admin dashboard, and personalized data persistence.
