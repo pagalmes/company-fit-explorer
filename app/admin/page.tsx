@@ -346,8 +346,13 @@ export default function AdminPage() {
               </div>
               
               <div className="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg">
-                <p className="font-medium mb-1">Expected JSON format:</p>
-                <code className="block">{"{"}"userProfile": {"{"}"name": "...", ...{"}"}, "companies": [...], "watchlistCompanyIds": [...], "removedCompanyIds": [...], "viewMode": "explore"{"}"}</code>
+                <p className="font-medium mb-1">Expected JSON format (UserExplorationState):</p>
+                <code className="block text-xs">
+                  {`{"id": "user-id", "name": "User Name", "cmf": {"name": "...", "targetRole": "...", "mustHaves": [...], "wantToHave": [...], "experience": [...], "targetCompanies": "..."}, "baseCompanies": [...], "addedCompanies": [...], "watchlistCompanyIds": [...], "removedCompanyIds": [...], "viewMode": "explore"}`}
+                </code>
+                <p className="text-xs text-slate-400 mt-2">
+                  {`Also supports legacy format: {"userProfile": {...}, "companies": [...], ...}`}
+                </p>
               </div>
               
               <button

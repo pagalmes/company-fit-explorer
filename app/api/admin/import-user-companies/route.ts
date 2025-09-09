@@ -30,12 +30,33 @@ export async function POST(request: Request) {
       )
     }
 
-    // Validate the companies data structure
-    if (!companiesData.userProfile || !companiesData.companies) {
+    // Validate the companies data structure - support UserExplorationState format
+    if (!companiesData.cmf && !companiesData.userProfile) {
       return NextResponse.json(
-        { error: 'Invalid companies data format. Expected userProfile and companies fields.' }, 
+        { error: 'Invalid companies data format. Expected cmf (UserExplorationState) or userProfile fields.' }, 
         { status: 400 }
       )
+    }
+
+    // Support both formats: legacy userProfile/companies and new UserExplorationState
+    const isUserExplorationState = companiesData.cmf && (companiesData.baseCompanies || companiesData.addedCompanies);
+    
+    if (isUserExplorationState) {
+      // Validate UserExplorationState structure
+      if (!companiesData.cmf) {
+        return NextResponse.json(
+          { error: 'Invalid UserExplorationState format. Missing cmf field.' }, 
+          { status: 400 }
+        )
+      }
+    } else {
+      // Validate legacy structure  
+      if (!companiesData.companies) {
+        return NextResponse.json(
+          { error: 'Invalid legacy format. Missing companies field.' }, 
+          { status: 400 }
+        )
+      }
     }
 
     // Check if user exists in profiles table
@@ -53,19 +74,57 @@ export async function POST(request: Request) {
     }
 
     console.log('👤 Found user:', userProfile.email)
-    console.log('📊 Importing data:', {
-      userProfileName: companiesData.userProfile.name,
-      companyCount: companiesData.companies.length,
-      hasWatchlist: companiesData.watchlistCompanyIds?.length > 0
-    })
+
+    // Process data based on format
+    let processedUserProfile, processedCompanies;
+    
+    if (isUserExplorationState) {
+      console.log('📊 Importing UserExplorationState format:', {
+        userName: companiesData.name || companiesData.cmf?.name,
+        baseCompanyCount: companiesData.baseCompanies?.length || 0,
+        addedCompanyCount: companiesData.addedCompanies?.length || 0,
+        hasWatchlist: companiesData.watchlistCompanyIds?.length > 0
+      });
+      
+      // Preserve the UserExplorationState structure
+      processedUserProfile = {
+        id: companiesData.id || userId,
+        name: companiesData.name || companiesData.cmf?.name || 'User',
+        cmf: companiesData.cmf,
+        baseCompanies: companiesData.baseCompanies || [],
+        addedCompanies: companiesData.addedCompanies || [],
+        removedCompanyIds: companiesData.removedCompanyIds || [],
+        watchlistCompanyIds: companiesData.watchlistCompanyIds || [],
+        lastSelectedCompanyId: companiesData.lastSelectedCompanyId,
+        viewMode: companiesData.viewMode || 'explore'
+      };
+      
+      // Combine baseCompanies + addedCompanies for database storage
+      // But preserve the structure in user_profile
+      processedCompanies = [
+        ...(companiesData.baseCompanies || []),
+        ...(companiesData.addedCompanies || [])
+      ];
+      
+    } else {
+      console.log('📊 Importing legacy format:', {
+        userProfileName: companiesData.userProfile?.name,
+        companyCount: companiesData.companies?.length || 0,
+        hasWatchlist: companiesData.watchlistCompanyIds?.length > 0
+      });
+      
+      // Legacy format - convert to structured format
+      processedUserProfile = companiesData.userProfile;
+      processedCompanies = companiesData.companies || [];
+    }
 
     // Upsert user company data
     const { error: dataError } = await supabase
       .from('user_company_data')
       .upsert({
         user_id: userId,
-        user_profile: companiesData.userProfile,
-        companies: companiesData.companies,
+        user_profile: processedUserProfile,
+        companies: processedCompanies,
         updated_at: new Date().toISOString()
       }, {
         onConflict: 'user_id'
@@ -105,11 +164,14 @@ export async function POST(request: Request) {
     console.log('✅ Successfully imported companies data for user:', userProfile.email)
 
     return NextResponse.json({ 
-      message: `Successfully imported ${companiesData.companies.length} companies for user ${userProfile.email}`,
+      message: `Successfully imported ${processedCompanies.length} companies for user ${userProfile.email}`,
       success: true,
       importedData: {
-        userProfile: companiesData.userProfile.name,
-        companyCount: companiesData.companies.length,
+        userProfile: processedUserProfile.name || 'User',
+        companyCount: processedCompanies.length,
+        baseCompanyCount: isUserExplorationState ? (companiesData.baseCompanies?.length || 0) : null,
+        addedCompanyCount: isUserExplorationState ? (companiesData.addedCompanies?.length || 0) : null,
+        format: isUserExplorationState ? 'UserExplorationState' : 'legacy',
         preferences: preferences
       }
     })
