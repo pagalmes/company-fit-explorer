@@ -51,15 +51,14 @@ const AppContainer: React.FC = () => {
             ...activeUserProfile, // Use as base structure
             id: userData.companyData.user_id,
             name: dbUserProfile?.name || 'User',
-            cmf: dbUserProfile,
-            // IMPORTANT: Replace baseCompanies with user's personalized companies
-            baseCompanies: dbCompanies || [],
-            // Clear added companies since user has their own base set
-            addedCompanies: [],
-            // Override with preferences if available
-            watchlistCompanyIds: userData.preferences?.watchlist_company_ids || [],
-            removedCompanyIds: userData.preferences?.removed_company_ids || [],
-            viewMode: userData.preferences?.view_mode || 'explore'
+            cmf: dbUserProfile?.cmf || dbUserProfile,
+            // Handle UserExplorationState format from admin import
+            baseCompanies: dbUserProfile?.baseCompanies || dbCompanies || [],
+            addedCompanies: dbUserProfile?.addedCompanies || [],
+            // Override with user_profile preferences first, then fallback to separate preferences
+            watchlistCompanyIds: dbUserProfile?.watchlistCompanyIds || userData.preferences?.watchlist_company_ids || [],
+            removedCompanyIds: dbUserProfile?.removedCompanyIds || userData.preferences?.removed_company_ids || [],
+            viewMode: dbUserProfile?.viewMode || userData.preferences?.view_mode || 'explore'
           };
 
           setUserProfile(customProfile);
