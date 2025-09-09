@@ -5,7 +5,7 @@ This guide will help you set up real LLM integration for testing on your local m
 ## 🏗️ Architecture
 
 ```
-Frontend (Vite:5173) ──→ Backend API (Express:3001) ──→ LLM APIs
+Frontend (Next.js:3000) ──→ Backend API (Express:3001) ──→ LLM APIs
                                      ↑
                               Environment Variables
                               (API Keys stored securely)

@@ -106,11 +106,11 @@ npm run setup:supabase
 npm run dev:full
 ```
 This runs all three servers with color-coded output:
-- 🔵 **React app** (port 5173-5174) - Main application interface
+- 🔵 **Next.js app** (port 3000) - Main application interface
 - 🟢 **File server** (port 3001) - Automatic companies.ts persistence  
 - 🟡 **LLM server** (port 3002) - AI functionality and company analysis
 
-**Option B: React App Only**
+**Option B: Next.js App Only**
 ```bash
 npm run dev
 ```
@@ -224,7 +224,7 @@ npx playwright show-report tests/reports # View test results and screenshots
 
 - **React 18.2** - Frontend framework
 - **TypeScript 5.2** - Type safety and development tooling
-- **Vite 5.0** - Build tool and dev server
+- **Next.js 15** - Full-stack React framework with App Router
 - **Tailwind CSS 3.3** - Utility-first CSS framework
 - **Cytoscape.js 3.26** - Graph visualization library
 - **Vitest 3.2** - Unit testing framework

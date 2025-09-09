@@ -66,7 +66,7 @@ Each company profile includes:
 
 ### **Frontend Stack**
 - **React 18 + TypeScript**: Modern, type-safe frontend
-- **Vite**: Fast development and optimized builds
+- **Next.js**: Full-stack React framework with optimized builds
 - **Tailwind CSS**: Utility-first styling system
 - **Cytoscape.js**: Powerful graph visualization engine
 
