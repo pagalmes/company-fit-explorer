@@ -111,61 +111,75 @@ const CollapsibleCMFPanel: React.FC<CollapsibleCMFPanelProps> = ({
               {/* Target Role */}
               <div>
                 <h4 className="font-medium text-slate-700 text-sm mb-2">Target Role</h4>
-                <p className="text-sm text-slate-600">{userCMF.targetRole}</p>
+                <p className="text-sm text-slate-600">
+                  {userCMF.targetRole || (
+                    <span className="italic text-slate-400">No target role specified</span>
+                  )}
+                </p>
               </div>
 
               {/* Target Companies */}
-              {userCMF.targetCompanies && (
-                <div>
-                  <h4 className="font-medium text-slate-700 text-sm mb-2">Target Companies</h4>
-                  <p className="text-sm text-slate-600">{userCMF.targetCompanies}</p>
-                </div>
-              )}
+              <div>
+                <h4 className="font-medium text-slate-700 text-sm mb-2">Target Companies</h4>
+                <p className="text-sm text-slate-600">
+                  {userCMF.targetCompanies || (
+                    <span className="italic text-slate-400">No target companies specified</span>
+                  )}
+                </p>
+              </div>
 
               {/* Must Haves */}
               <div>
                 <h4 className="font-medium text-slate-700 text-sm mb-2">Must Haves</h4>
                 <div className="space-y-1">
-                  {userCMF.mustHaves.map((item, index) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <div className="w-1.5 h-1.5 bg-rose-500 rounded-full flex-shrink-0"></div>
-                      <span className="text-sm text-slate-600">{item}</span>
-                    </div>
-                  ))}
+                  {userCMF.mustHaves && userCMF.mustHaves.length > 0 ? (
+                    userCMF.mustHaves.map((item, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <div className="w-1.5 h-1.5 bg-rose-500 rounded-full flex-shrink-0"></div>
+                        <span className="text-sm text-slate-600">{item}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <span className="text-sm italic text-slate-400">No must-have requirements specified</span>
+                  )}
                 </div>
               </div>
 
               {/* Want to Have */}
-              {userCMF.wantToHave && userCMF.wantToHave.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-slate-700 text-sm mb-2">Want to Have</h4>
-                  <div className="space-y-1">
-                    {userCMF.wantToHave.map((item, index) => (
+              <div>
+                <h4 className="font-medium text-slate-700 text-sm mb-2">Want to Have</h4>
+                <div className="space-y-1">
+                  {userCMF.wantToHave && userCMF.wantToHave.length > 0 ? (
+                    userCMF.wantToHave.map((item, index) => (
                       <div key={index} className="flex items-center space-x-2">
                         <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full flex-shrink-0"></div>
                         <span className="text-sm text-slate-600">{item}</span>
                       </div>
-                    ))}
-                  </div>
+                    ))
+                  ) : (
+                    <span className="text-sm italic text-slate-400">No preferences specified</span>
+                  )}
                 </div>
-              )}
+              </div>
 
               {/* Experience */}
-              {userCMF.experience && userCMF.experience.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-slate-700 text-sm mb-2">Experience</h4>
-                  <div className="flex flex-wrap gap-1">
-                    {userCMF.experience.map((exp, index) => (
+              <div>
+                <h4 className="font-medium text-slate-700 text-sm mb-2">Experience</h4>
+                <div className="flex flex-wrap gap-1">
+                  {userCMF.experience && userCMF.experience.length > 0 ? (
+                    userCMF.experience.map((exp, index) => (
                       <span 
                         key={index}
                         className="px-2 py-1 bg-white/60 text-slate-700 text-xs rounded-full border border-slate-200/50"
                       >
                         {exp}
                       </span>
-                    ))}
-                  </div>
+                    ))
+                  ) : (
+                    <span className="text-sm italic text-slate-400">No experience specified</span>
+                  )}
                 </div>
-              )}
+              </div>
             </>
           )}
         </div>

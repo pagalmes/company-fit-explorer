@@ -181,36 +181,23 @@ export const createUserProfileFromFiles = async (
   cmfFile: File, 
   baseId: string = 'user'
 ): Promise<UserCMF> => {
-  try {
-    const [resumeData, cmfData] = await Promise.all([
-      processResumeFile(resumeFile),
-      processCMFFile(cmfFile)
-    ]);
-    
-    // Merge data with defaults
-    const userProfile: UserCMF = {
-      id: baseId,
-      name: resumeData.name || cmfData.name || 'User',
-      mustHaves: cmfData.mustHaves || ['High Velocity of Execution', 'Growth-Oriented Environment', 'People-First Mentality'],
-      wantToHave: cmfData.wantToHave || ['Remote/Flexible Location', 'Innovation Focus', 'Professional Development'],
-      experience: resumeData.experience || ['Professional experience'],
-      targetRole: cmfData.targetRole || resumeData.targetRole || 'Professional Role',
-      targetCompanies: cmfData.targetCompanies || 'Growth-oriented companies'
-    };
-    
-    return userProfile;
-  } catch (error) {
-    console.error('Error processing files:', error);
-    
-    // Fallback profile if processing fails
-    return {
-      id: baseId,
-      name: 'User',
-      mustHaves: ['High Velocity of Execution', 'Growth-Oriented Environment', 'People-First Mentality'],
-      wantToHave: ['Remote/Flexible Location', 'Innovation Focus', 'Professional Development'],
-      experience: ['Professional experience'],
-      targetRole: 'Professional Role',
-      targetCompanies: 'Growth-oriented companies'
-    };
-  }
+  // TODO: Replace with sophisticated extraction logic in future
+  // For now, return empty profile regardless of file content
+  console.log(`📁 Files received for processing: ${resumeFile.name}, ${cmfFile.name}`);
+  console.log('🔧 Simple extraction disabled - returning empty profile (will be replaced with sophisticated logic)');
+  
+  // Extract just the name from resume filename for personalization
+  const fileName = resumeFile.name.split('.')[0];
+  const name = fileName.charAt(0).toUpperCase() + fileName.slice(1).replace(/[_-]/g, ' ');
+  
+  // Return completely empty CMF profile
+  return {
+    id: baseId,
+    name: name || 'User',
+    targetRole: '',
+    mustHaves: [],
+    wantToHave: [],
+    experience: [],
+    targetCompanies: ''
+  };
 };
