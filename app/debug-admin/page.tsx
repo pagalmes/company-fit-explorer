@@ -2,6 +2,9 @@
 import { useState, useEffect } from 'react'
 import { createClientComponentClient } from '../../src/lib/supabase'
 
+// Force dynamic rendering for debug pages
+export const dynamic = 'force-dynamic'
+
 export default function DebugAdminPage() {
   const [debugInfo, setDebugInfo] = useState<any>({})
   const [loading, setLoading] = useState(true)

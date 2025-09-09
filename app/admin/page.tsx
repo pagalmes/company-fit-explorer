@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation'
 import AuthWrapper from '../../src/components/AuthWrapper'
 import { Users, Plus, LogOut, Settings, Database, Trash2, FileUp } from 'lucide-react'
 
+// Force dynamic rendering for admin pages
+export const dynamic = 'force-dynamic'
+
 export default function AdminPage() {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
