@@ -4,6 +4,9 @@ import { createClientComponentClient } from '../../src/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { LogIn, Mail, Lock, Loader2 } from 'lucide-react'
 
+// Force dynamic rendering for auth pages
+export const dynamic = 'force-dynamic'
+
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -12,13 +15,13 @@ export default function LoginPage() {
   const [resetMode, setResetMode] = useState(false)
   const [resetSent, setResetSent] = useState(false)
   const router = useRouter()
-  const supabase = createClientComponentClient()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
+    const supabase = createClientComponentClient()
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -37,6 +40,7 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
+    const supabase = createClientComponentClient()
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`
     })
