@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import AppContainer from './components/AppContainer';
 import { autoMigrate } from './utils/migrateLegacyState';
