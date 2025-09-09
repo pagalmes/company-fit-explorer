@@ -22,19 +22,43 @@ export async function GET() {
 
   console.log('Fetching users from profiles table...')
   
-  // Use admin client to get all users
-  const { data: users, error } = await adminSupabase
+  // Get users first
+  const { data: profiles, error: profilesError } = await adminSupabase
     .from('profiles')
     .select('*')
     .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('Error fetching users:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  if (profilesError) {
+    console.error('Error fetching users:', profilesError)
+    return NextResponse.json({ error: profilesError.message }, { status: 500 })
   }
 
-  console.log('Found users:', users?.length || 0)
-  return NextResponse.json({ users: users || [] })
+  // Get all user company data
+  const { data: companyData, error: companyError } = await adminSupabase
+    .from('user_company_data')
+    .select('*')
+
+  if (companyError) {
+    console.error('Error fetching company data:', companyError)
+    return NextResponse.json({ error: companyError.message }, { status: 500 })
+  }
+
+  console.log('Found profiles:', profiles?.length || 0)
+  console.log('Found company data records:', companyData?.length || 0)
+
+  // Manually join the data
+  const users = profiles?.map(profile => {
+    const userCompanyData = companyData?.filter(data => data.user_id === profile.id) || []
+    const hasData = userCompanyData.length > 0
+    console.log(`User ${profile.email} (ID: ${profile.id}): ${hasData ? 'HAS DATA' : 'NO DATA'}`)
+    
+    return {
+      ...profile,
+      user_company_data: userCompanyData
+    }
+  }) || []
+  
+  return NextResponse.json({ users })
 }
 
 // Create user invitation (admin only)

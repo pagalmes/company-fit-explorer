@@ -358,7 +358,12 @@ export default function AdminPage() {
               <button
                 type="submit"
                 disabled={importLoading}
-                className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50"
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 mt-4 w-full"
+                style={{ 
+                  background: 'linear-gradient(to right, rgb(59 130 246), rgb(79 70 229))',
+                  color: 'white',
+                  zIndex: 10
+                }}
               >
                 {importLoading ? 'Importing...' : 'Import Data'}
               </button>
