@@ -1,9 +1,9 @@
 # Company Fit Explorer - Production Multi-User CMF Platform
 
-[![Tests](https://img.shields.io/badge/tests-206%20unit%20%2B%206%20e2e%20passing-brightgreen)](./TESTING.md)
-[![Coverage](https://img.shields.io/badge/coverage-85%25-green)](./TESTING.md#coverage-reports) 
-[![Architecture](https://img.shields.io/badge/architecture-Next.js%20%2B%20Supabase-blue)](./PERSISTENCE_ARCHITECTURE.md)
-[![Security](https://img.shields.io/badge/security-RLS%20%2B%20Auth%20hardened-green)](./SECURITY.md)
+[![Tests](https://img.shields.io/badge/tests-206%20unit%20%2B%206%20e2e%20passing-brightgreen)](./docs/guides/TESTING.md)
+[![Coverage](https://img.shields.io/badge/coverage-85%25-green)](./docs/guides/TESTING.md#coverage-reports) 
+[![Architecture](https://img.shields.io/badge/architecture-Next.js%20%2B%20Supabase-blue)](./docs/architecture/PERSISTENCE_ARCHITECTURE.md)
+[![Security](https://img.shields.io/badge/security-RLS%20%2B%20Auth%20hardened-green)](./docs/security/SECURITY.md)
 [![Build](https://img.shields.io/badge/build-passing-brightgreen)](./.github/workflows/ci.yml)
 
 A production-ready, multi-user CMF (Candidate Market Fit) platform that helps job seekers discover personalized companies based on their career goals, skills, and preferences. Features complete user management, admin dashboard, and personalized data persistence.
@@ -12,7 +12,7 @@ A production-ready, multi-user CMF (Candidate Market Fit) platform that helps jo
 
 - **Frontend**: Next.js 15 with App Router
 - **Backend**: Supabase (Authentication + Database)  
-- **Persistence**: [Hybrid Strategy](./PERSISTENCE_ARCHITECTURE.md) (Database + File fallbacks)
+- **Persistence**: [Hybrid Strategy](./docs/architecture/PERSISTENCE_ARCHITECTURE.md) (Database + File fallbacks)
 - **Deployment**: Vercel-ready with environment configuration
 
 ![Company Graph Explorer](./assets/images/company-fit-explorer-ui.jpg)
@@ -197,7 +197,7 @@ npx playwright show-report tests/reports # View test results and screenshots
 - ✅ **Visual regression** (6 tests) - E2E screenshot testing across browsers
 - ✅ **Graph interactions** (12 tests) - Cytoscape integration, zoom controls, positioning
 
-📖 **Complete testing guide:** [TESTING.md](./TESTING.md)
+📖 **Complete testing guide:** [TESTING.md](./docs/guides/TESTING.md)
 
 ## 🛠️ Available Scripts
 
@@ -480,6 +480,27 @@ The application is responsive and works on:
 - Desktop computers
 - Tablets
 - Mobile devices (with optimized touch interactions)
+
+## 📚 Documentation
+
+Complete documentation is organized in the `docs/` directory:
+
+### Architecture
+- [**Persistence Architecture**](./docs/architecture/PERSISTENCE_ARCHITECTURE.md) - Database and file system strategies
+- [**User Profile Architecture**](./docs/architecture/USER_PROFILE_ARCHITECTURE.md) - CMF profile management
+- [**Agentic Implementation Guide**](./docs/architecture/AGENTIC_IMPLEMENTATION_GUIDE.md) - LLM integration patterns
+
+### Guides  
+- [**Testing Guide**](./docs/guides/TESTING.md) - Complete testing strategy and commands
+- [**LLM Setup**](./docs/guides/SETUP_LLM.md) - AI provider configuration
+- [**LLM Integration**](./docs/guides/LLM_INTEGRATION.md) - Advanced AI features
+- [**Vitest Workarounds**](./docs/guides/VITEST_BUG_WORKAROUND.md) - Testing troubleshooting
+
+### Security
+- [**Security Documentation**](./docs/security/SECURITY.md) - RLS policies and authentication hardening
+
+### Product
+- [**Product Overview**](./docs/PRODUCT_OVERVIEW.md) - Feature specifications and user flows
 
 ## 🤝 Contributing
 
