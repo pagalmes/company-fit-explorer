@@ -18,9 +18,10 @@ export default function AuthWrapper({
   const [user, setUser] = useState<User | null>(null)
   const [_userRole, setUserRole] = useState<string | null>(null)
   const router = useRouter()
-  const supabase = createClientComponentClient()
 
   useEffect(() => {
+    const supabase = createClientComponentClient()
+    
     const checkUser = async () => {
       try {
         const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -84,7 +85,7 @@ export default function AuthWrapper({
     )
 
     return () => subscription.unsubscribe()
-  }, [router, supabase, requireAdmin])
+  }, [router, requireAdmin])
 
   if (loading) {
     return (
