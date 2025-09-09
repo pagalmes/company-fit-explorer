@@ -116,3 +116,7 @@ temp/
 
 # Company data (contains user-specific exploration state)
 src/data/companies.ts
+
+# Database setup and diagnostic scripts (one-time use, environment-specific)
+supabase/*.sql
+!supabase/migrations/
