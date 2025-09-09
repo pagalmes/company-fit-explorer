@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { UserCMF, Company } from '../types';
 import { getCompanySuggestions, getPopularCompanies, CompanySuggestion } from '../utils/companySuggestions';
 import { getCompanyPreview, CompanyPreview, validateCompanyData } from '../utils/companyValidation';
@@ -55,43 +56,6 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
     networkError: "Network connection issue. Please check your internet and try again."
   };
 
-  // Reset modal state when closed and focus input when opened
-  useEffect(() => {
-    if (!isOpen) {
-      resetModal();
-    } else {
-      // Focus input and show popular companies when opening
-      setTimeout(() => {
-        inputRef.current?.focus();
-        if (!companyName.trim()) {
-          const popularCompanies = getPopularCompanies(4);
-          setSuggestions(popularCompanies);
-          setShowSuggestions(true);
-        }
-      }, 100);
-    }
-  }, [isOpen]);
-
-  // Keyboard accessibility
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isOpen) return;
-      
-      if (e.key === 'Escape') {
-        onClose();
-      }
-      if (e.key === 'Enter' && step === 'input' && companyName.trim()) {
-        handleSearch();
-      }
-      if (e.key === 'Enter' && step === 'confirm') {
-        handleConfirm();
-      }
-    };
-    
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, step, companyName]);
-
   const resetModal = () => {
     setStep('input');
     setCompanyName('');
@@ -134,7 +98,7 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
     inputRef.current?.focus();
   };
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (!companyName.trim()) return;
     
     setIsLoading(true);
@@ -161,9 +125,9 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [companyName, errorMessages]);
 
-  const handleConfirm = async () => {
+  const handleConfirm = useCallback(async () => {
     if (!companyPreview) return;
     
     // Check if this company was previously removed and can be restored
@@ -300,7 +264,44 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
       setError(errorMessages.apiError);
       setStep('confirm');
     }
-  };
+  }, [companyPreview, onCheckForRemovedCompany, onRestoreRemovedCompany, onClose, userCMF, existingCompanies, onBatchUpdateCompanies, onAddCompany, errorMessages]);
+
+  // Reset modal state when closed and focus input when opened
+  useEffect(() => {
+    if (!isOpen) {
+      resetModal();
+    } else {
+      // Focus input and show popular companies when opening
+      setTimeout(() => {
+        inputRef.current?.focus();
+        if (!companyName.trim()) {
+          const popularCompanies = getPopularCompanies(4);
+          setSuggestions(popularCompanies);
+          setShowSuggestions(true);
+        }
+      }, 100);
+    }
+  }, [isOpen, companyName]);
+
+  // Keyboard accessibility
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isOpen) return;
+      
+      if (e.key === 'Escape') {
+        onClose();
+      }
+      if (e.key === 'Enter' && step === 'input' && companyName.trim()) {
+        handleSearch();
+      }
+      if (e.key === 'Enter' && step === 'confirm') {
+        handleConfirm();
+      }
+    };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, step, companyName, handleConfirm, handleSearch, onClose]);
 
   // Enhanced mock data generation when LLM is not available
   const generateEnhancedMockData = (preview: CompanyPreview, userCMF: UserCMF) => {
@@ -531,27 +532,18 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
                           onClick={() => handleSuggestionClick(suggestion)}
                           className="w-full text-left px-4 py-3 hover:bg-slate-50/80 hover:backdrop-blur-sm flex items-center space-x-3 transition-colors"
                         >
-                          <img 
-                            src={suggestion.logo} 
-                            alt={`${suggestion.name} logo`}
-                            className="w-8 h-8 rounded flex-shrink-0"
-                            crossOrigin="anonymous"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              if (!target.src.includes('ui-avatars.com')) {
-                                const initials = suggestion.name
-                                  .split(' ')
-                                  .map(word => word.charAt(0))
-                                  .join('')
-                                  .substring(0, 2)
-                                  .toUpperCase();
-                                const colors = ['3B82F6', '10B981', 'F59E0B', 'EF4444', '8B5CF6', '06B6D4', 'F97316'];
-                                const colorIndex = suggestion.name.length % colors.length;
-                                const backgroundColor = colors[colorIndex];
-                                target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=${backgroundColor}&color=fff&size=32&font-size=0.5`;
-                              }
-                            }}
-                          />
+                          <div className="relative w-8 h-8 rounded flex-shrink-0 overflow-hidden">
+                            <Image 
+                              src={suggestion.logo} 
+                              alt={`${suggestion.name} logo`}
+                              fill
+                              sizes="32px"
+                              className="object-cover"
+                              onError={() => {
+                                // Fallback handled by next/image automatically
+                              }}
+                            />
+                          </div>
                           <div className="flex-1 min-w-0">
                             <div className="font-medium text-sm text-slate-800 truncate">{suggestion.name}</div>
                             {suggestion.industry && (
@@ -612,27 +604,18 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
               <div className="space-y-4">
                 <div className="p-4 border border-blue-200/50 rounded-lg bg-white/60 backdrop-blur-sm">
                   <div className="flex items-start space-x-4">
-                    <img 
-                      src={companyPreview.logo} 
-                      alt={`${companyPreview.name} logo`}
-                      className="w-12 h-12 rounded flex-shrink-0"
-                      crossOrigin="anonymous"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        if (!target.src.includes('ui-avatars.com')) {
-                          const initials = companyPreview.name
-                            .split(' ')
-                            .map(word => word.charAt(0))
-                            .join('')
-                            .substring(0, 2)
-                            .toUpperCase();
-                          const colors = ['3B82F6', '10B981', 'F59E0B', 'EF4444', '8B5CF6', '06B6D4', 'F97316'];
-                          const colorIndex = companyPreview.name.length % colors.length;
-                          const backgroundColor = colors[colorIndex];
-                          target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=${backgroundColor}&color=fff&size=48&font-size=0.5`;
-                        }
-                      }}
-                    />
+                    <div className="relative w-12 h-12 rounded flex-shrink-0 overflow-hidden">
+                      <Image 
+                        src={companyPreview.logo} 
+                        alt={`${companyPreview.name} logo`}
+                        fill
+                        sizes="48px"
+                        className="object-cover"
+                        onError={() => {
+                          // Fallback handled by next/image automatically
+                        }}
+                      />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
                         <h3 className="font-semibold text-slate-800">{companyPreview.name}</h3>

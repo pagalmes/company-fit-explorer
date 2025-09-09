@@ -72,11 +72,11 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   const [isCMFPanelCollapsed, setIsCMFPanelCollapsed] = useState<boolean>(true);
   
   // Force re-render trigger for state changes
-  const [stateVersion, setStateVersion] = useState(0);
+  const [, setStateVersion] = useState(0);
   const forceUpdate = useCallback(() => setStateVersion(v => v + 1), []);
   
   // Separate state for watchlist-only updates (sidebar stats, etc.)
-  const [watchlistUpdateTrigger, setWatchlistUpdateTrigger] = useState(0);
+  const [, setWatchlistUpdateTrigger] = useState(0);
   const triggerWatchlistUpdate = useCallback(() => setWatchlistUpdateTrigger(v => v + 1), []);
 
   // Initialize state from companies.ts on mount
@@ -111,15 +111,15 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   // Get companies for display based on view mode - include stateVersion to trigger updates
   const displayedCompanies = useMemo(() => {
     return stateManager.getDisplayedCompanies();
-  }, [stateManager, viewMode, stateVersion]);
+  }, [stateManager]);
 
   const allCompanies = useMemo(() => {
     return stateManager.getAllCompanies();
-  }, [stateManager, stateVersion]);
+  }, [stateManager]);
 
   const watchlistStats = useMemo(() => {
     return stateManager.getWatchlistStats();
-  }, [stateManager, watchlistUpdateTrigger]);
+  }, [stateManager]);
 
   // ===== COMPANY SELECTION =====
 

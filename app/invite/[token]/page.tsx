@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClientComponentClient } from '../../../src/lib/supabase'
 import { UserPlus, CheckCircle, AlertCircle } from 'lucide-react'
@@ -20,11 +20,7 @@ export default function InvitePage() {
   const router = useRouter()
   const token = params.token as string
 
-  useEffect(() => {
-    checkInvitation()
-  }, [token])
-
-  const checkInvitation = async () => {
+  const checkInvitation = useCallback(async () => {
     try {
       const response = await fetch(`/api/invite/${token}`)
       const data = await response.json()
@@ -39,7 +35,11 @@ export default function InvitePage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [token])
+
+  useEffect(() => {
+    checkInvitation()
+  }, [token, checkInvitation])
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
