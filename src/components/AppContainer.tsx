@@ -15,6 +15,7 @@ const AppContainer: React.FC = () => {
   const [dataLoading, setDataLoading] = useState(true);
   const [authLoading, setAuthLoading] = useState(true);
   const [_isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [hasCompletedDataCheck, setHasCompletedDataCheck] = useState(false);
 
   // Check authentication FIRST, before any other logic
   useEffect(() => {
@@ -41,9 +42,18 @@ const AppContainer: React.FC = () => {
         }
 
         // User is authenticated - now handle data loading
+        console.log('🔍 AppContainer userData analysis:', {
+          hasData: userData.hasData,
+          hasCompanyData: !!userData.companyData,
+          companyDataKeys: userData.companyData ? Object.keys(userData.companyData) : null,
+          userId: userData.userId
+        });
 
         if (userData.hasData && userData.companyData) {
-          // Existing user with data
+          // Existing user with data - mark as visited to skip onboarding
+          console.log('✅ User has data, marking as visited to skip first-time experience');
+          markAsVisited();
+          
           const dbUserProfile = userData.companyData.user_profile;
           const dbCompanies = userData.companyData.companies;
 
@@ -64,6 +74,7 @@ const AppContainer: React.FC = () => {
           setUserProfile(customProfile);
         } else {
           // Authenticated but no data - new user (will show first-time experience)
+          console.log('❌ User has no data, will show first-time experience');
           
           // Use the real user ID from the API response
           const realUserId = userData.userId;
@@ -85,6 +96,9 @@ const AppContainer: React.FC = () => {
           
           setUserProfile(newProfile);
         }
+
+        // Mark that we've completed the data check
+        setHasCompletedDataCheck(true);
       } catch (error) {
         console.error('Error during auth check and data loading:', error);
         
@@ -197,8 +211,8 @@ const AppContainer: React.FC = () => {
     );
   }
 
-  // Show dreamy first contact for first-time users
-  if (isFirstTime && hasChecked) {
+  // Show dreamy first contact for first-time users - but only after we've completed data check
+  if (isFirstTime && hasChecked && !authLoading && !dataLoading && hasCompletedDataCheck) {
     return <DreamyFirstContact onComplete={handleFirstTimeComplete} />;
   }
 

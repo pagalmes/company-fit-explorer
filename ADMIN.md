@@ -99,9 +99,28 @@ This file contains realistic test data including:
 - Watchlist and removed company tracking
 - Full company details (logos, career URLs, match scores, etc.)
 
+### User Experience After Import
+
+When a user logs in after having their data imported:
+
+- **Skips onboarding**: Users with imported data bypass the first-time experience
+- **Direct access**: Goes directly to the main application interface  
+- **Complete profile**: CMF data, companies, and preferences are fully loaded
+- **Seamless transition**: No UI flashing or loading delays
+
+### Data Status Display
+
+The admin interface shows real-time data status for each user:
+
+- **"Has Data" (green)**: User has imported company data and CMF profile
+- **"No Data" (orange)**: User has not had data imported yet
+
+Status is updated immediately after successful imports.
+
 ### Usage Notes
 
 - Designed for admin/testing purposes
 - Requires authentication to access admin interface
 - Use with caution as it permanently overwrites user data
 - Ideal for setting up demo accounts or migrating user profiles
+- Users with imported data automatically skip first-time onboarding

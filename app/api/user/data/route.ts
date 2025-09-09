@@ -94,7 +94,7 @@ export async function GET(_request: NextRequest) {
       .eq('user_id', userData.user_id)
       .single()
 
-    return NextResponse.json({
+    const response = {
       authenticated: true,
       hasData: true,
       companyData: userData,
@@ -103,7 +103,17 @@ export async function GET(_request: NextRequest) {
         removed_company_ids: [],
         view_mode: 'explore'
       }
+    }
+
+    console.log('📤 Returning user data response:', {
+      authenticated: response.authenticated,
+      hasData: response.hasData,
+      userId: userData.user_id,
+      hasUserProfile: !!userData.user_profile,
+      hasCompanies: !!(userData.companies && userData.companies.length > 0)
     })
+
+    return NextResponse.json(response)
 
   } catch (error) {
     console.error('API error:', error)
