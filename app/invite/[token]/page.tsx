@@ -4,6 +4,9 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClientComponentClient } from '../../../src/lib/supabase'
 import { UserPlus, CheckCircle, AlertCircle } from 'lucide-react'
 
+// Force dynamic rendering for invite pages
+export const dynamic = 'force-dynamic'
+
 export default function InvitePage() {
   const [loading, setLoading] = useState(true)
   const [invitation, setInvitation] = useState<any>(null)
@@ -15,7 +18,6 @@ export default function InvitePage() {
 
   const params = useParams()
   const router = useRouter()
-  const supabase = createClientComponentClient()
   const token = params.token as string
 
   useEffect(() => {
@@ -57,6 +59,8 @@ export default function InvitePage() {
     }
 
     try {
+      const supabase = createClientComponentClient()
+      
       // Create the account with timeout handling
       console.log('Starting signup for:', invitation.email)
       
