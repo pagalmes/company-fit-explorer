@@ -20,7 +20,6 @@ export default function AdminPage() {
   const [selectedUserId, setSelectedUserId] = useState('')
   const [importLoading, setImportLoading] = useState(false)
 
-  const supabase = createClientComponentClient()
   const router = useRouter()
 
   useEffect(() => {
@@ -82,7 +81,10 @@ export default function AdminPage() {
   }
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
+    const supabase = createClientComponentClient()
+    if (supabase) {
+      await supabase.auth.signOut()
+    }
     router.push('/login')
   }
 

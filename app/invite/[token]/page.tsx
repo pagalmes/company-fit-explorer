@@ -60,6 +60,11 @@ export default function InvitePage() {
 
     try {
       const supabase = createClientComponentClient()
+      if (!supabase) {
+        setError('Authentication service not available')
+        setCreating(false)
+        return
+      }
       
       // Create the account with timeout handling
       console.log('Starting signup for:', invitation.email)

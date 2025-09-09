@@ -12,6 +12,12 @@ export default function DebugAdminPage() {
   useEffect(() => {
     const checkAuth = async () => {
       const supabase = createClientComponentClient()
+      if (!supabase) {
+        setDebugInfo({ error: 'Supabase client not available' })
+        setLoading(false)
+        return
+      }
+      
       try {
         // Check current user
         const { data: { user }, error: userError } = await supabase.auth.getUser()

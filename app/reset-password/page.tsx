@@ -12,9 +12,11 @@ function ResetPasswordForm() {
   const [success, setSuccess] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const supabase = createClientComponentClient()
 
   useEffect(() => {
+    const supabase = createClientComponentClient()
+    if (!supabase) return
+    
     // Check if we have the reset tokens in the URL
     const accessToken = searchParams.get('access_token')
     const refreshToken = searchParams.get('refresh_token')
@@ -26,7 +28,7 @@ function ResetPasswordForm() {
         refresh_token: refreshToken
       })
     }
-  }, [searchParams, supabase.auth])
+  }, [searchParams])
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,6 +48,13 @@ function ResetPasswordForm() {
     }
 
     try {
+      const supabase = createClientComponentClient()
+      if (!supabase) {
+        setError('Authentication service not available')
+        setLoading(false)
+        return
+      }
+      
       const { error } = await supabase.auth.updateUser({
         password: password
       })

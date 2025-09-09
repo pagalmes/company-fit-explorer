@@ -22,6 +22,12 @@ export default function LoginPage() {
     setError('')
 
     const supabase = createClientComponentClient()
+    if (!supabase) {
+      setError('Authentication service not available')
+      setLoading(false)
+      return
+    }
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -41,6 +47,12 @@ export default function LoginPage() {
     setError('')
 
     const supabase = createClientComponentClient()
+    if (!supabase) {
+      setError('Authentication service not available')
+      setLoading(false)
+      return
+    }
+    
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`
     })

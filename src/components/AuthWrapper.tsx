@@ -21,6 +21,11 @@ export default function AuthWrapper({
 
   useEffect(() => {
     const supabase = createClientComponentClient()
+    if (!supabase) {
+      // If no Supabase client available (e.g., during build), redirect to login
+      router.push('/login')
+      return
+    }
     
     const checkUser = async () => {
       try {
