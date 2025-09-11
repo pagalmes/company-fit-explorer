@@ -4,7 +4,7 @@ import { CompanyGraphProps, Company } from '../types';
 import { transformToGraphData, getCytoscapeStyles } from '../utils/graphDataTransform';
 
 // Helper function to apply selection highlighting
-const applySelectionHighlighting = (cy: cytoscape.Core, selectedCompany: Company | null) => {
+const applySelectionHighlighting = (cy: cytoscape.Core, selectedCompany: Company | null, companies: Company[]) => {
   // Clear previous selections
   cy.nodes().removeClass('selected dimmed');
   cy.edges().removeClass('highlighted');
@@ -61,34 +61,23 @@ const applySelectionHighlighting = (cy: cytoscape.Core, selectedCompany: Company
     }
   });
   
-  // Also highlight edges between companies that are BOTH directly connected to the selected node
-  const directlyConnectedIds = selectedCompany.connections.map((id: number) => `company-${id}`);
+  // Optimized: highlight edges between connected companies using Set for O(1) lookup
+  const directlyConnectedSet = new Set(selectedCompany.connections.map((id: number) => `company-${id}`));
   
-  // Only check edges between nodes that are directly connected to the selected company
-  for (let i = 0; i < directlyConnectedIds.length; i++) {
-    const nodeId = directlyConnectedIds[i];
-    const node = cy.getElementById(nodeId);
-    const nodeEdges = node.connectedEdges();
-    
-    for (let j = 0; j < nodeEdges.length; j++) {
-      const edge = nodeEdges[j];
-      const sourceNode = edge.source();
-      const targetNode = edge.target();
-      
-      // Skip edges that connect to the selected company (already highlighted above)
-      if (sourceNode.id() === `company-${selectedCompany.id}` || 
-          targetNode.id() === `company-${selectedCompany.id}`) {
-        continue;
-      }
-      
-      // Only highlight if BOTH endpoints are in the directly connected list and edge is not hidden
-      if (directlyConnectedIds.includes(sourceNode.id()) && 
-          directlyConnectedIds.includes(targetNode.id()) &&
-          !edge.hasClass('view-hidden')) {
-        edge.addClass('highlighted');
-      }
+  // Get edges more efficiently - only check edges between directly connected nodes
+  selectedCompany.connections.forEach((connId: number) => {
+    const connectedCompany = companies.find(c => c.id === connId);
+    if (connectedCompany) {
+      connectedCompany.connections.forEach((secondConnId: number) => {
+        if (directlyConnectedSet.has(`company-${secondConnId}`) && connId !== secondConnId) {
+          const edge = cy.getElementById(`edge-${connId}-${secondConnId}`);
+          if (edge.length > 0 && !edge.hasClass('view-hidden')) {
+            edge.addClass('highlighted');
+          }
+        }
+      });
     }
-  }
+  });
 };
 
 const CompanyGraph: React.FC<CompanyGraphProps> = ({
@@ -191,7 +180,7 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       // Trigger selection highlighting after a brief delay to ensure graph is ready
       setTimeout(() => {
         if (cyInstance.current && selectedCompanyRef.current) {
-          applySelectionHighlighting(cyInstance.current, selectedCompanyRef.current);
+          applySelectionHighlighting(cyInstance.current, selectedCompanyRef.current, companies);
         }
       }, 50);
     }
@@ -278,34 +267,22 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
             }
           });
             
-          // Also highlight edges between companies that are BOTH directly connected to the hovered node
-          const directlyConnectedIds = company.connections.map((id: number) => `company-${id}`);
+          // Optimized: highlight edges between connected companies (same optimization as selection)
+          const directlyConnectedSet = new Set(company.connections.map((id: number) => `company-${id}`));
           
-          // Only check edges between nodes that are directly connected to the hovered company
-          for (let i = 0; i < directlyConnectedIds.length; i++) {
-            const nodeId = directlyConnectedIds[i];
-            const node = cy.getElementById(nodeId);
-            const nodeEdges = node.connectedEdges();
-            
-            for (let j = 0; j < nodeEdges.length; j++) {
-              const edge = nodeEdges[j];
-              const sourceNode = edge.source();
-              const targetNode = edge.target();
-              
-              // Skip edges that connect to the hovered company (already highlighted above)
-              if (sourceNode.id() === `company-${company.id}` || 
-                  targetNode.id() === `company-${company.id}`) {
-                continue;
-              }
-              
-              // Only highlight if BOTH endpoints are in the directly connected list and edge is not hidden
-              if (directlyConnectedIds.includes(sourceNode.id()) && 
-                  directlyConnectedIds.includes(targetNode.id()) &&
-                  !edge.hasClass('view-hidden')) {
-                edge.addClass('highlighted');
-              }
+          company.connections.forEach((connId: number) => {
+            const connectedCompany = companies.find(c => c.id === connId);
+            if (connectedCompany) {
+              connectedCompany.connections.forEach((secondConnId: number) => {
+                if (directlyConnectedSet.has(`company-${secondConnId}`) && connId !== secondConnId) {
+                  const edge = cy.getElementById(`edge-${connId}-${secondConnId}`);
+                  if (edge.length > 0 && !edge.hasClass('view-hidden')) {
+                    edge.addClass('highlighted');
+                  }
+                }
+              });
             }
-          }
+          });
       }
       }
     });
@@ -470,7 +447,7 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       cy.nodes('[type="company-name-label"]').addClass('no-transitions');
       cy.nodes('[type="company-percent-label"]').addClass('no-transitions');
       
-      applySelectionHighlighting(cy, selectedCompany);
+      applySelectionHighlighting(cy, selectedCompany, companies);
       
       // Re-enable transitions after a brief delay
       setTimeout(() => {
@@ -489,7 +466,7 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
     const cy = cyInstance.current;
     
     if (selectedCompany) {
-      applySelectionHighlighting(cy, selectedCompany);
+      applySelectionHighlighting(cy, selectedCompany, companies);
     } else {
       // Clear selections when no company is selected
       cy.nodes().removeClass('selected dimmed');
