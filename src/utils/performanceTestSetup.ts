@@ -2,6 +2,7 @@
  * Performance test setup for detecting infinite loops and performance regressions
  * Based on 2024 React testing best practices
  */
+import { vi } from 'vitest';
 
 // Global timeout to catch infinite loops in tests
 let testStartTime: number;
@@ -64,7 +65,7 @@ const originalFetch = global.fetch;
 beforeEach(() => {
   fetchCallCount = 0;
   
-  global.fetch = jest.fn((...args) => {
+  global.fetch = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
     fetchCallCount++;
     
     // Detect potential infinite API call loops
@@ -72,8 +73,8 @@ beforeEach(() => {
       throw new Error(`Excessive API calls detected: ${fetchCallCount} calls in single test`);
     }
     
-    return originalFetch.apply(global, args);
-  }) as jest.MockedFunction<typeof fetch>;
+    return originalFetch.call(global, input, init);
+  }) as any;
 });
 
 afterEach(() => {

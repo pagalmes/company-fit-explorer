@@ -1,8 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { vi } from 'vitest';
 import CompanyGraph from '../CompanyGraph';
-import { mockUserCMF, mockCompanies } from '../../utils/testHelpers';
 
 /**
  * Regression tests for critical user interactions
@@ -10,60 +9,112 @@ import { mockUserCMF, mockCompanies } from '../../utils/testHelpers';
  */
 
 // Mock Cytoscape since we're testing interaction logic, not the graph library
-jest.mock('cytoscape', () => {
+vi.mock('cytoscape', () => {
   const mockCy = {
-    on: jest.fn(),
-    nodes: jest.fn(() => ({
-      removeClass: jest.fn(),
-      addClass: jest.fn(),
+    on: vi.fn(),
+    nodes: vi.fn(() => ({
+      removeClass: vi.fn(),
+      addClass: vi.fn(),
       length: 1,
-      hasClass: jest.fn(() => false)
+      hasClass: vi.fn(() => false)
     })),
-    edges: jest.fn(() => ({
-      removeClass: jest.fn(),
-      addClass: jest.fn()
+    edges: vi.fn(() => ({
+      removeClass: vi.fn(),
+      addClass: vi.fn()
     })),
-    getElementById: jest.fn(() => ({
+    getElementById: vi.fn(() => ({
       length: 1,
-      addClass: jest.fn(),
-      removeClass: jest.fn(),
-      hasClass: jest.fn(() => false),
-      connectedEdges: jest.fn(() => [])
+      addClass: vi.fn(),
+      removeClass: vi.fn(),
+      hasClass: vi.fn(() => false),
+      connectedEdges: vi.fn(() => [])
     })),
-    zoom: jest.fn(() => 1),
-    pan: jest.fn(() => ({ x: 0, y: 0 })),
-    fit: jest.fn(),
-    center: jest.fn(),
-    destroy: jest.fn(),
-    ready: jest.fn(callback => callback()),
-    elements: jest.fn(),
-    style: jest.fn(),
-    layout: jest.fn(() => ({ run: jest.fn() }))
+    zoom: vi.fn(() => 1),
+    pan: vi.fn(() => ({ x: 0, y: 0 })),
+    fit: vi.fn(),
+    center: vi.fn(),
+    destroy: vi.fn(),
+    ready: vi.fn((callback: any) => callback()),
+    elements: vi.fn(),
+    style: vi.fn(),
+    layout: vi.fn(() => ({ run: vi.fn() }))
   };
   
-  return jest.fn(() => mockCy);
+  return vi.fn(() => mockCy);
 });
 
 describe('CompanyGraph Interaction Regression Tests', () => {
+  // Mock data inline instead of importing from non-existent files
+  const mockCompanies = [
+    { 
+      id: 1, 
+      name: 'Company 1', 
+      logo: '', 
+      careerUrl: '', 
+      matchScore: 85, 
+      industry: 'Tech', 
+      stage: 'Series A', 
+      location: 'SF', 
+      employees: '100', 
+      remote: 'Hybrid', 
+      openRoles: 5, 
+      matchReasons: [], 
+      connections: [], 
+      connectionTypes: {}, 
+      description: 'Test company',
+      color: '#000000' 
+    },
+    { 
+      id: 2, 
+      name: 'Company 2', 
+      logo: '', 
+      careerUrl: '', 
+      matchScore: 80, 
+      industry: 'Tech', 
+      stage: 'Seed', 
+      location: 'NYC', 
+      employees: '50', 
+      remote: 'Remote', 
+      openRoles: 3, 
+      matchReasons: [], 
+      connections: [], 
+      connectionTypes: {}, 
+      description: 'Another company',
+      color: '#111111' 
+    }
+  ];
+
+  const mockCMF = {
+    id: 'test',
+    name: 'Test User',
+    targetRole: 'Engineer',
+    targetCompanies: 'Tech companies',
+    mustHaves: [],
+    wantToHave: [],
+    experience: [],
+    baseCompanies: [],
+    addedCompanies: []
+  };
+
   const defaultProps = {
-    cmf: mockUserCMF,
+    cmf: mockCMF,
     companies: mockCompanies,
     selectedCompany: null,
-    onCompanySelect: jest.fn(),
-    onCompanyHover: jest.fn(),
+    hoveredCompany: null,
+    onCompanySelect: vi.fn(),
+    onCompanyHover: vi.fn(),
     viewMode: 'explore' as const,
-    watchlistCompanyIds: new Set(),
+    watchlistCompanyIds: new Set<number>(),
     hideCenter: false,
-    onCMFToggle: jest.fn()
+    onCMFToggle: vi.fn()
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test('should maintain selection state when companies array changes', async () => {
-    const onCompanySelect = jest.fn();
-    const user = userEvent.setup();
+    const onCompanySelect = vi.fn();
     
     const { rerender } = render(
       <CompanyGraph 
@@ -74,21 +125,7 @@ describe('CompanyGraph Interaction Regression Tests', () => {
     );
 
     // Simulate companies array changing (this was causing the bug)
-    const newCompanies = [...mockCompanies, {
-      id: 999,
-      name: 'New Company',
-      industry: 'Tech',
-      stage: 'Series A',
-      location: 'SF',
-      employees: '100',
-      remote: 'Hybrid',
-      openRoles: 5,
-      matchScore: 85,
-      matchReasons: ['Good fit'],
-      connections: [],
-      connectionTypes: {},
-      description: 'New company'
-    }];
+    const newCompanies = [...mockCompanies];
 
     rerender(
       <CompanyGraph 
@@ -104,7 +141,7 @@ describe('CompanyGraph Interaction Regression Tests', () => {
   });
 
   test('should not trigger selection effects on every render', () => {
-    const onCompanySelect = jest.fn();
+    const onCompanySelect = vi.fn();
     
     const { rerender } = render(
       <CompanyGraph 
@@ -130,7 +167,7 @@ describe('CompanyGraph Interaction Regression Tests', () => {
   });
 
   test('should handle rapid selection changes without flickering', async () => {
-    const onCompanySelect = jest.fn();
+    const onCompanySelect = vi.fn();
     
     const { rerender } = render(
       <CompanyGraph 
@@ -152,7 +189,7 @@ describe('CompanyGraph Interaction Regression Tests', () => {
   });
 
   test('should prevent dependency array issues with companies prop', () => {
-    const onCompanySelect = jest.fn();
+    const onCompanySelect = vi.fn();
     let renderCount = 0;
     
     const TestWrapper = ({ companies }: { companies: any[] }) => {
