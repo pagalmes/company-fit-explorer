@@ -471,7 +471,8 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       cy.nodes().removeClass('selected dimmed');
       cy.edges().removeClass('highlighted');
     }
-  }, [selectedCompany, companies]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCompany]);
 
   return (
     <div className="w-full h-full relative">
