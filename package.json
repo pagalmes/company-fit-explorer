@@ -23,6 +23,9 @@
     "test:validate": "node scripts/validate-test-setup.js",
     "test:e2e": "playwright test --config=config/playwright.config.ts",
     "test:e2e:ui": "playwright test --config=config/playwright.config.ts --ui",
+    "test:performance": "jest --config=jest.performance.config.js",
+    "test:critical": "playwright test tests/e2e/critical-interactions.spec.ts",
+    "test:regression": "npm run test:performance && npm run test:critical",
     "setup:supabase": "node scripts/setup-supabase.js",
     "db:migrate": "node scripts/setup-supabase.js",
     "db:reset": "echo 'This will reset your database. Are you sure?' && node scripts/setup-supabase.js --reset"
