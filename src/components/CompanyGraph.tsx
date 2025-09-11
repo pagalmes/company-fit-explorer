@@ -171,6 +171,7 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       return; // Skip event handlers if graph failed to initialize properly
     }
 
+
     const cy = cyInstance.current;
 
     // Restore previous view state if it exists, otherwise fit with padding for UI

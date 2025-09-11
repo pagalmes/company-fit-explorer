@@ -138,6 +138,31 @@ export const getMatchScoreColor = (matchScore: number): string => {
 };
 
 export const getCytoscapeStyles = (): any[] => [
+  // Disable the default selection overlay (the dark square) on ALL elements
+  {
+    selector: 'node',
+    style: {
+      'overlay-padding': 0,
+      'overlay-color': 'transparent',
+      'overlay-opacity': 0
+    }
+  },
+  {
+    selector: 'edge',
+    style: {
+      'overlay-padding': 0,
+      'overlay-color': 'transparent',
+      'overlay-opacity': 0
+    }
+  },
+  {
+    selector: ':selected',
+    style: {
+      'overlay-padding': 0,
+      'overlay-color': 'transparent',
+      'overlay-opacity': 0
+    }
+  },
   // Background Zone Circles - Match Quality Zones
   {
     selector: 'node[type="zone-excellent"]',
@@ -346,7 +371,7 @@ export const getCytoscapeStyles = (): any[] => [
       'width': 30,
       'height': 30,
       'border-width': 1.5,
-      'border-color': 'black',
+      // 'border-color': 'black',
       'z-index': 20,
       'transition-property': 'width, height, border-color',
       'transition-duration': '0s',
@@ -360,10 +385,10 @@ export const getCytoscapeStyles = (): any[] => [
       'width': 30,
       'height': 30,
       'border-width': 1.5,
-      'border-color': 'black',
+      // 'border-color': 'black',
       'z-index': 15,
       'transition-property': 'width, height, border-color',
-      'transition-duration': '0.25s',
+      'transition-duration': '0.3s',
       'transition-timing-function': 'ease-out'
     }
   },
