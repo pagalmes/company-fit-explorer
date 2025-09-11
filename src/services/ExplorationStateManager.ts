@@ -233,9 +233,7 @@ export class ExplorationStateManager {
     
     if (companyId) {
       const company = this.findCompanyById(companyId);
-      console.log(`Selected company: ${company?.name || 'Unknown'} (ID: ${companyId})`);
     } else {
-      console.log('Cleared company selection');
     }
   }
 

@@ -331,7 +331,6 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
 
     // CMF center node click - toggle CMF panel
     cy.on('tap', 'node[type="cmf"]', () => {
-      console.log('CMF center clicked - toggling panel');
       onCMFToggleRef.current?.();
     });
 
