@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { UserCMF, Company } from '../types';
 import { getCompanySuggestions, getPopularCompanies, CompanySuggestion } from '../utils/companySuggestions';
@@ -49,12 +49,12 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Enhanced error messages for better user experience
-  const errorMessages = {
+  const errorMessages = useMemo(() => ({
     notFound: "We couldn't find that company. Try checking the spelling or using the full company name.",
     apiError: "Unable to connect to company database. Please try again.",
     llmError: "Failed to analyze company data. Please try again or contact support.",
     networkError: "Network connection issue. Please check your internet and try again."
-  };
+  }), []);
 
   const resetModal = () => {
     setStep('input');
@@ -264,6 +264,7 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
       setError(errorMessages.apiError);
       setStep('confirm');
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyPreview, onCheckForRemovedCompany, onRestoreRemovedCompany, onClose, userCMF, existingCompanies, onBatchUpdateCompanies, onAddCompany, errorMessages]);
 
   // Reset modal state when closed and focus input when opened
@@ -304,7 +305,7 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
   }, [isOpen, step, companyName, handleConfirm, handleSearch, onClose]);
 
   // Enhanced mock data generation when LLM is not available
-  const generateEnhancedMockData = (preview: CompanyPreview, userCMF: UserCMF) => {
+  const generateEnhancedMockData = useCallback((preview: CompanyPreview, userCMF: UserCMF) => {
     // Check if CMF is empty (new user)
     const isCMFEmpty = (!userCMF.experience || userCMF.experience.length === 0) &&
                        (!userCMF.mustHaves || userCMF.mustHaves.length === 0) &&
@@ -352,7 +353,7 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
       connectionTypes: {},
       description: preview.description || `${preview.name} is a technology company focused on innovation.`
     };
-  };
+  }, []);
 
   // Helper function to determine company stage based on preview data
   const determineCompanyStage = (preview: CompanyPreview): string => {

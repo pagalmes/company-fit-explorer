@@ -230,11 +230,6 @@ export class ExplorationStateManager {
     this.currentState.lastSelectedCompanyId = companyId || undefined;
     // Only save selection to localStorage, not to disk to avoid HMR cycles
     localStorage.setItem('cmf-exploration-state', JSON.stringify(this.currentState));
-    
-    if (companyId) {
-      const company = this.findCompanyById(companyId);
-    } else {
-    }
   }
 
   /**

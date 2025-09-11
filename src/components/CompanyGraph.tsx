@@ -471,7 +471,7 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       cy.nodes().removeClass('selected dimmed');
       cy.edges().removeClass('highlighted');
     }
-  }, [selectedCompany]);
+  }, [selectedCompany, companies]);
 
   return (
     <div className="w-full h-full relative">

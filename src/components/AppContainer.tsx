@@ -112,7 +112,7 @@ const AppContainer: React.FC = () => {
 
     // Always check authentication, regardless of first-time status
     checkAuthAndLoadData();
-  }, [hasChecked]);
+  }, [hasChecked, markAsVisited]);
 
   const handleFirstTimeComplete = async (resumeFile: File, cmfFile: File) => {
     setIsLoading(true);
