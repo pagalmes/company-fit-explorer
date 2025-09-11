@@ -403,9 +403,14 @@ describe('CollapsibleCMFPanel', () => {
       expect(screen.getByText('Empty User')).toBeInTheDocument()
       expect(screen.getByText('Must Haves')).toBeInTheDocument()
       
-      // Should not crash when arrays are empty
-      expect(screen.queryByText('Want to Have')).not.toBeInTheDocument()
-      expect(screen.queryByText('Experience')).not.toBeInTheDocument()
+      // Should show section headers even when arrays are empty
+      expect(screen.getByText('Want to Have')).toBeInTheDocument()
+      expect(screen.getByText('Experience')).toBeInTheDocument()
+      
+      // Should show appropriate fallback messages for empty arrays
+      expect(screen.getByText('No must-have requirements specified')).toBeInTheDocument()
+      expect(screen.getByText('No preferences specified')).toBeInTheDocument()
+      expect(screen.getByText('No experience specified')).toBeInTheDocument()
     })
   })
 
