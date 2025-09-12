@@ -1,6 +1,6 @@
 # Company Fit Explorer - Production Multi-User CMF Platform
 
-[![Tests](https://img.shields.io/badge/tests-206%20unit%20%2B%206%20e2e%20passing-brightgreen)](./docs/guides/TESTING.md)
+[![Tests](https://img.shields.io/badge/tests-224%20unit%20%2B%2014%20performance%20%2B%206%20e2e%20passing-brightgreen)](./docs/guides/TESTING.md)
 [![Coverage](https://img.shields.io/badge/coverage-85%25-green)](./docs/guides/TESTING.md#coverage-reports) 
 [![Architecture](https://img.shields.io/badge/architecture-Next.js%20%2B%20Supabase-blue)](./docs/architecture/PERSISTENCE_ARCHITECTURE.md)
 [![Security](https://img.shields.io/badge/security-RLS%20%2B%20Auth%20hardened-green)](./docs/security/SECURITY.md)
@@ -167,7 +167,7 @@ Without the file server, changes are only saved to localStorage and won't persis
 
 ## 🧪 Test-Driven Development
 
-This project uses comprehensive **multi-layer testing** with **206 unit tests + 6 E2E visual tests** covering all core functionality including **edge highlighting regression protection** and **watchlist functionality**, ensuring reliability and preventing regressions across visual interactions.
+This project uses comprehensive **multi-layer testing** with **224 unit tests + 14 performance tests + 6 E2E visual tests** covering all core functionality including **infinite loop detection**, **performance regression protection**, and **critical interaction monitoring**, ensuring reliability and preventing regressions across all system layers.
 
 ### Quick Test Commands
 ```bash
@@ -176,6 +176,11 @@ npm test              # Watch mode for development
 npm run test:run      # CI mode (run once)  
 npm run test:coverage # Generate coverage report
 npm run test:ui       # Visual test runner interface
+
+# Performance & Regression Tests
+npm run test:performance  # Run performance regression tests (14 tests)
+npm run test:critical     # Run critical interaction E2E tests
+npm run test:regression   # Run both performance + critical tests
 
 # E2E Visual Tests  
 npm run test:e2e      # Screenshot-based visual regression tests
@@ -187,15 +192,49 @@ npx playwright show-report tests/reports # View test results and screenshots
 1. **Write failing test** → 2. **Implement feature** → 3. **Verify test passes** → 4. **Refactor safely**
 
 **Test Coverage:**
-- ✅ **212 tests** across 13 test files (206 unit + 6 e2e)
+- ✅ **244 total tests** across 21 test files (224 unit + 14 performance + 6 e2e)
 - ✅ **Utility functions** (58 tests) - Data transformations, formatting, validations, storage utilities
 - ✅ **Component logic** (69 tests) - UI interactions, rendering, accessibility  
 - ✅ **Integration testing** (15 tests) - End-to-end workflows with real data
 - ✅ **State management** (19 tests) - ExplorationStateManager with watchlist functionality
 - ✅ **Type safety** (10 tests) - Interface validation, data integrity
 - ✅ **Development tools** (16 tests) - File writing, dev server integration
+- ✅ **Performance regression** (14 tests) - Infinite loop detection, API monitoring, rendering performance
+  - 🔍 **Infinite Loop Detection** (4 tests) - useEffect dependency array issues
+  - 📡 **API Call Monitoring** (5 tests) - Prevents infinite API requests
+  - 🚀 **Performance Metrics** (5 tests) - Render timing, memory leak detection
 - ✅ **Visual regression** (6 tests) - E2E screenshot testing across browsers
 - ✅ **Graph interactions** (12 tests) - Cytoscape integration, zoom controls, positioning
+
+### 🚀 Performance Testing Framework
+
+Our comprehensive performance testing suite prevents critical production issues:
+
+**🔍 Infinite Loop Detection**: Catches React useEffect dependency array issues that cause:
+- Unstable object/array dependencies triggering excessive re-renders
+- Missing dependency arrays causing continuous effect execution
+- Function recreation patterns leading to infinite loops
+
+**📡 API Call Monitoring**: Prevents infinite API request loops by:
+- Monitoring fetch call frequency and patterns
+- Testing authentication failure handling without retry storms  
+- Validating reasonable API call limits (max 3 calls per test)
+
+**🚀 Performance Regression**: Detects performance degradation through:
+- Component render timing measurements (< 16ms for 60fps)
+- Memory leak detection in useEffect cleanup functions
+- Dependency array performance issue identification
+
+**⚡ Critical Interaction Tests**: E2E validation of user-critical flows:
+- Node selection stability without flickering
+- Real browser network request monitoring  
+- Performance validation under actual user load
+
+**🛡️ Production Issue Prevention**: This framework was built after encountering critical production bugs where:
+1. Node selection was flickering due to unstable `companies` array in useEffect dependencies
+2. Infinite API calls to `/api/user/data` were caused by unstable `markAsVisited` function references
+
+All tests run in CI/CD to catch these issues before deployment.
 
 📖 **Complete testing guide:** [TESTING.md](./docs/guides/TESTING.md)
 
@@ -215,10 +254,11 @@ npx playwright show-report tests/reports # View test results and screenshots
 - `npm run test:run` - Run all tests once
 - `npm run test:coverage` - Generate coverage report
 - `npm run test:ui` - Open visual test interface
+- `npm run test:performance` - **🚀 Run performance regression tests** (infinite loops, API monitoring)
+- `npm run test:critical` - Run critical interaction E2E tests
+- `npm run test:regression` - **⚡ Run complete regression suite** (performance + critical)
 - `npm run test:e2e` - Run E2E visual regression tests
 - `npm run test:e2e:ui` - Interactive E2E test runner
-- `npm run test:e2e:headed` - Run E2E tests in headed browser mode
-- `npm run docs:tests` - Generate test documentation
 
 ## 🏗️ Built With
 
