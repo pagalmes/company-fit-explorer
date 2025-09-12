@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { vi } from 'vitest';
+import { vi, describe, test, expect } from 'vitest';
 
 /**
  * Performance regression tests to catch render performance issues

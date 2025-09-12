@@ -2,7 +2,7 @@
  * Performance test setup for detecting infinite loops and performance regressions
  * Based on 2024 React testing best practices
  */
-import { vi } from 'vitest';
+import { vi, beforeEach, afterEach, beforeAll, afterAll, expect } from 'vitest';
 
 // Global timeout to catch infinite loops in tests
 let testStartTime: number;

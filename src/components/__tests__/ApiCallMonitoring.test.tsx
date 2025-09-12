@@ -35,6 +35,11 @@ vi.mock('next/navigation', () => ({
   })
 }));
 
+// Mock CompanyGraph to avoid Canvas creation issues in tests
+vi.mock('../CompanyGraph', () => ({
+  default: vi.fn(() => null)
+}));
+
 describe('API Call Monitoring Tests', () => {
   let fetchSpy: any;
   let consoleErrorSpy: any;

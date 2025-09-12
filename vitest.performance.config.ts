@@ -20,9 +20,11 @@ export default defineConfig({
     // Enable additional debugging for performance issues
     reporters: ['verbose'],
     
+    // Make test globals available
+    globals: true,
+    
     // Custom test environment with performance monitoring
     setupFiles: [
-      './src/utils/testSetup.ts',
       './src/utils/performanceTestSetup.ts'
     ],
     

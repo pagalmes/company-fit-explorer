@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { useEffect, useState, useRef } from 'react';
-import { vi } from 'vitest';
+import { vi, describe, test, expect, beforeEach, afterEach } from 'vitest';
 
 /**
  * Test utilities to detect infinite useEffect loops
