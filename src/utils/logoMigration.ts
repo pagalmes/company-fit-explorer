@@ -9,17 +9,27 @@ import { getCompanyLogo, isFallbackLogo } from './logoProvider';
 import { Company } from '../types';
 
 /**
- * Migrate a single logo URL from Clearbit to Logo.dev
- * Extracts the domain and regenerates the URL with the new provider
+ * Migrate a single logo URL to the standardized proxy format
+ * Handles Clearbit URLs, direct Logo.dev URLs, and normalizes all to use the proxy
  *
- * @param oldLogoUrl - Old logo URL (potentially from Clearbit)
+ * @param oldLogoUrl - Old logo URL (from Clearbit, Logo.dev, or other)
  * @param companyName - Company name for fallback
- * @returns Updated logo URL using Logo.dev
+ * @returns Updated logo URL using the proxy format
  */
 export const migrateLogoURL = (oldLogoUrl: string, companyName?: string): string => {
-  // If already using Logo.dev or is a fallback, no migration needed
-  if (oldLogoUrl.includes('img.logo.dev') || isFallbackLogo(oldLogoUrl)) {
+  // If already using the proxy format or is a fallback, no migration needed
+  if (oldLogoUrl.includes('/api/logo') || isFallbackLogo(oldLogoUrl)) {
     return oldLogoUrl;
+  }
+
+  // Extract domain from Logo.dev URL
+  // Format: https://img.logo.dev/domain.com?token=...&format=...&size=...
+  if (oldLogoUrl.includes('img.logo.dev/')) {
+    const domain = oldLogoUrl.split('img.logo.dev/')[1]?.split('?')[0];
+    if (domain) {
+      console.log(`[Migration] Converting Logo.dev URL to proxy format for ${companyName || domain}`);
+      return getCompanyLogo(domain, companyName);
+    }
   }
 
   // Extract domain from Clearbit URL
@@ -27,22 +37,52 @@ export const migrateLogoURL = (oldLogoUrl: string, companyName?: string): string
   if (oldLogoUrl.includes('logo.clearbit.com/')) {
     const domain = oldLogoUrl.split('logo.clearbit.com/')[1]?.split('?')[0];
     if (domain) {
+      console.log(`[Migration] Converting Clearbit URL to proxy format for ${companyName || domain}`);
       return getCompanyLogo(domain, companyName);
     }
   }
 
   // If we can't parse it, use fallback
+  console.warn(`[Migration] Could not parse logo URL for ${companyName}, using fallback:`, oldLogoUrl);
   return getCompanyLogo(undefined, companyName);
 };
 
 /**
+ * Extract domain from company career URL
+ * Attempts to get a domain for Logo.dev lookup
+ *
+ * @param careerUrl - Company career URL
+ * @returns Extracted domain or undefined
+ */
+const extractDomainFromCareerUrl = (careerUrl: string): string | undefined => {
+  try {
+    const url = new URL(careerUrl);
+    return url.hostname;
+  } catch {
+    return undefined;
+  }
+};
+
+/**
  * Migrate a company object's logo URL
- * Updates the logo URL in place
+ * Updates the logo URL in place, with special handling for fallback avatars
  *
  * @param company - Company object to migrate
  * @returns Company with updated logo URL
  */
 export const migrateCompanyLogo = (company: Company): Company => {
+  // If it's a fallback avatar, try to get the real logo using the domain from careerUrl
+  if (isFallbackLogo(company.logo)) {
+    const domain = extractDomainFromCareerUrl(company.careerUrl);
+    if (domain) {
+      console.log(`[Migration] Converting fallback avatar to Logo.dev for ${company.name} using domain ${domain}`);
+      return {
+        ...company,
+        logo: getCompanyLogo(domain, company.name),
+      };
+    }
+  }
+
   return {
     ...company,
     logo: migrateLogoURL(company.logo, company.name),
@@ -67,5 +107,7 @@ export const migrateCompanyLogos = (companies: Company[]): Company[] => {
  * @returns True if migration is needed
  */
 export const needsMigration = (logoUrl: string): boolean => {
-  return logoUrl.includes('logo.clearbit.com');
+  return logoUrl.includes('logo.clearbit.com') ||
+         logoUrl.includes('img.logo.dev') ||
+         isFallbackLogo(logoUrl);
 };
