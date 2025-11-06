@@ -162,6 +162,19 @@ export default function LoginPage() {
             </div>
           </form>
         )}
+
+        {/* Logo.dev Attribution - Publicly visible for verification */}
+        <div className="mt-6 pt-6 border-t border-slate-200/50 text-center">
+          <a
+            href="https://logo.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+            title="Logo API"
+          >
+            Company logos provided by Logo.dev
+          </a>
+        </div>
       </div>
     </div>
   )

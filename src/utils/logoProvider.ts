@@ -32,14 +32,14 @@ export const getCompanyLogo = (domain: string | undefined, companyName?: string)
   const apiKey = getLogoDevKey();
 
   // If no API key configured, use fallback
-  // This allows the app to work without Logo.dev during development
   if (!apiKey) {
     console.warn('Logo.dev API key not configured. Using fallback logos. Set NEXT_PUBLIC_LOGO_DEV_KEY in .env.local');
     return generateFallbackLogo(companyName || domain);
   }
 
-  // Use Logo.dev API with authentication
-  return `https://img.logo.dev/${domain}?token=${apiKey}`;
+  // Use Logo.dev API with authentication and format optimization
+  // Default to WebP for better performance, with size optimization
+  return `https://img.logo.dev/${domain}?token=${apiKey}&format=webp&size=128`;
 };
 
 /**

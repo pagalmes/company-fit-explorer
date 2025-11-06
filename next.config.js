@@ -27,10 +27,23 @@ const nextConfig = {
   
   // Image optimization (for company logos)
   images: {
-    domains: [
-      'ui-avatars.com',
-      'img.logo.dev', // Logo.dev - primary logo provider
-      'cdn.brandfolder.io'
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'ui-avatars.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.logo.dev',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.brandfolder.io',
+      },
+      {
+        protocol: 'https',
+        hostname: 'logo.clearbit.com', // Temporary - for migrating old data
+      },
     ],
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",

@@ -6,6 +6,7 @@ import { createUserProfileFromFiles } from '../utils/fileProcessing';
 import { UserCMF, UserExplorationState } from '../types';
 import { activeUserProfile } from '../data/companies';
 import { createProfileForUser } from '../utils/userProfileCreation';
+import { migrateCompanyLogos } from '../utils/logoMigration';
 
 const AppContainer: React.FC = () => {
   const { isFirstTime, hasChecked, markAsVisited } = useFirstTimeExperience();
@@ -57,14 +58,18 @@ const AppContainer: React.FC = () => {
           const dbUserProfile = userData.companyData.user_profile;
           const dbCompanies = userData.companyData.companies;
 
+          // Migrate logo URLs from Clearbit to Logo.dev
+          const baseCompanies = dbUserProfile?.baseCompanies || dbCompanies || [];
+          const addedCompanies = dbUserProfile?.addedCompanies || [];
+
           const customProfile: UserExplorationState = {
             ...activeUserProfile, // Use as base structure
             id: userData.companyData.user_id,
             name: dbUserProfile?.name || 'User',
             cmf: dbUserProfile?.cmf || dbUserProfile,
-            // Handle UserExplorationState format from admin import
-            baseCompanies: dbUserProfile?.baseCompanies || dbCompanies || [],
-            addedCompanies: dbUserProfile?.addedCompanies || [],
+            // Handle UserExplorationState format from admin import - with logo migration
+            baseCompanies: migrateCompanyLogos(baseCompanies),
+            addedCompanies: migrateCompanyLogos(addedCompanies),
             // Override with user_profile preferences first, then fallback to separate preferences
             watchlistCompanyIds: dbUserProfile?.watchlistCompanyIds || userData.preferences?.watchlist_company_ids || [],
             removedCompanyIds: dbUserProfile?.removedCompanyIds || userData.preferences?.removed_company_ids || [],
