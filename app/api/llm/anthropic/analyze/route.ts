@@ -1,39 +1,22 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+import { NextRequest, NextResponse } from 'next/server';
+import { DEFAULT_ANTHROPIC_MODEL } from '@/utils/llm/config';
 
-const app = express();
-const PORT = process.env.PORT || 3002;
-
-// Anthropic model configuration - single source of truth
-const DEFAULT_ANTHROPIC_MODEL = 'claude-sonnet-4-5-20250929';
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'LLM API Server running' });
-});
-
-// Anthropic Claude API
-app.post('/api/llm/anthropic/analyze', async (req, res) => {
+export async function POST(request: NextRequest) {
   try {
-    const { request } = req.body;
+    const { request: analysisRequest } = await request.json();
     const apiKey = process.env.ANTHROPIC_API_KEY;
 
     if (!apiKey) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'ANTHROPIC_API_KEY not configured in environment variables' 
-      });
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'ANTHROPIC_API_KEY not configured in environment variables'
+        },
+        { status: 400 }
+      );
     }
 
-    // Import fetch dynamically for Node.js compatibility
-    const fetch = (await import('node-fetch')).default;
-
-    const prompt = buildAnthropicPrompt(request);
+    const prompt = buildAnthropicPrompt(analysisRequest);
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -70,7 +53,7 @@ app.post('/api/llm/anthropic/analyze', async (req, res) => {
     // Parse the JSON response
     const companyData = parseAnthropicResponse(responseText);
 
-    res.json({
+    return NextResponse.json({
       success: true,
       data: companyData,
       usage: {
@@ -82,48 +65,18 @@ app.post('/api/llm/anthropic/analyze', async (req, res) => {
 
   } catch (error) {
     console.error('Anthropic API error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message || 'Failed to analyze company with Claude'
-    });
-  }
-});
-
-// Anthropic key validation
-app.post('/api/llm/anthropic/validate', async (req, res) => {
-  try {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-
-    if (!apiKey) {
-      return res.json({ valid: false, error: 'API key not configured' });
-    }
-
-    // Import fetch dynamically
-    const fetch = (await import('node-fetch')).default;
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to analyze company with Claude'
       },
-      body: JSON.stringify({
-        model: DEFAULT_ANTHROPIC_MODEL,
-        max_tokens: 5,
-        messages: [{ role: 'user', content: 'Hi' }]
-      })
-    });
-
-    res.json({ valid: response.ok });
-
-  } catch (error) {
-    res.json({ valid: false, error: error.message });
+      { status: 500 }
+    );
   }
-});
+}
 
 // Helper function to build Anthropic prompt
-function buildAnthropicPrompt(request) {
+function buildAnthropicPrompt(request: any) {
   return `Analyze "${request.companyName}" and provide comprehensive company information as JSON.
 
 User's Candidate Market Fit (CMF) Criteria:
@@ -152,7 +105,7 @@ Provide a JSON response with this exact structure:
   "connections": ["Company1", "Company2", "Company3"],
   "connectionTypes": {
     "Company1": "Direct Competitor",
-    "Company2": "Industry Partner", 
+    "Company2": "Industry Partner",
     "Company3": "Similar Stage"
   },
   "description": "Brief company description focusing on what they do and their mission"
@@ -168,7 +121,7 @@ Be accurate and base analysis on real company information. Return only valid JSO
 }
 
 // Helper function to parse Anthropic response
-function parseAnthropicResponse(responseText) {
+function parseAnthropicResponse(responseText: string) {
   try {
     // Clean up potential markdown formatting
     const cleanedResponse = responseText
@@ -184,23 +137,12 @@ function parseAnthropicResponse(responseText) {
 }
 
 // Helper function to calculate costs
-function calculateAnthropicCost(inputTokens, outputTokens) {
+function calculateAnthropicCost(inputTokens: number, outputTokens: number): number {
   // Claude 3.5 Sonnet pricing
   const inputPrice = 3; // $3 per 1M tokens
   const outputPrice = 15; // $15 per 1M tokens
-  
+
   const inputCost = (inputTokens / 1000000) * inputPrice;
   const outputCost = (outputTokens / 1000000) * outputPrice;
   return inputCost + outputCost;
 }
-
-app.listen(PORT, () => {
-  console.log(`🚀 LLM API Server running on http://localhost:${PORT}`);
-  console.log('📝 Configure your environment variables:');
-  console.log('   ANTHROPIC_API_KEY=your_claude_api_key');
-  console.log('');
-  console.log('🔗 Test endpoints:');
-  console.log(`   GET  http://localhost:${PORT}/health`);
-  console.log(`   POST http://localhost:${PORT}/api/llm/anthropic/analyze`);
-  console.log(`   POST http://localhost:${PORT}/api/llm/anthropic/validate`);
-});

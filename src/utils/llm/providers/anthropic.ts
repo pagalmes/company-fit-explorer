@@ -7,7 +7,7 @@
 import { BaseLLMProvider, CompanyAnalysisRequest, LLMResponse, LLMSettings } from '../types';
 
 export class AnthropicProvider extends BaseLLMProvider {
-  private readonly baseUrl = 'http://localhost:3002/api/llm/anthropic';
+  private readonly baseUrl = '/api/llm/anthropic';
 
   constructor(settings: LLMSettings) {
     super(settings);

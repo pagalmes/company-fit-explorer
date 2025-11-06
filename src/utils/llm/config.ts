@@ -6,34 +6,54 @@
 
 import { LLMProviderConfig } from './types';
 
+// Anthropic model constants - single source of truth
+export const ANTHROPIC_MODELS = {
+  SONNET_4_5: 'claude-sonnet-4-5-20250929',
+  HAIKU_4_5: 'claude-haiku-4-5-20251001',
+  OPUS_4_1: 'claude-opus-4-1-20250805',
+  // Legacy models (still available but not recommended)
+  SONNET_4: 'claude-sonnet-4-20250514',
+  SONNET_3_7: 'claude-3-7-sonnet-20250219',
+  HAIKU_3_5: 'claude-3-5-haiku-20241022'
+} as const;
+
+// Default model for API calls
+export const DEFAULT_ANTHROPIC_MODEL = ANTHROPIC_MODELS.SONNET_4_5;
+
 export const LLM_PROVIDERS: Record<string, LLMProviderConfig> = {
   anthropic: {
     name: 'anthropic',
     displayName: 'Anthropic Claude',
     models: [
       {
-        id: 'claude-sonnet-4-20250514',
-        name: 'Claude Sonnet 4',
+        id: ANTHROPIC_MODELS.SONNET_4_5,
+        name: 'Claude Sonnet 4.5',
         description: 'Latest flagship model with superior reasoning and coding',
         costPer1MTokens: { input: 3, output: 15 }
       },
       {
-        id: 'claude-3-7-sonnet-20250219',
-        name: 'Claude 3.7 Sonnet',
-        description: 'Extended thinking mode for complex analysis',
-        costPer1MTokens: { input: 3, output: 15 }
-      },
-      {
-        id: 'claude-3-5-sonnet-20241022',
-        name: 'Claude 3.5 Sonnet',
-        description: 'Proven model for reasoning and analysis',
-        costPer1MTokens: { input: 3, output: 15 }
-      },
-      {
-        id: 'claude-3-5-haiku-20241022',
-        name: 'Claude 3.5 Haiku',
-        description: 'Fast and cost-effective for simpler tasks',
+        id: ANTHROPIC_MODELS.HAIKU_4_5,
+        name: 'Claude Haiku 4.5',
+        description: 'Fast and cost-effective with strong performance',
         costPer1MTokens: { input: 1, output: 5 }
+      },
+      {
+        id: ANTHROPIC_MODELS.OPUS_4_1,
+        name: 'Claude Opus 4.1',
+        description: 'Most powerful model for complex agentic tasks',
+        costPer1MTokens: { input: 15, output: 75 }
+      },
+      {
+        id: ANTHROPIC_MODELS.SONNET_4,
+        name: 'Claude Sonnet 4 (Legacy)',
+        description: 'Previous flagship model',
+        costPer1MTokens: { input: 3, output: 15 }
+      },
+      {
+        id: ANTHROPIC_MODELS.SONNET_3_7,
+        name: 'Claude 3.7 Sonnet (Legacy)',
+        description: 'Extended thinking mode',
+        costPer1MTokens: { input: 3, output: 15 }
       }
     ],
     apiKeyLabel: 'Anthropic API Key',
