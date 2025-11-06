@@ -37,9 +37,10 @@ export const getCompanyLogo = (domain: string | undefined, companyName?: string)
     return generateFallbackLogo(companyName || domain);
   }
 
-  // Use Logo.dev API with authentication and format optimization
-  // Default to WebP for better performance, with size optimization
-  return `https://img.logo.dev/${domain}?token=${apiKey}&format=webp&size=128`;
+  // Use our proxy API route to avoid CORS issues
+  // Logo.dev doesn't send Access-Control-Allow-Origin headers, which blocks
+  // CSS background-image loads in Cytoscape
+  return `/api/logo?domain=${encodeURIComponent(domain)}`;
 };
 
 /**
@@ -78,27 +79,21 @@ export const isFallbackLogo = (logoUrl: string): boolean => {
 
 /**
  * Get logo with explicit size parameter
- * Logo.dev supports size parameter for optimization
+ * Note: Currently the proxy uses a fixed size of 128px
+ * This function is provided for API compatibility but delegates to getCompanyLogo
  *
  * @param domain - Company domain
  * @param companyName - Company name for fallback
- * @param size - Desired size (e.g., 128, 256)
- * @returns Logo URL with size parameter
+ * @param size - Desired size (currently ignored, proxy uses 128px)
+ * @returns Logo URL via proxy
+ * @deprecated Use getCompanyLogo instead - size parameter is not currently supported via proxy
  */
 export const getCompanyLogoWithSize = (
   domain: string | undefined,
   companyName: string | undefined,
-  size: number = 128
+  _size: number = 128
 ): string => {
-  if (!domain) {
-    return generateFallbackLogo(companyName || 'Company');
-  }
-
-  const apiKey = getLogoDevKey();
-
-  if (!apiKey) {
-    return generateFallbackLogo(companyName || domain);
-  }
-
-  return `https://img.logo.dev/${domain}?token=${apiKey}&size=${size}`;
+  // Delegate to main function - proxy currently uses fixed 128px size
+  // TODO: Add size parameter support to /api/logo if needed
+  return getCompanyLogo(domain, companyName);
 };

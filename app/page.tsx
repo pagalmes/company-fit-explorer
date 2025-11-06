@@ -4,30 +4,21 @@ import { cookies } from 'next/headers'
 import App from '../src/App'
 
 export default async function HomePage() {
-  // Server-side authentication check
-  try {
-    const cookieStore = await cookies()
-    const supabase = createServerComponentClient({ cookies: () => cookieStore })
-    
-    if (!supabase) {
-      console.log('🚨 SECURITY: Supabase client not available, redirecting to login')
-      redirect('/login')
-    }
-    
-    const { data: { user }, error } = await supabase.auth.getUser()
-    
-    // If no user or auth error, redirect immediately (no client-side loading)
-    if (!user || error) {
-      console.log('🚨 SECURITY: Server-side auth check failed, redirecting to login')
-      redirect('/login')
-    }
-    
-    console.log('🔐 SECURITY: Server-side auth passed for user:', user.email)
-    
-    // Only render the app if user is authenticated
-    return <App />
-  } catch (error) {
-    console.error('🚨 SECURITY: Server auth error:', error)
+  const cookieStore = await cookies()
+  const supabase = createServerComponentClient({ cookies: () => cookieStore })
+
+  if (!supabase) {
     redirect('/login')
   }
+
+  // Middleware has already refreshed the session, so this should be clean
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // If no user, redirect (this is expected for logged-out users)
+  if (!user) {
+    redirect('/login')
+  }
+
+  // Only render the app if user is authenticated
+  return <App />
 }
