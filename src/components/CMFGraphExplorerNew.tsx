@@ -159,12 +159,16 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
     try {
       const addedCompany = stateManager.addCompany(newCompany);
       forceUpdate(); // Force re-render to show new company
-      
+
       // Auto-select the new company after brief delay
+      // Find the company from the updated state to ensure we have the correct reference
       setTimeout(() => {
-        handleCompanySelect(addedCompany);
+        const companyFromState = stateManager.getAllCompanies().find(c => c.id === addedCompany.id);
+        if (companyFromState) {
+          handleCompanySelect(companyFromState);
+        }
       }, 1000);
-      
+
       console.log('Company added successfully:', addedCompany.name);
     } catch (error) {
       console.error('Failed to add company:', error);
@@ -175,10 +179,14 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   const handleBatchUpdateCompanies = useCallback(async (updatedCompanies: Company[]) => {
     try {
       console.log('🎯 Performing batch company update with smart repositioning');
-      
+
+      // Find the newly added company BEFORE updating (the one not in existing companies)
+      const existingIds = new Set(stateManager.getAllCompanies().map(c => c.id));
+      const newCompany = updatedCompanies.find(c => !existingIds.has(c.id));
+
       // Update all companies in the state manager
       updatedCompanies.forEach(company => {
-        if (stateManager.getAllCompanies().find(c => c.id === company.id)) {
+        if (existingIds.has(company.id)) {
           // Update existing company
           stateManager.updateCompany(company);
         } else {
@@ -186,17 +194,17 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
           stateManager.addCompany(company);
         }
       });
-      
+
       forceUpdate(); // Force re-render to show repositioned companies
-      
-      // Auto-select the newest company (highest ID, likely the one just added)
-      const newestCompany = updatedCompanies.reduce((newest, company) => 
-        company.id > newest.id ? company : newest
-      );
-      
+
       // Auto-select the new company after animations complete
       setTimeout(() => {
-        handleCompanySelect(newestCompany);
+        if (newCompany) {
+          const companyFromState = stateManager.getAllCompanies().find(c => c.id === newCompany.id);
+          if (companyFromState) {
+            handleCompanySelect(companyFromState);
+          }
+        }
       }, 1500); // Slightly longer delay to allow animations to finish
       
       console.log(`📊 Batch update completed: ${updatedCompanies.length} companies repositioned`);
