@@ -1,5 +1,10 @@
 /**
- * One-time Logo Migration Endpoint
+ * Logo Migration Endpoint (Archived - Migration Complete)
+ *
+ * This endpoint was used for the one-time migration from Clearbit/Logo.dev to proxy format.
+ * Migration completed on 2025-11-06 - all 474 companies across 11 users migrated successfully.
+ *
+ * Kept for reference and potential future migrations. Requires confirmation header to run.
  *
  * Migrates all logo URLs in the database from:
  * - Direct Logo.dev URLs -> Proxy format
@@ -8,9 +13,25 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  // Safety check - require confirmation header to prevent accidental runs
+  const confirmHeader = request.headers.get('X-Confirm-Migration');
+  if (confirmHeader !== 'true') {
+    return NextResponse.json({
+      status: 'archived',
+      message: 'Logo migration completed on 2025-11-06',
+      stats: {
+        totalUsers: 13,
+        usersUpdated: 11,
+        companiesMigrated: 474
+      },
+      note: 'Migration already complete. To re-run, add header: X-Confirm-Migration: true',
+      warning: 'Only re-run if you have new users with legacy logo URLs'
+    }, { status: 200 });
+  }
+
   // Check if Supabase is configured
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return NextResponse.json(

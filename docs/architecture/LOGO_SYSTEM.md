@@ -113,20 +113,35 @@ This happens automatically in `AppContainer.tsx` when loading user data.
 
 ### Database Migration
 
-For one-time bulk updates to the database:
+**Status**: ✅ Migration completed on 2025-11-06
+
+The one-time database migration has been completed:
+- 13 total users processed
+- 11 users updated
+- 474 companies migrated to proxy format
+
+The migration endpoint is now **archived** and requires a confirmation header to run:
 
 ```bash
-# Run migration endpoint
+# Check migration status (no changes made)
 curl -X POST https://your-app.vercel.app/api/migrate-logos
+
+# Re-run migration (only if needed for new users with legacy URLs)
+curl -X POST https://your-app.vercel.app/api/migrate-logos \
+  -H "X-Confirm-Migration: true"
 ```
 
-**Response:**
+**Response (without confirmation):**
 ```json
 {
-  "message": "Migration complete",
-  "totalUsers": 13,
-  "usersUpdated": 11,
-  "results": [...]
+  "status": "archived",
+  "message": "Logo migration completed on 2025-11-06",
+  "stats": {
+    "totalUsers": 13,
+    "usersUpdated": 11,
+    "companiesMigrated": 474
+  },
+  "note": "Migration already complete. To re-run, add header: X-Confirm-Migration: true"
 }
 ```
 
