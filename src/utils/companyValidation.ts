@@ -1,11 +1,12 @@
 /**
  * Company Validation Utility
- * 
+ *
  * Handles company validation and preview generation with graceful fallbacks
  * when external APIs are not available.
  */
 
 import { getCompanyByName } from './companySuggestions';
+import { getCompanyLogo, generateFallbackLogo } from './logoProvider';
 
 export interface CompanyPreview {
   name: string;
@@ -41,14 +42,14 @@ export const getCompanyPreview = async (companyName: string): Promise<CompanyPre
     
     // Strategy 2: Generate intelligent guesses for domain and basic info
     const domainGuess = generateDomainGuess(trimmedName);
-    
-    // Strategy 3: Always try Clearbit logo first, fallback handled in UI
-    const logoUrl = `https://logo.clearbit.com/${domainGuess}`;
-    
+
+    // Strategy 3: Use centralized logo provider (Logo.dev with fallback)
+    const logoUrl = getCompanyLogo(domainGuess, trimmedName);
+
     return {
       name: trimmedName,
       domain: domainGuess,
-      logo: logoUrl, // Try Clearbit first, onError will handle fallback
+      logo: logoUrl,
       description: `Information about ${trimmedName}`,
       industry: guessIndustryFromName(trimmedName),
       confidence: 'medium'
@@ -83,27 +84,7 @@ const generateDomainGuess = (companyName: string): string => {
   return `${normalized}.com`;
 };
 
-// Logo checking and alternative domains removed to simplify validation
-// Fallback handling is now done entirely in the UI layer
-
-/**
- * Generate a fallback logo using initials
- */
-const generateFallbackLogo = (companyName: string): string => {
-  const initials = companyName
-    .split(' ')
-    .map(word => word.charAt(0))
-    .join('')
-    .substring(0, 2)
-    .toUpperCase();
-  
-  // Generate a consistent color based on company name
-  const colors = ['3B82F6', '10B981', 'F59E0B', 'EF4444', '8B5CF6', '06B6D4', 'F97316'];
-  const colorIndex = companyName.length % colors.length;
-  const backgroundColor = colors[colorIndex];
-  
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=${backgroundColor}&color=fff&size=128&font-size=0.5`;
-};
+// Logo generation is now handled by the centralized logoProvider utility
 
 /**
  * Guess industry based on company name patterns

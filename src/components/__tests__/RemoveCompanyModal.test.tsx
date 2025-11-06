@@ -10,7 +10,7 @@ describe('RemoveCompanyModal', () => {
     industry: 'AI/ML',
     stage: 'Late Stage',
     matchScore: 95,
-    logo: 'https://logo.clearbit.com/openai.com',
+    logo: 'https://img.logo.dev/openai.com',
     careerUrl: 'https://openai.com/careers',
     location: 'San Francisco, CA',
     employees: '~1500',

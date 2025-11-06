@@ -29,7 +29,7 @@ const nextConfig = {
   images: {
     domains: [
       'ui-avatars.com',
-      'logo.clearbit.com',
+      'img.logo.dev', // Logo.dev - primary logo provider
       'cdn.brandfolder.io'
     ],
     dangerouslyAllowSVG: true,

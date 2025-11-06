@@ -1,9 +1,11 @@
 /**
  * Company Suggestions Utility
- * 
- * Provides autocomplete suggestions for company names with fallback to 
+ *
+ * Provides autocomplete suggestions for company names with fallback to
  * a curated list of popular tech companies when external APIs aren't available.
  */
+
+import { getCompanyLogo } from './logoProvider';
 
 export interface CompanySuggestion {
   name: string;
@@ -94,7 +96,7 @@ export const getCompanySuggestions = async (query: string): Promise<CompanySugge
     // Convert to suggestion format with actual logos for popular companies
     return sorted.slice(0, 5).map(company => ({
       name: company.name,
-      logo: `https://logo.clearbit.com/${company.domain}`,
+      logo: getCompanyLogo(company.domain, company.name),
       industry: company.industry,
       description: company.description,
       domain: company.domain
@@ -113,7 +115,7 @@ export const getPopularCompanies = (count: number = 6): CompanySuggestion[] => {
   const shuffled = [...POPULAR_COMPANIES].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count).map(company => ({
     name: company.name,
-    logo: `https://logo.clearbit.com/${company.domain}`,
+    logo: getCompanyLogo(company.domain, company.name),
     industry: company.industry,
     description: company.description,
     domain: company.domain
@@ -135,19 +137,19 @@ export const isPopularCompany = (companyName: string): boolean => {
  */
 export const getCompanyByName = (companyName: string): CompanySuggestion | null => {
   const normalizedName = companyName.toLowerCase().trim();
-  const company = POPULAR_COMPANIES.find(c => 
+  const company = POPULAR_COMPANIES.find(c =>
     c.name.toLowerCase() === normalizedName
   );
-  
+
   if (company) {
     return {
       name: company.name,
-      logo: `https://logo.clearbit.com/${company.domain}`,
+      logo: getCompanyLogo(company.domain, company.name),
       industry: company.industry,
       description: company.description,
       domain: company.domain
     };
   }
-  
+
   return null;
 };

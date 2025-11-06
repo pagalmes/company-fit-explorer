@@ -40,7 +40,7 @@ describe('CMFGraphExplorer', () => {
     {
       id: 1,
       name: 'OpenAI',
-      logo: 'https://logo.clearbit.com/openai.com',
+      logo: 'https://img.logo.dev/openai.com',
       careerUrl: 'https://openai.com/careers',
       matchScore: 95,
       industry: 'AI/ML',
@@ -59,7 +59,7 @@ describe('CMFGraphExplorer', () => {
     {
       id: 2,
       name: 'Anthropic',
-      logo: 'https://logo.clearbit.com/anthropic.com',
+      logo: 'https://img.logo.dev/anthropic.com',
       careerUrl: 'https://www.anthropic.com/careers',
       matchScore: 94,
       industry: 'AI Safety',
@@ -78,7 +78,7 @@ describe('CMFGraphExplorer', () => {
     {
       id: 3,
       name: 'Scale AI',
-      logo: 'https://logo.clearbit.com/scale.com',
+      logo: 'https://img.logo.dev/scale.com',
       careerUrl: 'https://scale.com/careers',
       matchScore: 89,
       industry: 'AI Infrastructure',

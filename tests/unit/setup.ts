@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 
+// Test logo helper - generates consistent logo URLs for testing
+const getTestLogo = (domain: string) => `https://img.logo.dev/${domain}?token=test-key`
+
 // Mock localStorage for testing
 const localStorageMock = {
   getItem: vi.fn(() => null),
@@ -53,7 +56,7 @@ vi.mock('../../src/data/companies', () => ({
     {
       id: 1,
       name: 'OpenAI',
-      logo: 'https://logo.clearbit.com/openai.com',
+      logo: getTestLogo('openai.com'),
       careerUrl: 'https://openai.com/careers',
       matchScore: 95,
       industry: 'AI/ML',
@@ -76,7 +79,7 @@ vi.mock('../../src/data/companies', () => ({
     {
       id: 2,
       name: 'Anthropic',
-      logo: 'https://logo.clearbit.com/anthropic.com',
+      logo: getTestLogo('anthropic.com'),
       careerUrl: 'https://anthropic.com/careers',
       matchScore: 88,
       industry: 'AI/ML',
@@ -99,7 +102,7 @@ vi.mock('../../src/data/companies', () => ({
     {
       id: 3,
       name: 'Scale AI',
-      logo: 'https://logo.clearbit.com/scale.com',
+      logo: getTestLogo('scale.com'),
       careerUrl: 'https://scale.com/careers',
       matchScore: 82,
       industry: 'AI/ML',
@@ -122,7 +125,7 @@ vi.mock('../../src/data/companies', () => ({
     {
       id: 4,
       name: 'TestCorp',
-      logo: 'https://logo.clearbit.com/testcorp.com',
+      logo: getTestLogo('testcorp.com'),
       careerUrl: 'https://testcorp.com/careers',
       matchScore: 75,
       industry: 'Technology',
@@ -147,7 +150,7 @@ vi.mock('../../src/data/companies', () => ({
     {
       id: 1,
       name: 'OpenAI',
-      logo: 'https://logo.clearbit.com/openai.com',
+      logo: getTestLogo('openai.com'),
       careerUrl: 'https://openai.com/careers',
       matchScore: 95,
       industry: 'AI/ML',
@@ -170,7 +173,7 @@ vi.mock('../../src/data/companies', () => ({
     {
       id: 2,
       name: 'Anthropic',
-      logo: 'https://logo.clearbit.com/anthropic.com',
+      logo: getTestLogo('anthropic.com'),
       careerUrl: 'https://anthropic.com/careers',
       matchScore: 88,
       industry: 'AI/ML',
@@ -193,7 +196,7 @@ vi.mock('../../src/data/companies', () => ({
     {
       id: 3,
       name: 'Scale AI',
-      logo: 'https://logo.clearbit.com/scale.com',
+      logo: getTestLogo('scale.com'),
       careerUrl: 'https://scale.com/careers',
       matchScore: 82,
       industry: 'AI/ML',
@@ -216,7 +219,7 @@ vi.mock('../../src/data/companies', () => ({
     {
       id: 4,
       name: 'TestCorp',
-      logo: 'https://logo.clearbit.com/testcorp.com',
+      logo: getTestLogo('testcorp.com'),
       careerUrl: 'https://testcorp.com/careers',
       matchScore: 75,
       industry: 'Technology',

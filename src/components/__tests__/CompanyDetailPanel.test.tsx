@@ -39,7 +39,7 @@ describe('CompanyDetailPanel', () => {
     {
       id: 1,
       name: 'OpenAI',
-      logo: 'https://logo.clearbit.com/openai.com',
+      logo: 'https://img.logo.dev/openai.com',
       careerUrl: 'https://openai.com/careers',
       matchScore: 95,
       industry: 'AI/ML',
@@ -58,7 +58,7 @@ describe('CompanyDetailPanel', () => {
     {
       id: 2,
       name: 'Anthropic',
-      logo: 'https://logo.clearbit.com/anthropic.com',
+      logo: 'https://img.logo.dev/anthropic.com',
       careerUrl: 'https://www.anthropic.com/careers',
       matchScore: 94,
       industry: 'AI Safety',
@@ -77,7 +77,7 @@ describe('CompanyDetailPanel', () => {
     {
       id: 3,
       name: 'Discord',
-      logo: 'https://logo.clearbit.com/discord.com',
+      logo: 'https://img.logo.dev/discord.com',
       careerUrl: 'https://discord.com/careers',
       matchScore: 87,
       industry: 'Communication',

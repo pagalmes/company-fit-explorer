@@ -357,13 +357,24 @@ const LLMSettingsModal: React.FC<LLMSettingsModalProps> = ({
 
           {/* Footer */}
           <div className="flex items-center justify-between mt-8 pt-4 border-t">
-            <button
-              onClick={handleClearSettings}
-              className="text-sm text-slate-500 hover:text-gray-700 underline"
-            >
-              Clear All Settings
-            </button>
-            
+            <div className="flex flex-col space-y-2">
+              <button
+                onClick={handleClearSettings}
+                className="text-sm text-slate-500 hover:text-gray-700 underline text-left"
+              >
+                Clear All Settings
+              </button>
+              <a
+                href="https://logo.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                title="Logo API"
+              >
+                Company logos provided by Logo.dev
+              </a>
+            </div>
+
             <div className="flex space-x-3">
               <button
                 onClick={onClose}

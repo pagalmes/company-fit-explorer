@@ -42,7 +42,7 @@ describe('TypeScript Types and Data Validation', () => {
       const validCompany: Company = {
         id: 1,
         name: 'OpenAI',
-        logo: 'https://logo.clearbit.com/openai.com',
+        logo: 'https://img.logo.dev/openai.com',
         careerUrl: 'https://openai.com/careers',
         matchScore: 95,
         industry: 'AI/ML',
@@ -69,7 +69,7 @@ describe('TypeScript Types and Data Validation', () => {
       const companyWithoutOptionals: Company = {
         id: 2,
         name: 'Anthropic',
-        logo: 'https://logo.clearbit.com/anthropic.com',
+        logo: 'https://img.logo.dev/anthropic.com',
         careerUrl: 'https://www.anthropic.com/careers',
         matchScore: 94,
         industry: 'AI Safety',
@@ -93,7 +93,7 @@ describe('TypeScript Types and Data Validation', () => {
       const isolatedCompany: Company = {
         id: 3,
         name: 'Isolated Company',
-        logo: 'https://logo.clearbit.com/isolated.com',
+        logo: 'https://img.logo.dev/isolated.com',
         careerUrl: 'https://isolated.com/careers',
         matchScore: 80,
         industry: 'Technology',
@@ -167,7 +167,7 @@ describe('TypeScript Types and Data Validation', () => {
         {
           id: 1,
           name: 'Company A',
-          logo: 'https://logo.clearbit.com/a.com',
+          logo: 'https://img.logo.dev/a.com',
           careerUrl: 'https://a.com/careers',
           matchScore: 95,
           industry: 'Tech',
@@ -184,7 +184,7 @@ describe('TypeScript Types and Data Validation', () => {
         {
           id: 2,
           name: 'Company B',
-          logo: 'https://logo.clearbit.com/b.com',
+          logo: 'https://img.logo.dev/b.com',
           careerUrl: 'https://b.com/careers',
           matchScore: 90,
           industry: 'Tech',
