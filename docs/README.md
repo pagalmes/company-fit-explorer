@@ -7,7 +7,8 @@ This directory contains comprehensive documentation for the Company Fit Explorer
 Technical documentation covering the system's design and implementation:
 
 - **[Persistence Architecture](./architecture/PERSISTENCE_ARCHITECTURE.md)** - Database strategies, file fallbacks, and data persistence patterns
-- **[User Profile Architecture](./architecture/USER_PROFILE_ARCHITECTURE.md)** - CMF profile management and user state handling  
+- **[User Profile Architecture](./architecture/USER_PROFILE_ARCHITECTURE.md)** - CMF profile management and user state handling
+- **[Logo System](./architecture/LOGO_SYSTEM.md)** - Company logo fetching, CORS proxy, and migration from Clearbit to Logo.dev
 - **[Agentic Implementation Guide](./architecture/AGENTIC_IMPLEMENTATION_GUIDE.md)** - LLM integration patterns and AI-driven features
 
 ## 📖 Guides
