@@ -72,9 +72,12 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   const [isCMFPanelCollapsed, setIsCMFPanelCollapsed] = useState<boolean>(true);
   
   // Force re-render trigger for state changes
-  const [, setStateVersion] = useState(0);
+  const [stateVersion, setStateVersion] = useState(0);
   const forceUpdate = useCallback(() => setStateVersion(v => v + 1), []);
-  
+
+  // Track pending company selection after state update
+  const [pendingSelectionId, setPendingSelectionId] = useState<number | null>(null);
+
   // Separate state for watchlist-only updates (sidebar stats, etc.)
   const [, setWatchlistUpdateTrigger] = useState(0);
   const triggerWatchlistUpdate = useCallback(() => setWatchlistUpdateTrigger(v => v + 1), []);
@@ -82,21 +85,21 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   // Initialize state from companies.ts on mount
   useEffect(() => {
     setIsLoading(true);
-    
+
     // Restore last selected company
     const lastSelected = stateManager.getSelectedCompany();
     setSelectedCompany(lastSelected);
-    
+
     // Restore view mode
     const lastViewMode = stateManager.getViewMode();
     setViewMode(lastViewMode);
-    
+
     // Load panel state
     const panelState = loadPanelState();
     setIsCMFPanelCollapsed(panelState.cmfCollapsed);
-    
+
     setIsLoading(false);
-    
+
     // Development logging commented out to reduce console noise
     // console.log('🚀 Loaded exploration state from companies.ts:', {
     //   userId: activeUserProfile.id,
@@ -111,15 +114,15 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   // Get companies for display based on view mode - include stateVersion to trigger updates
   const displayedCompanies = useMemo(() => {
     return stateManager.getDisplayedCompanies();
-  }, [stateManager]);
+  }, [stateManager, stateVersion]); // Force recalculation on state changes
 
   const allCompanies = useMemo(() => {
     return stateManager.getAllCompanies();
-  }, [stateManager]);
+  }, [stateManager, stateVersion]); // Force recalculation on state changes
 
   const watchlistStats = useMemo(() => {
     return stateManager.getWatchlistStats();
-  }, [stateManager]);
+  }, [stateManager, stateVersion]); // Force recalculation on state changes
 
   // ===== COMPANY SELECTION =====
 
@@ -141,6 +144,23 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
     handleCompanySelect(company);
   }, [handleCompanySelect]);
 
+  // Handle pending company selection after state updates
+  useEffect(() => {
+    if (pendingSelectionId !== null) {
+      // Wait a frame to ensure React has finished rendering with the updated companies list
+      requestAnimationFrame(() => {
+        const companyFromState = stateManager.getAllCompanies().find(c => c.id === pendingSelectionId);
+        if (companyFromState) {
+          console.log('✅ Selecting newly added company:', companyFromState.name);
+          handleCompanySelect(companyFromState);
+        } else {
+          console.warn('⚠️ Could not find company with ID:', pendingSelectionId);
+        }
+        setPendingSelectionId(null);
+      });
+    }
+  }, [pendingSelectionId, stateManager, handleCompanySelect, stateVersion]);
+
   // ===== WATCHLIST MANAGEMENT =====
 
   const handleToggleWatchlist = useCallback((companyId: number) => {
@@ -158,23 +178,17 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   const handleAddCompany = useCallback(async (newCompany: Company) => {
     try {
       const addedCompany = stateManager.addCompany(newCompany);
+      console.log('Company added successfully:', addedCompany.name, 'with ID:', addedCompany.id);
+
+      // Set pending selection ID and trigger re-render
+      // The useEffect will handle selecting the company after React finishes rendering
+      setPendingSelectionId(addedCompany.id);
       forceUpdate(); // Force re-render to show new company
-
-      // Auto-select the new company after brief delay
-      // Find the company from the updated state to ensure we have the correct reference
-      setTimeout(() => {
-        const companyFromState = stateManager.getAllCompanies().find(c => c.id === addedCompany.id);
-        if (companyFromState) {
-          handleCompanySelect(companyFromState);
-        }
-      }, 1000);
-
-      console.log('Company added successfully:', addedCompany.name);
     } catch (error) {
       console.error('Failed to add company:', error);
       throw error; // Re-throw to let modal handle the error
     }
-  }, [stateManager, forceUpdate, handleCompanySelect]);
+  }, [stateManager, forceUpdate]);
 
   const handleBatchUpdateCompanies = useCallback(async (updatedCompanies: Company[]) => {
     try {
@@ -195,24 +209,19 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
         }
       });
 
-      forceUpdate(); // Force re-render to show repositioned companies
-
-      // Auto-select the new company after animations complete
-      setTimeout(() => {
-        if (newCompany) {
-          const companyFromState = stateManager.getAllCompanies().find(c => c.id === newCompany.id);
-          if (companyFromState) {
-            handleCompanySelect(companyFromState);
-          }
-        }
-      }, 1500); // Slightly longer delay to allow animations to finish
-      
       console.log(`📊 Batch update completed: ${updatedCompanies.length} companies repositioned`);
+
+      // Set pending selection for the new company and trigger re-render
+      // The useEffect will handle selecting the company after React finishes rendering
+      if (newCompany) {
+        setPendingSelectionId(newCompany.id);
+      }
+      forceUpdate(); // Force re-render to show repositioned companies
     } catch (error) {
       console.error('Failed to batch update companies:', error);
       throw error; // Re-throw to let modal handle the error
     }
-  }, [stateManager, forceUpdate, handleCompanySelect]);
+  }, [stateManager, forceUpdate]);
 
   const removeCompany = useCallback((companyId: number) => {
     stateManager.removeCompany(companyId);
