@@ -59,7 +59,10 @@ const AppContainer: React.FC = () => {
           const dbCompanies = userData.companyData.companies;
 
           // Migrate logo URLs from Clearbit to Logo.dev
-          const baseCompanies = dbUserProfile?.baseCompanies || dbCompanies || [];
+          // Use baseCompanies if it has data, otherwise fall back to companies array
+          const baseCompanies = (dbUserProfile?.baseCompanies && dbUserProfile.baseCompanies.length > 0)
+            ? dbUserProfile.baseCompanies
+            : (dbCompanies || []);
           const addedCompanies = dbUserProfile?.addedCompanies || [];
 
           const customProfile: UserExplorationState = {
