@@ -133,18 +133,26 @@ export class LLMService {
     try {
       // Check if we're in a browser environment
       if (typeof window === 'undefined' || !localStorage) {
+        // Use default Anthropic settings in non-browser environments
+        this.settings = { ...DEFAULT_LLM_SETTINGS };
+        this.initializeProvider();
         return;
       }
-      
+
       const stored = localStorage.getItem(LLMService.STORAGE_KEY);
       if (stored) {
         const parsedSettings = JSON.parse(stored);
         this.settings = { ...DEFAULT_LLM_SETTINGS, ...parsedSettings };
-        this.initializeProvider();
+      } else {
+        // First time loading - initialize with default Anthropic settings
+        this.settings = { ...DEFAULT_LLM_SETTINGS };
+        this.saveSettings();
       }
+      this.initializeProvider();
     } catch (error) {
       console.error('Failed to load LLM settings:', error);
       this.settings = { ...DEFAULT_LLM_SETTINGS };
+      this.initializeProvider();
     }
   }
 

@@ -125,9 +125,9 @@ export const LLM_PROVIDERS: Record<string, LLMProviderConfig> = {
 };
 
 export const DEFAULT_LLM_SETTINGS = {
-  provider: 'none' as const,
-  apiKey: '',
-  model: '',
+  provider: 'anthropic' as const,
+  apiKey: 'backend-configured',
+  model: DEFAULT_ANTHROPIC_MODEL,
   maxTokens: 1500,
   temperature: 0.7
 };
