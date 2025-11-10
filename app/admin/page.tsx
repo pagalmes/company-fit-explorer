@@ -4,6 +4,8 @@ import { createClientComponentClient } from '../../src/lib/supabase'
 import { useRouter } from 'next/navigation'
 import AuthWrapper from '../../src/components/AuthWrapper'
 import { Users, Plus, LogOut, Settings, Database, Trash2, FileUp } from 'lucide-react'
+import LLMSettingsModal from '../../src/components/LLMSettingsModal'
+import { llmService } from '../../src/utils/llm/service'
 
 // Force dynamic rendering for admin pages
 export const dynamic = 'force-dynamic'
@@ -19,11 +21,14 @@ export default function AdminPage() {
   const [importFile, setImportFile] = useState<File | null>(null)
   const [selectedUserId, setSelectedUserId] = useState('')
   const [importLoading, setImportLoading] = useState(false)
+  const [showLLMSettings, setShowLLMSettings] = useState(false)
+  const [llmConfigured, setLLMConfigured] = useState(false)
 
   const router = useRouter()
 
   useEffect(() => {
     fetchUsers()
+    setLLMConfigured(llmService.isConfigured())
   }, [])
 
   const fetchUsers = async () => {
@@ -261,13 +266,51 @@ export default function AdminPage() {
           {/* Message */}
           {message && (
             <div className={`p-4 rounded-lg border ${
-              messageType === 'success' 
-                ? 'bg-green-50 border-green-200 text-green-700' 
+              messageType === 'success'
+                ? 'bg-green-50 border-green-200 text-green-700'
                 : 'bg-red-50 border-red-200 text-red-700'
             }`}>
               {message}
             </div>
           )}
+
+          {/* LLM Settings */}
+          <div className="bg-white/60 backdrop-blur-sm rounded-xl shadow-lg border border-blue-200/40 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <Settings className="w-6 h-6 text-blue-600" />
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">LLM Configuration</h2>
+                  <p className="text-sm text-slate-600">Configure AI provider for all users</p>
+                </div>
+              </div>
+              {llmConfigured && (
+                <div className="px-3 py-1.5 bg-green-50 border border-green-200 text-green-700 text-sm rounded-full flex items-center">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                  <span className="font-medium">{llmService.getSettings().provider.toUpperCase()} Configured</span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+              <div>
+                <p className="text-slate-700 mb-1">
+                  <span className="font-medium">Current Provider:</span> {llmConfigured ? llmService.getSettings().provider.charAt(0).toUpperCase() + llmService.getSettings().provider.slice(1) : 'Not configured'}
+                </p>
+                {llmConfigured && (
+                  <p className="text-sm text-slate-600">
+                    <span className="font-medium">Model:</span> {llmService.getSettings().model}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() => setShowLLMSettings(true)}
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
+              >
+                {llmConfigured ? 'Update Settings' : 'Configure LLM'}
+              </button>
+            </div>
+          </div>
 
           {/* Invite User */}
           <div className="bg-white/60 backdrop-blur-sm rounded-xl shadow-lg border border-blue-200/40 p-6">
@@ -453,6 +496,19 @@ export default function AdminPage() {
             )}
           </div>
         </main>
+
+        {/* LLM Settings Modal */}
+        {showLLMSettings && (
+          <LLMSettingsModal
+            isOpen={showLLMSettings}
+            onClose={() => setShowLLMSettings(false)}
+            onSettingsUpdated={() => {
+              setLLMConfigured(llmService.isConfigured())
+              setMessage('LLM settings updated successfully')
+              setMessageType('success')
+            }}
+          />
+        )}
       </div>
     </AuthWrapper>
   )
