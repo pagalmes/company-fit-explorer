@@ -5,7 +5,7 @@ import { activeUserProfile } from '../data/companies';
 import CompanyGraph from './CompanyGraph';
 import CompanyDetailPanel from './CompanyDetailPanel';
 import AddCompanyModal from './AddCompanyModal';
-import LLMSettingsModal from './LLMSettingsModal';
+import SettingsViewModal from './SettingsViewModal';
 import { RemoveCompanyModal } from './RemoveCompanyModal';
 import EmptyWatchlistModal from './EmptyWatchlistModal';
 import { llmService } from '../utils/llm/service';
@@ -303,7 +303,8 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
 
   // ===== LLM SETTINGS =====
 
-  const handleLLMSettingsUpdated = useCallback(() => {
+  // Update LLM configured status on mount and periodically
+  useEffect(() => {
     setLLMConfigured(llmService.isConfigured());
   }, []);
 
@@ -446,10 +447,9 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
       )}
 
       {showLLMSettings && (
-        <LLMSettingsModal
+        <SettingsViewModal
           isOpen={showLLMSettings}
           onClose={() => setShowLLMSettings(false)}
-          onSettingsUpdated={handleLLMSettingsUpdated}
         />
       )}
 
