@@ -205,7 +205,11 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
         angle: 0, // Will be set by positioning logic
         distance: 0, // Will be set by positioning logic
         careerUrl: generateCareerUrl(companyData.name, companyPreview.domain),
-        externalLinks: companyData.externalLinks
+        externalLinks: {
+          ...companyData.externalLinks,
+          // Add website URL from preview domain if available
+          website: companyPreview.domain ? `https://${companyPreview.domain}` : companyData.externalLinks?.website
+        }
       };
 
       // Import positioning utilities

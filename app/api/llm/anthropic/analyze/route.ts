@@ -33,6 +33,10 @@ export async function POST(request: NextRequest) {
           {
             role: 'user',
             content: prompt
+          },
+          {
+            role: 'assistant',
+            content: '{'
           }
         ]
       })
@@ -52,6 +56,14 @@ export async function POST(request: NextRequest) {
 
     // Parse the JSON response
     const companyData = parseAnthropicResponse(responseText);
+
+    // Generate Google search URLs for external links
+    const externalLinks = await searchCompanyUrls(analysisRequest.companyName);
+
+    // Add external links with company data
+    if (externalLinks && Object.keys(externalLinks).length > 0) {
+      companyData.externalLinks = externalLinks;
+    }
 
     return NextResponse.json({
       success: true,
@@ -108,13 +120,7 @@ Provide a JSON response with this exact structure:
     "Company2": "Industry Partner",
     "Company3": "Similar Stage"
   },
-  "description": "Brief company description focusing on what they do and their mission",
-  "externalLinks": {
-    "website": "https://company.com",
-    "linkedin": "https://www.linkedin.com/company/company-name",
-    "glassdoor": "https://www.glassdoor.com/Overview/Working-at-Company-EI_IE123456.htm",
-    "crunchbase": "https://www.crunchbase.com/organization/company-name"
-  }
+  "description": "Brief company description focusing on what they do and their mission"
 }
 
 Calculate matchScore (0-100) by evaluating:
@@ -123,27 +129,36 @@ Calculate matchScore (0-100) by evaluating:
 3. Relevance to experience background
 4. Match with want-to-have preferences
 
-For externalLinks, provide accurate URLs if available. Include only links you can verify exist:
-- website: Company's main website
-- linkedin: LinkedIn company page
-- glassdoor: Glassdoor company profile
-- crunchbase: Crunchbase organization page
-
 Be accurate and base analysis on real company information. Return only valid JSON.`;
 }
 
 // Helper function to parse Anthropic response
 function parseAnthropicResponse(responseText: string) {
   try {
+    // Since we prefilled with '{', prepend it to complete the JSON
+    const fullJson = '{' + responseText;
+
     // Clean up potential markdown formatting
-    const cleanedResponse = responseText
+    let cleanedResponse = fullJson
       .replace(/```json\n?/g, '')
       .replace(/```\n?/g, '')
       .trim();
 
-    return JSON.parse(cleanedResponse);
+    // Remove markdown bold/italic from JSON keys (e.g., **"key"** -> "key")
+    cleanedResponse = cleanedResponse.replace(/\*\*"([^"]+)"\*\*/g, '"$1"');
+    cleanedResponse = cleanedResponse.replace(/\*"([^"]+)"\*/g, '"$1"');
+
+    const parsed = JSON.parse(cleanedResponse);
+
+    // Remove any externalLinks that Claude might have added (we generate these separately)
+    if (parsed.externalLinks) {
+      delete parsed.externalLinks;
+    }
+
+    return parsed;
   } catch (error) {
     console.error('Failed to parse Claude response:', responseText);
+    console.error('Parse error:', error);
     throw new Error('Invalid JSON response from Claude API');
   }
 }
@@ -157,4 +172,37 @@ function calculateAnthropicCost(inputTokens: number, outputTokens: number): numb
   const inputCost = (inputTokens / 1000000) * inputPrice;
   const outputCost = (outputTokens / 1000000) * outputPrice;
   return inputCost + outputCost;
+}
+
+// Helper function to generate search URLs for company platforms
+async function searchCompanyUrls(companyName: string, websiteUrl?: string): Promise<Record<string, string> | null> {
+  try {
+    console.log(`🔍 Generating search URLs for ${companyName}...`);
+
+    // Call our internal endpoint to generate Google search URLs
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/llm/perplexity/search-company-urls`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ companyName, websiteUrl })
+    });
+
+    if (!response.ok) {
+      console.error('URL generation failed:', response.status);
+      return null;
+    }
+
+    const result = await response.json();
+
+    if (result.success && result.data) {
+      console.log('✅ Generated URLs:', result.data);
+      return result.data;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error generating company URLs:', error);
+    return null;
+  }
 }
