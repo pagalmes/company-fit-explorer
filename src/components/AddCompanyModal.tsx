@@ -204,7 +204,8 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
         color: getColorForScore(companyData.matchScore),
         angle: 0, // Will be set by positioning logic
         distance: 0, // Will be set by positioning logic
-        careerUrl: generateCareerUrl(companyData.name, companyPreview.domain)
+        careerUrl: generateCareerUrl(companyData.name, companyPreview.domain),
+        externalLinks: companyData.externalLinks
       };
 
       // Import positioning utilities
@@ -351,7 +352,10 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
       matchReasons: generateMatchReasons(preview, userCMF, isCMFEmpty),
       connections: [], // Will be populated by positioning logic
       connectionTypes: {},
-      description: preview.description || `${preview.name} is a technology company focused on innovation.`
+      description: preview.description || `${preview.name} is a technology company focused on innovation.`,
+      externalLinks: preview.domain ? {
+        website: `https://${preview.domain}`
+      } : undefined
     };
   }, []);
 

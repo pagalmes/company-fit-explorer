@@ -108,7 +108,13 @@ Provide a JSON response with this exact structure:
     "Company2": "Industry Partner",
     "Company3": "Similar Stage"
   },
-  "description": "Brief company description focusing on what they do and their mission"
+  "description": "Brief company description focusing on what they do and their mission",
+  "externalLinks": {
+    "website": "https://company.com",
+    "linkedin": "https://www.linkedin.com/company/company-name",
+    "glassdoor": "https://www.glassdoor.com/Overview/Working-at-Company-EI_IE123456.htm",
+    "crunchbase": "https://www.crunchbase.com/organization/company-name"
+  }
 }
 
 Calculate matchScore (0-100) by evaluating:
@@ -116,6 +122,12 @@ Calculate matchScore (0-100) by evaluating:
 2. Fit with target role and company stage
 3. Relevance to experience background
 4. Match with want-to-have preferences
+
+For externalLinks, provide accurate URLs if available. Include only links you can verify exist:
+- website: Company's main website
+- linkedin: LinkedIn company page
+- glassdoor: Glassdoor company profile
+- crunchbase: Crunchbase organization page
 
 Be accurate and base analysis on real company information. Return only valid JSON.`;
 }

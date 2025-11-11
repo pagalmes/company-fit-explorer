@@ -26,6 +26,12 @@ export interface Company {
   color: string;
   angle?: number;
   distance?: number;
+  externalLinks?: {
+    website?: string;
+    linkedin?: string;
+    glassdoor?: string;
+    crunchbase?: string;
+  };
 }
 
 export interface GraphData {

@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { Company } from '../types';
 import { CompanyDetailPanelProps } from '../types/watchlist';
 
@@ -173,7 +174,7 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
       {/* Content */}
       <div className="panel-content flex-1 overflow-auto p-6 space-y-6 bg-white/30 backdrop-blur-sm">
         {/* Company Info */}
-        <div>
+        <div className="pb-6 border-b border-slate-200/50">
           <h3 className="section-title text-lg font-semibold text-slate-800 mb-3">
             Company Info
           </h3>
@@ -202,7 +203,7 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
         </div>
 
         {/* Match Reasons */}
-        <div>
+        <div className="pb-6 border-b border-slate-200/50">
           <h3 className="section-title text-lg font-semibold text-slate-800 mb-3">
             Why This Match?
           </h3>
@@ -215,6 +216,72 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
             ))}
           </ul>
         </div>
+
+        {/* Research This Company */}
+        {selectedCompany.externalLinks && Object.keys(selectedCompany.externalLinks).length > 0 && (
+          <div className="pb-6 border-b border-slate-200/50">
+            <div className="flex items-center space-x-2 mb-3">
+              <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              <h3 className="section-title text-lg font-semibold text-slate-800">
+                Research This Company
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {selectedCompany.externalLinks.website && (
+                <a
+                  href={selectedCompany.externalLinks.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2 px-3 py-2 bg-white/70 hover:bg-white border border-blue-200/60 hover:border-blue-400 rounded-lg transition-all text-sm text-slate-700 hover:text-blue-700 font-medium"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                  </svg>
+                  <span>Website</span>
+                </a>
+              )}
+
+              {selectedCompany.externalLinks.linkedin && (
+                <a
+                  href={selectedCompany.externalLinks.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2 px-3 py-2 bg-white/70 hover:bg-white border border-slate-200 hover:border-[#0A66C2] rounded-lg transition-all text-sm text-slate-700 hover:text-[#0A66C2] font-medium"
+                >
+                  <Image src="/icons/linkedin.svg" alt="LinkedIn" width={16} height={16} className="flex-shrink-0" style={{ filter: 'brightness(0) saturate(100%) invert(27%) sepia(93%) saturate(2793%) hue-rotate(196deg) brightness(95%) contrast(101%)' }} />
+                  <span>LinkedIn</span>
+                </a>
+              )}
+
+              {selectedCompany.externalLinks.glassdoor && (
+                <a
+                  href={selectedCompany.externalLinks.glassdoor}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2 px-3 py-2 bg-white/70 hover:bg-white border border-slate-200 hover:border-[#0CAA41] rounded-lg transition-all text-sm text-slate-700 hover:text-[#0CAA41] font-medium"
+                >
+                  <Image src="/icons/glassdoor.svg" alt="Glassdoor" width={16} height={16} className="flex-shrink-0" style={{ filter: 'brightness(0) saturate(100%) invert(50%) sepia(96%) saturate(1707%) hue-rotate(102deg) brightness(95%) contrast(101%)' }} />
+                  <span>Glassdoor</span>
+                </a>
+              )}
+
+              {selectedCompany.externalLinks.crunchbase && (
+                <a
+                  href={selectedCompany.externalLinks.crunchbase}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2 px-3 py-2 bg-white/70 hover:bg-white border border-slate-200 hover:border-[#0288D1] rounded-lg transition-all text-sm text-slate-700 hover:text-[#0288D1] font-medium"
+                >
+                  <Image src="/icons/crunchbase.svg" alt="Crunchbase" width={16} height={16} className="flex-shrink-0" style={{ filter: 'brightness(0) saturate(100%) invert(42%) sepia(84%) saturate(1261%) hue-rotate(171deg) brightness(94%) contrast(94%)' }} />
+                  <span>Crunchbase</span>
+                </a>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Connected Companies */}
         {connectedCompanies.length > 0 && (

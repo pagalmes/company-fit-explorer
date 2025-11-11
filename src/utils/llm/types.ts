@@ -53,6 +53,12 @@ export interface CompanyAnalysisResponse {
   connections: string[];
   connectionTypes: Record<string, string>;
   description?: string;
+  externalLinks?: {
+    website?: string;
+    linkedin?: string;
+    glassdoor?: string;
+    crunchbase?: string;
+  };
 }
 
 export interface LLMResponse {
