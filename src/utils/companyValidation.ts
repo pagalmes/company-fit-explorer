@@ -72,15 +72,41 @@ export const getCompanyPreview = async (companyName: string): Promise<CompanyPre
 
 /**
  * Generate intelligent domain guesses based on company name
+ * If the input looks like a domain/URL, use it directly
  */
 const generateDomainGuess = (companyName: string): string => {
-  const normalized = companyName
-    .toLowerCase()
+  const trimmed = companyName.trim().toLowerCase();
+
+  // Check if it looks like a URL (contains http:// or https://)
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    try {
+      const url = new URL(trimmed);
+      return url.hostname;
+    } catch {
+      // If URL parsing fails, continue with normal logic
+    }
+  }
+
+  // Check if it looks like a domain (contains a dot and valid TLD)
+  const domainPattern = /^[a-z0-9][a-z0-9-]*\.[a-z]{2,}$/i;
+  if (domainPattern.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Check if it contains a space followed by a common TLD (e.g., "credo ai" -> might be credo.ai)
+  const spacedDomainPattern = /^([a-z0-9][a-z0-9-]*)\s+(ai|io|co|app|dev|tech)$/i;
+  const spacedMatch = trimmed.match(spacedDomainPattern);
+  if (spacedMatch) {
+    return `${spacedMatch[1]}.${spacedMatch[2]}`;
+  }
+
+  // Otherwise, generate a guess by normalizing the name
+  const normalized = trimmed
     .replace(/[^a-z0-9\s]/g, '') // Remove special characters
     .replace(/\s+/g, '') // Remove spaces
     .replace(/^the\s+/i, '') // Remove "the" prefix
     .replace(/\s+(inc|llc|corp|ltd|limited|company|co)$/i, ''); // Remove business suffixes
-  
+
   return `${normalized}.com`;
 };
 
