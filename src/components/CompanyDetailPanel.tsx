@@ -345,7 +345,22 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
           >
             View Jobs at {selectedCompany.name}
           </button>
-          <button 
+          {/* My Connections Button */}
+          <button
+            onClick={() => {
+              const companyName = encodeURIComponent(selectedCompany.name);
+              window.open(`https://www.linkedin.com/search/results/people/?keywords=${companyName}`, '_blank', 'noopener,noreferrer');
+            }}
+            className="w-full bg-white/60 text-slate-700 border border-slate-200/50 py-2 px-4 rounded-lg hover:bg-white/80 transition-colors flex items-center justify-center space-x-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span>My Connections</span>
+          </button>
+
+          {/* Save to Watchlist Button */}
+          <button
             className={`w-full py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2 ${
               isInWatchlist && isInWatchlist(selectedCompany.id)
                 ? 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'
@@ -353,7 +368,7 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
             }`}
             onClick={() => onToggleWatchlist && onToggleWatchlist(selectedCompany.id)}
           >
-            <svg 
+            <svg
               className={`w-5 h-5 ${
                 isInWatchlist && isInWatchlist(selectedCompany.id)
                   ? 'fill-current'
@@ -361,9 +376,9 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
               }`}
               viewBox="0 0 24 24"
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
                 strokeWidth={isInWatchlist && isInWatchlist(selectedCompany.id) ? 0 : 2}
                 d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
               />
@@ -371,9 +386,6 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
             <span>
               {isInWatchlist && isInWatchlist(selectedCompany.id) ? 'Remove from Watchlist' : 'Save to Watchlist'}
             </span>
-          </button>
-          <button className="w-full bg-white/60 text-slate-700 border border-slate-200/50 py-2 px-4 rounded-lg hover:bg-white/80 transition-colors">
-            Learn More
           </button>
           
           {/* Remove Company Button */}
