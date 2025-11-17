@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Company } from '../types';
 import { CompanyDetailPanelProps } from '../types/watchlist';
+import { getExternalLinks } from '../utils/externalLinks';
 
 /**
  * CompanyDetailPanel Component
@@ -111,6 +112,9 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
 
   const connectedCompanies = getConnectedCompanies();
 
+  // Get external links (existing or generated on-the-fly)
+  const externalLinks = getExternalLinks(selectedCompany);
+
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Header */}
@@ -218,7 +222,7 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
         </div>
 
         {/* Research This Company */}
-        {selectedCompany.externalLinks && Object.keys(selectedCompany.externalLinks).length > 0 && (
+        {externalLinks && Object.keys(externalLinks).length > 0 && (
           <div className="pb-6 border-b border-slate-200/50">
             <div className="flex items-center space-x-2 mb-3">
               <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,9 +234,9 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              {selectedCompany.externalLinks.website && (
+              {externalLinks.website && (
                 <a
-                  href={selectedCompany.externalLinks.website}
+                  href={externalLinks.website}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center space-x-2 px-3 py-2 bg-white/70 hover:bg-white border border-blue-200/60 hover:border-blue-400 rounded-lg transition-all text-sm text-slate-700 hover:text-blue-700 font-medium"
@@ -244,9 +248,9 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
                 </a>
               )}
 
-              {selectedCompany.externalLinks.linkedin && (
+              {externalLinks.linkedin && (
                 <a
-                  href={selectedCompany.externalLinks.linkedin}
+                  href={externalLinks.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center space-x-2 px-3 py-2 bg-white/70 hover:bg-white border border-slate-200 hover:border-[#0A66C2] rounded-lg transition-all text-sm text-slate-700 hover:text-[#0A66C2] font-medium"
@@ -256,9 +260,9 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
                 </a>
               )}
 
-              {selectedCompany.externalLinks.glassdoor && (
+              {externalLinks.glassdoor && (
                 <a
-                  href={selectedCompany.externalLinks.glassdoor}
+                  href={externalLinks.glassdoor}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center space-x-2 px-3 py-2 bg-white/70 hover:bg-white border border-slate-200 hover:border-[#0CAA41] rounded-lg transition-all text-sm text-slate-700 hover:text-[#0CAA41] font-medium"
@@ -268,9 +272,9 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
                 </a>
               )}
 
-              {selectedCompany.externalLinks.crunchbase && (
+              {externalLinks.crunchbase && (
                 <a
-                  href={selectedCompany.externalLinks.crunchbase}
+                  href={externalLinks.crunchbase}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center space-x-2 px-3 py-2 bg-white/70 hover:bg-white border border-slate-200 hover:border-[#0288D1] rounded-lg transition-all text-sm text-slate-700 hover:text-[#0288D1] font-medium"
