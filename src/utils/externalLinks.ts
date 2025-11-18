@@ -76,11 +76,52 @@ function generateGoogleSearchUrl(companyName: string, platformName: string): str
  * @returns External links (existing or generated)
  */
 export function getExternalLinks(company: Company): ExternalLinks {
-  // If company already has external links, use them
-  if (company.externalLinks && Object.keys(company.externalLinks).length > 0) {
-    return company.externalLinks;
-  }
+  const companyName = company.name;
 
-  // Otherwise, generate them on-the-fly
-  return generateExternalLinks(company);
+  // Always generate LinkedIn/Glassdoor/Crunchbase
+  const generatedLinks = {
+    linkedin: generateGoogleSearchUrl(companyName, 'LinkedIn'),
+    glassdoor: generateGoogleSearchUrl(companyName, 'Glassdoor'),
+    crunchbase: generateGoogleSearchUrl(companyName, 'Crunchbase')
+  };
+
+  // Use stored website if available, otherwise try to extract from careerUrl
+  const website = company.externalLinks?.website || extractWebsiteFromCareerUrl(company.careerUrl);
+
+  return {
+    website,
+    ...generatedLinks
+  };
+}
+
+/**
+ * Extract website URL from career URL
+ */
+function extractWebsiteFromCareerUrl(careerUrl?: string): string | undefined {
+  if (!careerUrl) return undefined;
+
+  try {
+    const url = new URL(careerUrl);
+    const hostname = url.hostname;
+    const parts = hostname.split('.');
+
+    // Get the last 2 parts (domain.tld) or 3 for .co.uk style TLDs
+    let rootDomain: string;
+    if (parts.length >= 2) {
+      const secondLevel = parts[parts.length - 2];
+
+      // Handle multi-part TLDs like .co.uk, .com.au, etc.
+      if (['co', 'com', 'org', 'net', 'gov', 'edu', 'ac'].includes(secondLevel) && parts.length >= 3) {
+        rootDomain = parts.slice(-3).join('.');
+      } else {
+        rootDomain = parts.slice(-2).join('.');
+      }
+    } else {
+      rootDomain = hostname;
+    }
+
+    return `https://${rootDomain}`;
+  } catch {
+    return undefined;
+  }
 }

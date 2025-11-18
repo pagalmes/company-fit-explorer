@@ -73,8 +73,8 @@ async function fetchExternalLinks(companyName: string, careerUrl: string) {
         // If URL parsing fails, websiteUrl remains undefined
       }
 
+      // Only return website URL - LinkedIn/Glassdoor/Crunchbase generated on-the-fly
       return {
-        ...result.data,
         website: websiteUrl || result.data.website
       };
     }
@@ -123,12 +123,7 @@ async function migrateExternalLinks() {
     if (externalLinks) {
       company.externalLinks = externalLinks;
       updatedCount++;
-      console.log(`  ✅ Added external links:`, {
-        website: externalLinks.website ? '✓' : '✗',
-        linkedin: externalLinks.linkedin ? '✓' : '✗',
-        glassdoor: externalLinks.glassdoor ? '✓' : '✗',
-        crunchbase: externalLinks.crunchbase ? '✓' : '✗'
-      });
+      console.log(`  ✅ Added website: ${externalLinks.website || '(none)'}`);
     } else {
       failedCount++;
       console.log(`  ❌ Failed to fetch links`);

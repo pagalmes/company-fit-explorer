@@ -43,7 +43,11 @@
       "employees": "~6800",
       "remote": "Live and Work Anywhere - fully remote",
       "openRoles": 3,
-      "connections": [5, 11, 2],
+      "connections": [
+        5,
+        11,
+        2
+      ],
       "connectionTypes": {
         "2": "People-First Culture",
         "5": "Marketplace Model",
@@ -57,7 +61,13 @@
       ],
       "color": "#10B981",
       "angle": 0,
-      "distance": 75
+      "distance": 75,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=Airbnb%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=Airbnb%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=Airbnb%20on%20Crunchbase",
+        "website": "https://airbnb.com"
+      }
     },
     {
       "id": 2,
@@ -71,7 +81,11 @@
       "employees": "~8000",
       "remote": "Hybrid-friendly with flexible remote",
       "openRoles": 1,
-      "connections": [1, 13, 4],
+      "connections": [
+        1,
+        13,
+        4
+      ],
       "connectionTypes": {
         "1": "Growth Culture",
         "4": "Research Maturity",
@@ -85,7 +99,13 @@
       ],
       "color": "#10B981",
       "angle": 30,
-      "distance": 80
+      "distance": 80,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=HubSpot%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=HubSpot%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=HubSpot%20on%20Crunchbase",
+        "website": "https://hubspot.com"
+      }
     },
     {
       "id": 3,
@@ -99,7 +119,11 @@
       "employees": "~5000",
       "remote": "Hybrid with flexible remote",
       "openRoles": 2,
-      "connections": [9, 4, 2],
+      "connections": [
+        9,
+        4,
+        2
+      ],
       "connectionTypes": {
         "2": "High Growth",
         "4": "Research Excellence",
@@ -113,7 +137,13 @@
       ],
       "color": "#10B981",
       "angle": 60,
-      "distance": 85
+      "distance": 85,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=The%20Trade%20Desk%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=The%20Trade%20Desk%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=The%20Trade%20Desk%20on%20Crunchbase",
+        "website": "https://thetradedesk.com"
+      }
     },
     {
       "id": 4,
@@ -127,7 +157,11 @@
       "employees": "~1200",
       "remote": "Hybrid model with SF office access",
       "openRoles": 1,
-      "connections": [2, 5, 12],
+      "connections": [
+        2,
+        5,
+        12
+      ],
       "connectionTypes": {
         "2": "Design Platform",
         "5": "Collaboration Tools",
@@ -141,7 +175,13 @@
       ],
       "color": "#10B981",
       "angle": 90,
-      "distance": 90
+      "distance": 90,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=Figma%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=Figma%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=Figma%20on%20Crunchbase",
+        "website": "https://figma.com"
+      }
     },
     {
       "id": 5,
@@ -155,7 +195,11 @@
       "employees": "~800",
       "remote": "Hybrid with quarterly gatherings",
       "openRoles": 1,
-      "connections": [1, 4, 6],
+      "connections": [
+        1,
+        4,
+        6
+      ],
       "connectionTypes": {
         "1": "Platform Strategy",
         "4": "B2B Focus",
@@ -169,7 +213,13 @@
       ],
       "color": "#F59E0B",
       "angle": 120,
-      "distance": 95
+      "distance": 95,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=Retool%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=Retool%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=Retool%20on%20Crunchbase",
+        "website": "https://retool.com"
+      }
     },
     {
       "id": 6,
@@ -183,7 +233,11 @@
       "employees": "~150",
       "remote": "Remote-friendly with NYC hub",
       "openRoles": 1,
-      "connections": [5, 8, 14],
+      "connections": [
+        5,
+        8,
+        14
+      ],
       "connectionTypes": {
         "5": "B2B Platform",
         "8": "Data Research",
@@ -197,7 +251,13 @@
       ],
       "color": "#F59E0B",
       "angle": 150,
-      "distance": 100
+      "distance": 100,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=Clay%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=Clay%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=Clay%20on%20Crunchbase",
+        "website": "https://clay.com"
+      }
     },
     {
       "id": 7,
@@ -211,7 +271,11 @@
       "employees": "~2000",
       "remote": "Remote-first with optional office",
       "openRoles": 1,
-      "connections": [10, 16, 3],
+      "connections": [
+        10,
+        16,
+        3
+      ],
       "connectionTypes": {
         "3": "Growth Stage",
         "10": "HealthTech",
@@ -225,7 +289,13 @@
       ],
       "color": "#10B981",
       "angle": 180,
-      "distance": 92
+      "distance": 92,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=Hinge%20Health%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=Hinge%20Health%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=Hinge%20Health%20on%20Crunchbase",
+        "website": "https://hingehealth.com"
+      }
     },
     {
       "id": 8,
@@ -239,7 +309,11 @@
       "employees": "~80",
       "remote": "Fully remote",
       "openRoles": 0,
-      "connections": [6, 5, 4],
+      "connections": [
+        6,
+        5,
+        4
+      ],
       "connectionTypes": {
         "4": "Quality Culture",
         "5": "Developer Focus",
@@ -253,7 +327,13 @@
       ],
       "color": "#F59E0B",
       "angle": 210,
-      "distance": 105
+      "distance": 105,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=Linear%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=Linear%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=Linear%20on%20Crunchbase",
+        "website": "https://linear.app"
+      }
     },
     {
       "id": 9,
@@ -267,7 +347,11 @@
       "employees": "~500",
       "remote": "Remote-friendly with SF office",
       "openRoles": 1,
-      "connections": [7, 10, 1],
+      "connections": [
+        7,
+        10,
+        1
+      ],
       "connectionTypes": {
         "1": "People-First",
         "7": "HealthTech",
@@ -281,7 +365,13 @@
       ],
       "color": "#F59E0B",
       "angle": 240,
-      "distance": 110
+      "distance": 110,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=Oura%20Health%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=Oura%20Health%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=Oura%20Health%20on%20Crunchbase",
+        "website": "https://ouraring.com"
+      }
     },
     {
       "id": 10,
@@ -295,7 +385,11 @@
       "employees": "~11000",
       "remote": "Hybrid with San Diego headquarters",
       "openRoles": 1,
-      "connections": [7, 9, 3],
+      "connections": [
+        7,
+        9,
+        3
+      ],
       "connectionTypes": {
         "3": "Platform Integration",
         "7": "HealthTech",
@@ -309,7 +403,13 @@
       ],
       "color": "#F59E0B",
       "angle": 270,
-      "distance": 118
+      "distance": 118,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=Dexcom%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=Dexcom%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=Dexcom%20on%20Crunchbase",
+        "website": "https://dexcom.com"
+      }
     },
     {
       "id": 11,
@@ -323,7 +423,11 @@
       "employees": "~2500",
       "remote": "Global remote-friendly",
       "openRoles": 1,
-      "connections": [1, 18, 2],
+      "connections": [
+        1,
+        18,
+        2
+      ],
       "connectionTypes": {
         "1": "Marketplace Model",
         "2": "B2B/B2C Platform",
@@ -337,7 +441,13 @@
       ],
       "color": "#F59E0B",
       "angle": 300,
-      "distance": 112
+      "distance": 112,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=Udemy%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=Udemy%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=Udemy%20on%20Crunchbase",
+        "website": "https://udemy.com"
+      }
     },
     {
       "id": 12,
@@ -351,7 +461,11 @@
       "employees": "~200",
       "remote": "Fully remote with global coverage",
       "openRoles": 1,
-      "connections": [4, 13, 2],
+      "connections": [
+        4,
+        13,
+        2
+      ],
       "connectionTypes": {
         "2": "Remote Culture",
         "4": "Research Platform",
@@ -365,7 +479,13 @@
       ],
       "color": "#10B981",
       "angle": 330,
-      "distance": 88
+      "distance": 88,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=Maze%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=Maze%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=Maze%20on%20Crunchbase",
+        "website": "https://maze.co"
+      }
     },
     {
       "id": 13,
@@ -379,7 +499,11 @@
       "employees": "~5000",
       "remote": "Flexible remote across US",
       "openRoles": 1,
-      "connections": [2, 12, 5],
+      "connections": [
+        2,
+        12,
+        5
+      ],
       "connectionTypes": {
         "2": "B2B Platform",
         "5": "Customer Focus",
@@ -393,7 +517,13 @@
       ],
       "color": "#F59E0B",
       "angle": 45,
-      "distance": 120
+      "distance": 120,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=Gusto%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=Gusto%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=Gusto%20on%20Crunchbase",
+        "website": "https://gusto.com"
+      }
     },
     {
       "id": 14,
@@ -407,7 +537,11 @@
       "employees": "~3500",
       "remote": "Hybrid with remote capabilities",
       "openRoles": 1,
-      "connections": [7, 10, 6],
+      "connections": [
+        7,
+        10,
+        6
+      ],
       "connectionTypes": {
         "6": "Research Innovation",
         "7": "HealthTech",
@@ -421,7 +555,13 @@
       ],
       "color": "#F59E0B",
       "angle": 75,
-      "distance": 118
+      "distance": 118,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=Oscar%20Health%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=Oscar%20Health%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=Oscar%20Health%20on%20Crunchbase",
+        "website": "https://hioscar.com"
+      }
     },
     {
       "id": 15,
@@ -435,7 +575,11 @@
       "employees": "~100",
       "remote": "Fully remote US",
       "openRoles": 1,
-      "connections": [1, 6, 8],
+      "connections": [
+        1,
+        6,
+        8
+      ],
       "connectionTypes": {
         "1": "Marketplace Model",
         "6": "B2B Platform",
@@ -449,7 +593,13 @@
       ],
       "color": "#F59E0B",
       "angle": 103,
-      "distance": 115
+      "distance": 115,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=Vetcove%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=Vetcove%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=Vetcove%20on%20Crunchbase",
+        "website": "https://vetcove.com"
+      }
     },
     {
       "id": 16,
@@ -463,7 +613,11 @@
       "employees": "~400",
       "remote": "Remote with Sr. UX Researcher role",
       "openRoles": 1,
-      "connections": [7, 12, 1],
+      "connections": [
+        7,
+        12,
+        1
+      ],
       "connectionTypes": {
         "1": "Consumer Platform",
         "7": "Behavioral Research",
@@ -477,7 +631,13 @@
       ],
       "color": "#F59E0B",
       "angle": 130,
-      "distance": 120
+      "distance": 120,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=Hinge%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=Hinge%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=Hinge%20on%20Crunchbase",
+        "website": "https://hinge.co"
+      }
     },
     {
       "id": 17,
@@ -491,7 +651,11 @@
       "employees": "~1200",
       "remote": "Remote-friendly distributed team",
       "openRoles": 1,
-      "connections": [1, 15, 11],
+      "connections": [
+        1,
+        15,
+        11
+      ],
       "connectionTypes": {
         "1": "Marketplace Model",
         "11": "Global Scale",
@@ -505,7 +669,13 @@
       ],
       "color": "#6B7280",
       "angle": 165,
-      "distance": 125
+      "distance": 125,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=ShopBack%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=ShopBack%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=ShopBack%20on%20Crunchbase",
+        "website": "https://shopback.com"
+      }
     },
     {
       "id": 18,
@@ -519,7 +689,11 @@
       "employees": "~15000",
       "remote": "Hybrid with LA office presence",
       "openRoles": 0,
-      "connections": [11, 1, 4],
+      "connections": [
+        11,
+        1,
+        4
+      ],
       "connectionTypes": {
         "1": "Consumer Research",
         "4": "Experience Design",
@@ -533,7 +707,13 @@
       ],
       "color": "#F59E0B",
       "angle": 195,
-      "distance": 122
+      "distance": 122,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=Netflix%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=Netflix%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=Netflix%20on%20Crunchbase",
+        "website": "https://netflix.com"
+      }
     },
     {
       "id": 19,
@@ -547,7 +727,11 @@
       "employees": "~29000",
       "remote": "Hybrid with Bay Area presence",
       "openRoles": 1,
-      "connections": [4, 2, 18],
+      "connections": [
+        4,
+        2,
+        18
+      ],
       "connectionTypes": {
         "2": "Research Excellence",
         "4": "Design Platform",
@@ -561,7 +745,13 @@
       ],
       "color": "#6B7280",
       "angle": 225,
-      "distance": 130
+      "distance": 130,
+      "externalLinks": {
+        "linkedin": "https://www.google.com/search?q=Adobe%20on%20LinkedIn",
+        "glassdoor": "https://www.google.com/search?q=Adobe%20on%20Glassdoor",
+        "crunchbase": "https://www.google.com/search?q=Adobe%20on%20Crunchbase",
+        "website": "https://adobe.com"
+      }
     }
   ],
   "addedCompanies": [
@@ -577,7 +767,11 @@
       "employees": "~800",
       "remote": "Remote-First",
       "openRoles": 2,
-      "connections": [5, 8, 12],
+      "connections": [
+        5,
+        8,
+        12
+      ],
       "connectionTypes": {
         "5": "B2B Platform",
         "8": "Workflow Tools",
@@ -714,8 +908,25 @@
       "careerUrl": "https://spacex.com/careers"
     }
   ],
-  "removedCompanyIds": [17, 19, 1005, 1004, 1003, 1002],
-  "watchlistCompanyIds": [3, 4, 7, 1001, 2, 12, 1, 11, 8],
+  "removedCompanyIds": [
+    17,
+    19,
+    1005,
+    1004,
+    1003,
+    1002
+  ],
+  "watchlistCompanyIds": [
+    3,
+    4,
+    7,
+    1001,
+    2,
+    12,
+    1,
+    11,
+    8
+  ],
   "lastSelectedCompanyId": null,
   "viewMode": "explore"
 }

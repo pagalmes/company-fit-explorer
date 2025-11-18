@@ -29,7 +29,11 @@
     "setup:supabase": "node scripts/setup-supabase.js",
     "db:migrate": "node scripts/setup-supabase.js",
     "db:reset": "echo 'This will reset your database. Are you sure?' && node scripts/setup-supabase.js --reset",
-    "migrate:external-links": "npx tsx scripts/migrate-external-links.ts"
+    "migrate:external-links": "npx tsx scripts/migrate-external-links.ts",
+    "migrate:supabase-links": "npx tsx scripts/migrate-supabase-external-links.ts",
+    "export:companies-csv": "npx tsx scripts/export-companies-csv.ts",
+    "import:companies-csv": "npx tsx scripts/import-companies-csv.ts",
+    "cleanup:supabase-links": "npx tsx scripts/cleanup-supabase-links.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",
