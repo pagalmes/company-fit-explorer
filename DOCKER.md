@@ -18,19 +18,35 @@ Both services communicate via a private Docker network (`app-network`).
 
 ## Quick Start
 
-### 1. Build the containers
+### 1. Ensure environment variables are set
+
+Make sure you have a `.env.local` file with your Supabase credentials:
 
 ```bash
-docker-compose build
+cp .env.example .env.local
+# Edit .env.local with your actual credentials
 ```
 
-### 2. Start the services
+### 2. Build and start the containers
+
+**Option A: Use the helper script (recommended)**
 
 ```bash
+./docker-rebuild.sh
+```
+
+**Option B: Manual build**
+
+```bash
+# Load environment variables and build
+export $(cat .env.local | grep -v '^#' | xargs)
+docker-compose build
 docker-compose up -d
 ```
 
 The `-d` flag runs the containers in detached mode (background).
+
+> **Important**: Environment variables must be loaded before building because Next.js bakes `NEXT_PUBLIC_*` variables into the client-side code at build time.
 
 ### 3. Verify the services are running
 
@@ -77,11 +93,22 @@ docker-compose restart
 
 ### Rebuild and restart after code changes
 
+**Recommended: Use the helper script**
+
 ```bash
+./docker-rebuild.sh
+```
+
+**Or manually:**
+
+```bash
+export $(cat .env.local | grep -v '^#' | xargs)
 docker-compose down
 docker-compose build
 docker-compose up -d
 ```
+
+> **Note**: Always load environment variables before building to ensure `NEXT_PUBLIC_*` variables are embedded in the client-side code.
 
 ## Environment Variables
 
@@ -99,6 +126,18 @@ The following environment variables are required (set them in your `.env` file):
 - `NEXT_PUBLIC_LLM_SERVER_URL` - Set to `http://llm-server:3002` (internal Docker network)
 
 ## Troubleshooting
+
+### "Supabase environment variables not found. Using mock client for build."
+
+This console error means the Next.js build didn't have access to your Supabase credentials. 
+
+**Solution**: Rebuild with environment variables:
+
+```bash
+./docker-rebuild.sh
+```
+
+This ensures `NEXT_PUBLIC_*` variables are embedded in the client-side JavaScript during the build.
 
 ### Port already in use
 
@@ -125,6 +164,7 @@ docker-compose logs <service-name>
 If you encounter issues, try a clean rebuild:
 
 ```bash
+export $(cat .env.local | grep -v '^#' | xargs)
 docker-compose down -v  # -v removes volumes
 docker-compose build --no-cache
 docker-compose up -d

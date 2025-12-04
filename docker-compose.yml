@@ -4,13 +4,16 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+        - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        - NEXT_PUBLIC_LLM_SERVER_URL=http://llm-server:3002
     ports:
       - "3000:3000"
     env_file:
       - .env.local
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_LLM_SERVER_URL=http://llm-server:3002
     depends_on:
       - llm-server
     networks:
