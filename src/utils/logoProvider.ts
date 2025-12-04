@@ -48,7 +48,7 @@ export const getCompanyLogo = (domain: string | undefined, companyName?: string)
  * This provides a consistent, professional-looking placeholder
  *
  * @param name - Company or domain name
- * @returns Fallback logo URL using ui-avatars.com
+ * @returns Fallback logo URL using proxied ui-avatars.com to avoid CORS issues
  */
 export const generateFallbackLogo = (name: string): string => {
   const initials = name
@@ -63,7 +63,10 @@ export const generateFallbackLogo = (name: string): string => {
   const colorIndex = name.length % colors.length;
   const backgroundColor = colors[colorIndex];
 
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=${backgroundColor}&color=fff&size=128&font-size=0.5&bold=true`;
+  // Use proxy API route with special 'avatar:' prefix to avoid CORS issues
+  // The proxy will detect this prefix and fetch from ui-avatars.com
+  const avatarParams = `name=${encodeURIComponent(initials)}&background=${backgroundColor}&color=fff&size=128&font-size=0.5&bold=true`;
+  return `/api/logo?domain=avatar:${encodeURIComponent(avatarParams)}`;
 };
 
 /**
@@ -74,7 +77,7 @@ export const generateFallbackLogo = (name: string): string => {
  * @returns True if this is a fallback logo
  */
 export const isFallbackLogo = (logoUrl: string): boolean => {
-  return logoUrl.includes('ui-avatars.com');
+  return logoUrl.includes('ui-avatars.com') || logoUrl.includes('domain=avatar:');
 };
 
 /**

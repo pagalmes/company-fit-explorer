@@ -6,6 +6,7 @@
  */
 
 import { Company } from '../types';
+import { generateFallbackLogo } from './logoProvider';
 
 interface CompanyStateData {
   companies: Company[];
@@ -225,7 +226,7 @@ const validateCompaniesData = (companies: any[]): Company[] => {
     if (typeof company.matchScore !== 'number' || company.matchScore < 0 || company.matchScore > 100) return false;
     
     // Fix missing optional fields
-    company.logo = company.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(company.name)}&background=random`;
+    company.logo = company.logo || generateFallbackLogo(company.name);
     company.industry = company.industry || 'Technology';
     company.stage = company.stage || 'Unknown';
     company.location = company.location || 'Unknown';

@@ -167,19 +167,31 @@ export async function POST(request: NextRequest) {
  * Migrate a single logo URL to the proxy format
  */
 function migrateLogoURL(logoUrl: string, careerUrl?: string, companyName?: string): string {
-  // Already using proxy format - no change needed
-  if (logoUrl.includes('/api/logo')) {
+  // Already using proxy format with avatar - no change needed
+  if (logoUrl.includes('/api/logo') && logoUrl.includes('domain=avatar:')) {
     return logoUrl;
   }
 
-  // Handle fallback avatars - try to get real logo from careerUrl domain
+  // Already using proxy format for regular logos - no change needed
+  if (logoUrl.includes('/api/logo') && !logoUrl.includes('ui-avatars.com')) {
+    return logoUrl;
+  }
+
+  // Handle direct ui-avatars.com URLs - convert to proxied format
   if (logoUrl.includes('ui-avatars.com')) {
     const domain = extractDomainFromCareerUrl(careerUrl);
     if (domain) {
       console.log(`Converting fallback to real logo for ${companyName}: ${domain}`);
       return `/api/logo?domain=${encodeURIComponent(domain)}`;
     }
-    // Keep fallback if no domain available
+    // Convert fallback avatar to proxied format to fix CORS issues
+    // Extract the query parameters from the old URL
+    const urlParams = logoUrl.split('?')[1];
+    if (urlParams) {
+      console.log(`Converting direct ui-avatars URL to proxy for ${companyName}`);
+      return `/api/logo?domain=avatar:${encodeURIComponent(urlParams)}`;
+    }
+    // If we can't parse, keep original (will be handled by fallback generator)
     return logoUrl;
   }
 

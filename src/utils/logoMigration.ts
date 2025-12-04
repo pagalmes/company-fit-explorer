@@ -10,16 +10,29 @@ import { Company } from '../types';
 
 /**
  * Migrate a single logo URL to the standardized proxy format
- * Handles Clearbit URLs, direct Logo.dev URLs, and normalizes all to use the proxy
+ * Handles Clearbit URLs, direct Logo.dev URLs, ui-avatars URLs, and normalizes all to use the proxy
  *
- * @param oldLogoUrl - Old logo URL (from Clearbit, Logo.dev, or other)
+ * @param oldLogoUrl - Old logo URL (from Clearbit, Logo.dev, ui-avatars, or other)
  * @param companyName - Company name for fallback
  * @returns Updated logo URL using the proxy format
  */
 export const migrateLogoURL = (oldLogoUrl: string, companyName?: string): string => {
-  // If already using the proxy format or is a fallback, no migration needed
-  if (oldLogoUrl.includes('/api/logo') || isFallbackLogo(oldLogoUrl)) {
+  // If already using the proxy format with avatar prefix, no migration needed
+  if (oldLogoUrl.includes('/api/logo') && oldLogoUrl.includes('domain=avatar:')) {
     return oldLogoUrl;
+  }
+
+  // If it's using the proxy format but not an avatar, check if we need to update
+  if (oldLogoUrl.includes('/api/logo') && !oldLogoUrl.includes('ui-avatars.com')) {
+    return oldLogoUrl;
+  }
+
+  // Convert direct ui-avatars.com URL to proxied format
+  // Format: https://ui-avatars.com/api/?name=...&background=...
+  if (oldLogoUrl.includes('ui-avatars.com')) {
+    console.log(`[Migration] Converting direct ui-avatars URL to proxy format for ${companyName}`);
+    // Use the fallback generator which now creates proxied URLs
+    return getCompanyLogo(undefined, companyName);
   }
 
   // Extract domain from Logo.dev URL

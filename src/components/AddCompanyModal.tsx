@@ -5,6 +5,7 @@ import { getCompanySuggestions, getPopularCompanies, CompanySuggestion } from '.
 import { getCompanyPreview, CompanyPreview, validateCompanyData } from '../utils/companyValidation';
 import { getColorForScore, generateCareerUrl } from '../utils/companyPositioning';
 import { llmService } from '../utils/llm/service';
+import { generateFallbackLogo } from '../utils/logoProvider';
 
 interface AddCompanyModalProps {
   isOpen: boolean;
@@ -190,7 +191,7 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
       const baseCompany: Company = {
         id: Date.now(), // Generate unique ID
         name: companyData.name,
-        logo: companyPreview.logo || `https://ui-avatars.com/api/?name=${companyData.name}&background=random`,
+        logo: companyPreview.logo || generateFallbackLogo(companyData.name),
         matchScore: companyData.matchScore,
         industry: companyData.industry,
         stage: companyData.stage,

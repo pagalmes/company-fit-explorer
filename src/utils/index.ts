@@ -15,6 +15,8 @@
  * @regressionProtection Prevents display formatting bugs and URL generation issues
  */
 
+import { generateFallbackLogo } from './logoProvider';
+
 /**
  * Formats currency amount with proper locale formatting
  * @example formatCurrency(1234.56) → "$1,234.56"
@@ -34,9 +36,9 @@ export const formatCompanyType = (type: string): string => {
 };
 
 /**
- * Generates fallback avatar URL for companies
- * @example getFallbackAvatar("OpenAI") → "https://ui-avatars.com/api/?name=OpenAI&background=random"
+ * Generates fallback avatar URL for companies using proxied ui-avatars.com
+ * @example getFallbackAvatar("OpenAI") → "/api/logo?domain=avatar:..."
  */
 export const getFallbackAvatar = (companyName: string): string => {
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&background=random`;
+  return generateFallbackLogo(companyName);
 };
