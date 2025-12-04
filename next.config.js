@@ -5,6 +5,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Enable standalone output for Docker
+  output: 'standalone',
+  
   // Explicitly set the output file tracing root to this directory
   // This fixes the multiple lockfiles warning by telling Next.js this is the project root
   outputFileTracingRoot: __dirname,
