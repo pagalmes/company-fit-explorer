@@ -29,24 +29,32 @@ cp .env.example .env.local
 
 ### 2. Build and start the containers
 
-**Option A: Use the helper script (recommended)**
+**Recommended: Use the helper script**
 
 ```bash
 ./docker-rebuild.sh
 ```
 
-**Option B: Manual build**
+This script automatically:
+- Creates a `.env` symlink (Docker Compose auto-loads this file)
+- Stops any running containers
+- Rebuilds with environment variables
+- Starts fresh containers
+
+**Manual alternative:**
 
 ```bash
-# Load environment variables and build
-export $(cat .env.local | grep -v '^#' | xargs)
+# Create .env symlink if it doesn't exist
+ln -s .env.local .env
+
+# Build and start
 docker-compose build
 docker-compose up -d
 ```
 
 The `-d` flag runs the containers in detached mode (background).
 
-> **Important**: Environment variables must be loaded before building because Next.js bakes `NEXT_PUBLIC_*` variables into the client-side code at build time.
+> **How it works**: Docker Compose automatically loads variables from `.env` for substitution in `docker-compose.yml`. We symlink `.env` to `.env.local` so your environment variables are automatically available during the build process.
 
 ### 3. Verify the services are running
 
@@ -102,13 +110,12 @@ docker-compose restart
 **Or manually:**
 
 ```bash
-export $(cat .env.local | grep -v '^#' | xargs)
 docker-compose down
 docker-compose build
 docker-compose up -d
 ```
 
-> **Note**: Always load environment variables before building to ensure `NEXT_PUBLIC_*` variables are embedded in the client-side code.
+The `.env` symlink ensures environment variables are always available.
 
 ## Environment Variables
 
@@ -164,7 +171,10 @@ docker-compose logs <service-name>
 If you encounter issues, try a clean rebuild:
 
 ```bash
-export $(cat .env.local | grep -v '^#' | xargs)
+# Ensure .env symlink exists
+ln -sf .env.local .env
+
+# Clean rebuild
 docker-compose down -v  # -v removes volumes
 docker-compose build --no-cache
 docker-compose up -d
