@@ -6,11 +6,10 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    env_file:
+      - .env.local
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
-      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
-      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
       - NEXT_PUBLIC_LLM_SERVER_URL=http://llm-server:3002
     depends_on:
       - llm-server
@@ -25,10 +24,11 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3002:3002"
+    env_file:
+      - .env.local
     environment:
       - NODE_ENV=production
       - PORT=3002
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     networks:
       - app-network
     restart: unless-stopped
