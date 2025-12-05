@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { Company } from '../types';
 import { CompanyDetailPanelProps } from '../types/watchlist';
@@ -34,6 +34,8 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
   viewMode,
   watchlistStats: _watchlistStats
 }) => {
+  const [isMatchReasonsExpanded, setIsMatchReasonsExpanded] = useState(false);
+
   if (!selectedCompany) {
     return (
       <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -211,14 +213,41 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
           <h3 className="section-title text-lg font-semibold text-slate-800 mb-3">
             Why This Match?
           </h3>
-          <ul className="space-y-2">
-            {(selectedCompany.matchReasons || []).map((reason, index) => (
-              <li key={index} className="flex items-start space-x-2 text-sm">
-                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full mt-2 flex-shrink-0"></div>
-                <span className="text-slate-700">{reason}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="relative">
+            <ul className="space-y-2">
+              {(selectedCompany.matchReasons || [])
+                .slice(0, isMatchReasonsExpanded ? undefined : 3)
+                .map((reason, index) => (
+                  <li key={index} className="flex items-start space-x-2 text-sm">
+                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <span className="text-slate-700">{reason}</span>
+                  </li>
+                ))}
+            </ul>
+
+            {/* Gradient fade overlay - only show when collapsed and there are more items */}
+            {!isMatchReasonsExpanded && (selectedCompany.matchReasons || []).length > 3 && (
+              <div
+                className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none"
+                style={{
+                  background: 'linear-gradient(to bottom, transparent 0%, rgba(248, 250, 252, 0.7) 50%, rgba(248, 250, 252, 0.98) 100%)'
+                }}
+              />
+            )}
+          </div>
+
+          {/* Show more/less button */}
+          {(selectedCompany.matchReasons || []).length > 3 && (
+            <div className="flex justify-center mt-3">
+              <button
+                onClick={() => setIsMatchReasonsExpanded(!isMatchReasonsExpanded)}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                aria-expanded={isMatchReasonsExpanded}
+              >
+                {isMatchReasonsExpanded ? 'Show less' : 'Show more'}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Research This Company */}
