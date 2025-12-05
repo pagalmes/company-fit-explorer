@@ -3,8 +3,9 @@ import { useState, useEffect } from 'react'
 import { createClientComponentClient } from '../../src/lib/supabase'
 import { useRouter } from 'next/navigation'
 import AuthWrapper from '../../src/components/AuthWrapper'
-import { Users, Plus, LogOut, Settings, Database, Trash2, FileUp } from 'lucide-react'
+import { Users, Plus, LogOut, Settings, Trash2, FileUp, Download, Eye } from 'lucide-react'
 import LLMSettingsModal from '../../src/components/LLMSettingsModal'
+import ImportDataModal from '../../src/components/ImportDataModal'
 import { llmService } from '../../src/utils/llm/service'
 
 // Force dynamic rendering for admin pages
@@ -18,11 +19,10 @@ export default function AdminPage() {
   const [inviteLoading, setInviteLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState<'success' | 'error'>('success')
-  const [importFile, setImportFile] = useState<File | null>(null)
-  const [selectedUserId, setSelectedUserId] = useState('')
-  const [importLoading, setImportLoading] = useState(false)
   const [showLLMSettings, setShowLLMSettings] = useState(false)
   const [llmConfigured, setLLMConfigured] = useState(false)
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<{ id: string; email: string } | null>(null)
 
   const router = useRouter()
 
@@ -93,63 +93,41 @@ export default function AdminPage() {
     router.push('/login')
   }
 
-  const handleImportData = async (userId: string) => {
-    // For now, we'll use the existing JSON data from your current app
-    // In a real scenario, you'd have a file upload or data import form
-    const sampleData = {
-      userProfile: {
-        id: "user-1",
-        name: "Demo User",
-        targetRole: "Software Engineer",
-        mustHaves: ["Remote work", "Good work-life balance", "Competitive salary"],
-        wantToHave: ["Startup environment", "Learning opportunities"],
-        experience: ["React", "TypeScript", "Node.js"],
-        targetCompanies: "Tech startups and established companies"
-      },
-      companies: [
-        {
-          id: 1,
-          name: "Example Corp",
-          industry: "Technology",
-          stage: "Late Stage",
-          matchScore: 85,
-          location: "San Francisco, CA",
-          employees: "500-1000",
-          remote: "Remote-Friendly",
-          openRoles: 5,
-          connections: [],
-          connectionTypes: {},
-          matchReasons: ["Great culture", "Competitive salary", "Remote work"],
-          color: "#10B981",
-          logo: "https://ui-avatars.com/api/?name=Example+Corp&background=10B981&color=fff"
-        }
-      ]
-    }
+  const handleImportData = (userId: string, userEmail: string) => {
+    setSelectedUser({ id: userId, email: userEmail })
+    setShowImportModal(true)
+  }
 
+  const handleExportData = async (userId: string, userEmail: string) => {
     try {
-      const response = await fetch('/api/admin/import-user-data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          userData: sampleData
-        })
-      })
-
-      const data = await response.json()
+      const response = await fetch(`/api/admin/export-user-data/${userId}`)
 
       if (response.ok) {
-        setMessage('Sample data imported successfully!')
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${userEmail.split('@')[0]}-companies-${new Date().toISOString().split('T')[0]}.json`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+        setMessage('Data exported successfully!')
         setMessageType('success')
-        fetchUsers()
       } else {
-        setMessage(data.error)
+        const data = await response.json()
+        setMessage(data.error || 'Failed to export data')
         setMessageType('error')
       }
     } catch (error) {
-      setMessage('Failed to import data')
+      setMessage('Failed to export data')
       setMessageType('error')
     }
+  }
+
+  const handleViewAsUser = (userId: string) => {
+    const viewUrl = `/?viewAsUserId=${userId}`
+    window.open(viewUrl, '_blank')
   }
 
   const handleDeleteUser = async (userId: string, userEmail: string) => {
@@ -178,61 +156,6 @@ export default function AdminPage() {
     }
   }
 
-  const handleImportCompanies = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!importFile || !selectedUserId) {
-      setMessage('Please select a file and user')
-      setMessageType('error')
-      return
-    }
-
-    setImportLoading(true)
-    setMessage('')
-
-    try {
-      // Read the file content
-      const fileContent = await importFile.text()
-      
-      // Try to parse as JSON first (simplest approach)
-      let companiesData
-      try {
-        companiesData = JSON.parse(fileContent)
-      } catch (parseError) {
-        setMessage('Invalid JSON format. Please provide a valid JSON file with userProfile and companies fields.')
-        setMessageType('error')
-        setImportLoading(false)
-        return
-      }
-
-      const response = await fetch('/api/admin/import-user-companies', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: selectedUserId,
-          companiesData: companiesData
-        })
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        setMessage(data.message)
-        setMessageType('success')
-        setImportFile(null)
-        setSelectedUserId('')
-        fetchUsers()
-      } else {
-        setMessage(data.error)
-        setMessageType('error')
-      }
-    } catch (error) {
-      setMessage('Failed to import companies data: ' + (error instanceof Error ? error.message : 'Unknown error'))
-      setMessageType('error')
-    } finally {
-      setImportLoading(false)
-    }
-  }
 
   return (
     <AuthWrapper requireAdmin={true}>
@@ -346,73 +269,6 @@ export default function AdminPage() {
             </form>
           </div>
 
-          {/* Import Companies Data */}
-          <div className="bg-white/60 backdrop-blur-sm rounded-xl shadow-lg border border-blue-200/40 p-6">
-            <div className="flex items-center space-x-3 mb-6">
-              <FileUp className="w-6 h-6 text-green-600" />
-              <h2 className="text-xl font-semibold text-slate-900">Import Companies Data</h2>
-            </div>
-            
-            <form onSubmit={handleImportCompanies} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Select User
-                  </label>
-                  <select
-                    value={selectedUserId}
-                    onChange={(e) => setSelectedUserId(e.target.value)}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/90"
-                    required
-                  >
-                    <option value="">Choose a user...</option>
-                    {users.map((user: any) => (
-                      <option key={user.id} value={user.id}>
-                        {user.email} ({user.full_name || 'No name'})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Companies JSON File
-                  </label>
-                  <input
-                    type="file"
-                    accept=".json,.ts,.js"
-                    onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/90 file:mr-4 file:py-1 file:px-4 file:rounded-lg file:border-0 file:text-sm file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100"
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div className="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg">
-                <p className="font-medium mb-1">Expected JSON format (UserExplorationState):</p>
-                <code className="block text-xs">
-                  {`{"id": "user-id", "name": "User Name", "cmf": {"name": "...", "targetRole": "...", "mustHaves": [...], "wantToHave": [...], "experience": [...], "targetCompanies": "..."}, "baseCompanies": [...], "addedCompanies": [...], "watchlistCompanyIds": [...], "removedCompanyIds": [...], "viewMode": "explore"}`}
-                </code>
-                <p className="text-xs text-slate-400 mt-2">
-                  {`Also supports legacy format: {"userProfile": {...}, "companies": [...], ...}`}
-                </p>
-              </div>
-              
-              <button
-                type="submit"
-                disabled={importLoading}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 mt-4 w-full"
-                style={{ 
-                  background: 'linear-gradient(to right, rgb(59 130 246), rgb(79 70 229))',
-                  color: 'white',
-                  zIndex: 10
-                }}
-              >
-                {importLoading ? 'Importing...' : 'Import Data'}
-              </button>
-            </form>
-          </div>
-
           {/* Users List */}
           <div className="bg-white/60 backdrop-blur-sm rounded-xl shadow-lg border border-blue-200/40 p-6">
             <div className="flex items-center space-x-3 mb-6">
@@ -466,11 +322,25 @@ export default function AdminPage() {
                           {user.role !== 'admin' && (
                             <div className="flex items-center space-x-2">
                               <button
-                                onClick={() => handleImportData(user.id)}
+                                onClick={() => handleImportData(user.id, user.email)}
                                 className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
-                                title="Import Sample Data"
+                                title="Import Data"
                               >
-                                <Database className="w-4 h-4" />
+                                <FileUp className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleExportData(user.id, user.email)}
+                                className="p-1 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors"
+                                title="Export Data"
+                              >
+                                <Download className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleViewAsUser(user.id)}
+                                className="p-1 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded transition-colors"
+                                title="View as User"
+                              >
+                                <Eye className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleDeleteUser(user.id, user.email)}
@@ -506,6 +376,24 @@ export default function AdminPage() {
               setLLMConfigured(llmService.isConfigured())
               setMessage('LLM settings updated successfully')
               setMessageType('success')
+            }}
+          />
+        )}
+
+        {/* Import Data Modal */}
+        {showImportModal && selectedUser && (
+          <ImportDataModal
+            isOpen={showImportModal}
+            onClose={() => {
+              setShowImportModal(false)
+              setSelectedUser(null)
+            }}
+            userId={selectedUser.id}
+            userEmail={selectedUser.email}
+            onImportSuccess={() => {
+              setMessage('Data imported successfully!')
+              setMessageType('success')
+              fetchUsers()
             }}
           />
         )}

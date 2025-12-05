@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
 
 // Get user's company data and preferences
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   // Check if Supabase is configured
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     console.log('🔧 Supabase not configured, returning no data (will use defaults)');
@@ -42,7 +42,7 @@ export async function GET(_request: NextRequest) {
 
   // Get the authenticated user
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  
+
   if (authError || !user) {
     console.log('🔐 No authenticated user found, returning unauthenticated status');
     return NextResponse.json({
@@ -59,12 +59,36 @@ export async function GET(_request: NextRequest) {
 
   console.log('🔐 Authenticated user found:', user.email);
 
+  // Check if this is an admin viewing as another user
+  const { searchParams } = new URL(request.url);
+  const viewAsUserId = searchParams.get('viewAsUserId');
+
+  let targetUserId = user.id;
+  let isViewingAsUser = false;
+
+  if (viewAsUserId) {
+    // Verify the current user is an admin
+    const { data: currentUserProfile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (currentUserProfile?.role === 'admin') {
+      console.log('🔍 Admin viewing as user:', viewAsUserId);
+      targetUserId = viewAsUserId;
+      isViewingAsUser = true;
+    } else {
+      console.warn('⚠️ Non-admin user attempted to view as another user');
+    }
+  }
+
   try {
-    // Get THIS user's company data
+    // Get target user's company data (could be current user or viewed user)
     const { data: companyData, error: companyError } = await supabase
       .from('user_company_data')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', targetUserId)
 
     if (companyError) {
       console.error('Error fetching company data:', companyError)
@@ -75,7 +99,9 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({
         authenticated: true,
         hasData: false,
-        userId: user.id, // Include real Supabase user ID for profile creation
+        userId: targetUserId, // Include target user ID for profile creation
+        isViewingAsUser,
+        viewedUserId: isViewingAsUser ? targetUserId : undefined,
         companyData: null,
         preferences: {
           watchlist_company_ids: [],
@@ -87,16 +113,30 @@ export async function GET(_request: NextRequest) {
 
     const userData = companyData[0]
 
-    // Get user preferences for this user
+    // Get user preferences for target user
     const { data: preferences } = await supabase
       .from('user_preferences')
       .select('*')
-      .eq('user_id', userData.user_id)
+      .eq('user_id', targetUserId)
       .single()
+
+    // Get viewed user's profile info if viewing as user
+    let viewedUserInfo;
+    if (isViewingAsUser) {
+      const { data: viewedProfile } = await supabase
+        .from('profiles')
+        .select('email, full_name')
+        .eq('id', targetUserId)
+        .single();
+      viewedUserInfo = viewedProfile;
+    }
 
     const response = {
       authenticated: true,
       hasData: true,
+      isViewingAsUser,
+      viewedUserId: isViewingAsUser ? targetUserId : undefined,
+      viewedUserInfo: isViewingAsUser ? viewedUserInfo : undefined,
       companyData: userData,
       preferences: preferences || {
         watchlist_company_ids: [],
