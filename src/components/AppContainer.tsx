@@ -7,6 +7,7 @@ import { UserCMF, UserExplorationState } from '../types';
 import { activeUserProfile } from '../data/companies';
 import { createProfileForUser } from '../utils/userProfileCreation';
 import { migrateCompanyLogos } from '../utils/logoMigration';
+import { mergeUserPreferences } from '../utils/userPreferencesMerger';
 
 const AppContainer: React.FC = () => {
   const { isFirstTime, hasChecked, markAsVisited } = useFirstTimeExperience();
@@ -83,6 +84,9 @@ const AppContainer: React.FC = () => {
             : (dbCompanies || []);
           const addedCompanies = dbUserProfile?.addedCompanies || [];
 
+          // Merge preferences from both sources using centralized utility
+          const mergedPreferences = mergeUserPreferences(dbUserProfile, userData.preferences);
+
           const customProfile: UserExplorationState = {
             ...activeUserProfile, // Use as base structure
             id: userData.companyData.user_id,
@@ -91,10 +95,10 @@ const AppContainer: React.FC = () => {
             // Handle UserExplorationState format from admin import - with logo migration
             baseCompanies: migrateCompanyLogos(baseCompanies),
             addedCompanies: migrateCompanyLogos(addedCompanies),
-            // Override with user_profile preferences first, then fallback to separate preferences
-            watchlistCompanyIds: dbUserProfile?.watchlistCompanyIds || userData.preferences?.watchlist_company_ids || [],
-            removedCompanyIds: dbUserProfile?.removedCompanyIds || userData.preferences?.removed_company_ids || [],
-            viewMode: dbUserProfile?.viewMode || userData.preferences?.view_mode || 'explore'
+            // Use merged preferences from centralized utility
+            watchlistCompanyIds: mergedPreferences.watchlistCompanyIds,
+            removedCompanyIds: mergedPreferences.removedCompanyIds,
+            viewMode: mergedPreferences.viewMode
           };
 
           setUserProfile(customProfile);

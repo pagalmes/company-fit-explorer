@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { mergeUserPreferences } from '../../../../../src/utils/userPreferencesMerger'
 
 // Export user data as JSON (admin only)
 export async function GET(
@@ -79,6 +80,9 @@ export async function GET(
     // Check if it's already in UserExplorationState format
     const isUserExplorationState = userProfileData.cmf && (userProfileData.baseCompanies || userProfileData.addedCompanies);
 
+    // Merge preferences using centralized utility
+    const mergedPreferences = mergeUserPreferences(userProfileData, preferences);
+
     let exportData;
 
     if (isUserExplorationState) {
@@ -89,10 +93,10 @@ export async function GET(
         cmf: userProfileData.cmf,
         baseCompanies: userProfileData.baseCompanies || [],
         addedCompanies: userProfileData.addedCompanies || [],
-        removedCompanyIds: preferences?.removed_company_ids || userProfileData.removedCompanyIds || [],
-        watchlistCompanyIds: preferences?.watchlist_company_ids || userProfileData.watchlistCompanyIds || [],
+        removedCompanyIds: mergedPreferences.removedCompanyIds,
+        watchlistCompanyIds: mergedPreferences.watchlistCompanyIds,
         lastSelectedCompanyId: userProfileData.lastSelectedCompanyId || null,
-        viewMode: preferences?.view_mode || userProfileData.viewMode || 'explore'
+        viewMode: mergedPreferences.viewMode
       };
     } else {
       // Legacy format - convert to UserExplorationState
@@ -112,10 +116,10 @@ export async function GET(
         },
         baseCompanies: companies,
         addedCompanies: [],
-        removedCompanyIds: preferences?.removed_company_ids || [],
-        watchlistCompanyIds: preferences?.watchlist_company_ids || [],
+        removedCompanyIds: mergedPreferences.removedCompanyIds,
+        watchlistCompanyIds: mergedPreferences.watchlistCompanyIds,
         lastSelectedCompanyId: null,
-        viewMode: preferences?.view_mode || 'explore'
+        viewMode: mergedPreferences.viewMode
       };
     }
 

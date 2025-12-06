@@ -114,11 +114,37 @@ export async function GET(request: NextRequest) {
     const userData = companyData[0]
 
     // Get user preferences for target user
-    const { data: preferences } = await supabase
-      .from('user_preferences')
-      .select('*')
-      .eq('user_id', targetUserId)
-      .single()
+    // When viewing as another user (admin masquerade), use service role key to bypass RLS
+    let preferences = null;
+    let prefError = null;
+
+    if (isViewingAsUser && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      // Admin viewing as user - use service role to bypass RLS
+      const adminClient = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+      const result = await adminClient
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', targetUserId)
+        .maybeSingle();
+      preferences = result.data;
+      prefError = result.error;
+    } else {
+      // Normal user viewing their own data - use regular client with RLS
+      const result = await supabase
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', targetUserId)
+        .maybeSingle();
+      preferences = result.data;
+      prefError = result.error;
+    }
+
+    if (prefError) {
+      console.error('Error fetching preferences:', prefError.message);
+    }
 
     // Get viewed user's profile info if viewing as user
     let viewedUserInfo;
@@ -145,13 +171,13 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    console.log('📤 Returning user data response:', {
-      authenticated: response.authenticated,
-      hasData: response.hasData,
-      userId: userData.user_id,
-      hasUserProfile: !!userData.user_profile,
-      hasCompanies: !!(userData.companies && userData.companies.length > 0)
-    })
+    if (isViewingAsUser) {
+      console.log('👀 Admin viewing as user:', {
+        targetUserId,
+        watchlistCount: preferences?.watchlist_company_ids?.length || 0,
+        removedCount: preferences?.removed_company_ids?.length || 0
+      });
+    }
 
     return NextResponse.json(response)
 
