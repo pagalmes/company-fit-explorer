@@ -8,11 +8,13 @@ import { getCompanyLogo } from '../utils/logoProvider';
 interface SettingsViewModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onShowKeyboardShortcuts?: () => void;
 }
 
 const SettingsViewModal: React.FC<SettingsViewModalProps> = ({
   isOpen,
-  onClose
+  onClose,
+  onShowKeyboardShortcuts
 }) => {
   const settings: LLMSettings = llmService.getSettings();
 
@@ -103,7 +105,21 @@ const SettingsViewModal: React.FC<SettingsViewModalProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end mt-8 pt-4 border-t">
+          <div className="flex items-center justify-between mt-8 pt-4 border-t">
+            {onShowKeyboardShortcuts && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onShowKeyboardShortcuts();
+                }}
+                className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+                <span>⌨️ Keyboard Shortcuts</span>
+              </button>
+            )}
             <button
               onClick={onClose}
               className="px-6 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"

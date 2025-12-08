@@ -8,6 +8,7 @@ import AddCompanyModal from './AddCompanyModal';
 import SettingsViewModal from './SettingsViewModal';
 import { RemoveCompanyModal } from './RemoveCompanyModal';
 import EmptyWatchlistModal from './EmptyWatchlistModal';
+import KeyboardShortcutsModal from './KeyboardShortcutsModal';
 import { llmService } from '../utils/llm/service';
 import { loadPanelState, savePanelState } from '../utils/panelStorage';
 import CollapsibleCMFPanel from './CollapsibleCMFPanel';
@@ -65,6 +66,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   // Modal states
   const [showAddCompanyModal, setShowAddCompanyModal] = useState(false);
   const [showLLMSettings, setShowLLMSettings] = useState(false);
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
   const [llmConfigured, setLLMConfigured] = useState(llmService.isConfigured());
   const [showRemoveConfirmation, setShowRemoveConfirmation] = useState(false);
   const [companyToRemove, setCompanyToRemove] = useState<Company | null>(null);
@@ -93,25 +95,32 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
         key: 'a',
         description: 'Add company',
         action: () => setShowAddCompanyModal(true),
-        condition: () => !showAddCompanyModal && !showLLMSettings && !showRemoveConfirmation,
+        condition: () => !showAddCompanyModal && !showLLMSettings && !showRemoveConfirmation && !showKeyboardShortcuts,
       },
       {
         key: '/',
         description: 'Focus search',
         action: () => companyDetailPanelRef.current?.focusSearch(),
-        condition: () => !showAddCompanyModal && !showLLMSettings && !showRemoveConfirmation,
+        condition: () => !showAddCompanyModal && !showLLMSettings && !showRemoveConfirmation && !showKeyboardShortcuts,
       },
       {
         key: 'e',
         description: 'Switch to Explore tab',
         action: () => handleViewModeChange('explore'),
-        condition: () => !showAddCompanyModal && !showLLMSettings && !showRemoveConfirmation,
+        condition: () => !showAddCompanyModal && !showLLMSettings && !showRemoveConfirmation && !showKeyboardShortcuts,
       },
       {
         key: 'w',
         description: 'Switch to Watchlist tab',
         action: () => handleViewModeChange('watchlist'),
-        condition: () => !showAddCompanyModal && !showLLMSettings && !showRemoveConfirmation,
+        condition: () => !showAddCompanyModal && !showLLMSettings && !showRemoveConfirmation && !showKeyboardShortcuts,
+      },
+      {
+        key: '?',
+        description: 'Show keyboard shortcuts',
+        action: () => setShowKeyboardShortcuts(true),
+        condition: () => !showAddCompanyModal && !showLLMSettings && !showRemoveConfirmation && !showKeyboardShortcuts,
+        modifiers: { shift: true }, // '?' requires shift key
       },
     ],
   });
@@ -505,6 +514,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
         <SettingsViewModal
           isOpen={showLLMSettings}
           onClose={() => setShowLLMSettings(false)}
+          onShowKeyboardShortcuts={() => setShowKeyboardShortcuts(true)}
         />
       )}
 
@@ -516,6 +526,11 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
           onCancel={handleRemoveCancel}
         />
       )}
+
+      <KeyboardShortcutsModal
+        isOpen={showKeyboardShortcuts}
+        onClose={() => setShowKeyboardShortcuts(false)}
+      />
 
       <EmptyWatchlistModal
         isOpen={viewMode === 'watchlist' && stateManager.getCurrentState().watchlistCompanyIds.length === 0}
