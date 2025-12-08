@@ -168,9 +168,16 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       cy.zoom(viewStateRef.current.zoom);
       cy.pan(viewStateRef.current.pan);
     } else {
-      // First time load - fit based on the fixed background zones to maintain consistent centering
-      const zoneNodes = cy.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
-      cy.fit(zoneNodes, 120); // Fit to background zones with more padding for companies
+      // First time load - fit to show all companies if any exist, otherwise fit to zones
+      const companyNodes = cy.nodes('[type="company"]');
+      if (companyNodes.length > 0) {
+        // Fit to all company nodes with generous padding to ensure all are visible
+        cy.fit(companyNodes, 80);
+      } else {
+        // No companies - fit to background zones
+        const zoneNodes = cy.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
+        cy.fit(zoneNodes, 120);
+      }
     }
 
     // Basic initialization will be handled by separate useEffects
@@ -540,12 +547,19 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       
       {/* Graph Controls */}
       <div className="absolute top-4 right-4 flex flex-col space-y-2" style={{ zIndex: 10 }}>
-        <button 
+        <button
           className="bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow"
           onClick={() => {
             if (cyInstance.current) {
-              const zoneNodes = cyInstance.current.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
-              cyInstance.current.fit(zoneNodes, 120);
+              const companyNodes = cyInstance.current.nodes('[type="company"]');
+              if (companyNodes.length > 0) {
+                // Fit to all companies with padding
+                cyInstance.current.fit(companyNodes, 80);
+              } else {
+                // No companies - fit to zones
+                const zoneNodes = cyInstance.current.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
+                cyInstance.current.fit(zoneNodes, 120);
+              }
             }
           }}
           title="Fit to view"
