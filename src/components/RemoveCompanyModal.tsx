@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Company } from '../types';
 
 interface RemoveCompanyModalProps {
@@ -14,6 +14,18 @@ export const RemoveCompanyModal: React.FC<RemoveCompanyModalProps> = ({
   onConfirm,
   onCancel,
 }) => {
+  // Handle Escape key to cancel
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onCancel();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onCancel]);
+
   if (!isOpen || !company) return null;
 
   return (
