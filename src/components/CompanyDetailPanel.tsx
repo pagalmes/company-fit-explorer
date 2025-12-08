@@ -290,12 +290,16 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
             </div>
           </div>
           <button
-            onClick={() => onCompanySelect(null)}
-            className="text-slate-400 hover:text-slate-600 transition-colors"
-            title="Close details"
+            onClick={() => onToggleWatchlist(selectedCompany.id)}
+            className={`transition-colors ${
+              isInWatchlist(selectedCompany.id)
+                ? 'text-red-500 hover:text-red-600'
+                : 'text-slate-300 hover:text-red-400'
+            }`}
+            title={isInWatchlist(selectedCompany.id) ? 'Remove from watchlist' : 'Add to watchlist'}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill={isInWatchlist(selectedCompany.id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
             </svg>
           </button>
         </div>
