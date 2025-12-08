@@ -23,22 +23,46 @@ export async function POST(request: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
+        'anthropic-version': '2023-06-01',
+        'anthropic-beta': 'structured-outputs-2025-11-13'
       },
       body: JSON.stringify({
         model: DEFAULT_ANTHROPIC_MODEL,
-        max_tokens: 1500,
+        max_tokens: 2048,
         temperature: 0.7,
         messages: [
           {
             role: 'user',
             content: prompt
-          },
-          {
-            role: 'assistant',
-            content: '{'
           }
-        ]
+        ],
+        output_format: {
+          type: 'json_schema',
+          schema: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              industry: { type: 'string' },
+              stage: { type: 'string' },
+              location: { type: 'string' },
+              employees: { type: 'string' },
+              remote: { type: 'string' },
+              openRoles: { type: 'number' },
+              matchScore: { type: 'number' },
+              matchReasons: {
+                type: 'array',
+                items: { type: 'string' }
+              },
+              connections: {
+                type: 'array',
+                items: { type: 'string' }
+              },
+              description: { type: 'string' }
+            },
+            required: ['name', 'industry', 'stage', 'location', 'employees', 'remote', 'openRoles', 'matchScore', 'matchReasons', 'connections', 'description'],
+            additionalProperties: false
+          }
+        }
       })
     });
 
@@ -54,8 +78,25 @@ export async function POST(request: NextRequest) {
       throw new Error('No response content from Claude API');
     }
 
+    console.log('📝 Raw Claude response text:', responseText);
+    console.log('📏 Response length:', responseText.length, 'characters');
+    console.log('⏹️  Stop reason:', data.stop_reason);
+
+    // Check if response was truncated
+    if (data.stop_reason === 'max_tokens') {
+      console.warn('⚠️ WARNING: Claude response was truncated due to max_tokens limit');
+    }
+
     // Parse the JSON response
     const companyData = parseAnthropicResponse(responseText);
+
+    // Generate connectionTypes if connections exist (structured outputs doesn't support dynamic object keys)
+    if (companyData.connections && companyData.connections.length > 0) {
+      companyData.connectionTypes = companyData.connections.reduce((acc: Record<string, string>, conn: string) => {
+        acc[conn] = 'Related Company'; // Default relationship type
+        return acc;
+      }, {});
+    }
 
     // Generate Google search URLs for external links
     const externalLinks = await searchCompanyUrls(analysisRequest.companyName);
@@ -89,7 +130,7 @@ export async function POST(request: NextRequest) {
 
 // Helper function to build Anthropic prompt
 function buildAnthropicPrompt(request: any) {
-  return `Analyze "${request.companyName}" and provide comprehensive company information as JSON.
+  return `Analyze "${request.companyName}" and provide comprehensive company information based on the user's career criteria.
 
 User's Candidate Market Fit (CMF) Criteria:
 - Target Role: ${request.userCMF.targetRole}
@@ -98,30 +139,18 @@ ${request.userCMF.wantToHave?.length ? `- Want-to-Have: ${request.userCMF.wantTo
 ${request.userCMF.experience?.length ? `- Experience: ${request.userCMF.experience.join(', ')}` : ''}
 ${request.userCMF.targetCompanies ? `- Target Companies: ${request.userCMF.targetCompanies}` : ''}
 
-Provide a JSON response with this exact structure:
-
-{
-  "name": "Company Name",
-  "industry": "Primary industry (e.g., AI/ML, Fintech, Gaming, Healthcare)",
-  "stage": "Company stage (Early Stage, Late Stage, Public, Mature)",
-  "location": "Primary location (e.g., San Francisco, CA)",
-  "employees": "Employee range (e.g., ~500, 1000-5000, 10000+)",
-  "remote": "Remote policy (Remote-Friendly, Hybrid, In-Office)",
-  "openRoles": 15,
-  "matchScore": 85,
-  "matchReasons": [
-    "Specific reason why this company matches user's criteria",
-    "Another specific alignment with their requirements",
-    "Additional match reason based on their experience"
-  ],
-  "connections": ["Company1", "Company2", "Company3"],
-  "connectionTypes": {
-    "Company1": "Direct Competitor",
-    "Company2": "Industry Partner",
-    "Company3": "Similar Stage"
-  },
-  "description": "Brief company description focusing on what they do and their mission"
-}
+Provide the following information:
+- name: The company's official name
+- industry: Primary industry (e.g., AI/ML, Fintech, Gaming, Healthcare, SaaS, etc.)
+- stage: Company stage (Early Stage, Late Stage, Public, Mature)
+- location: Primary headquarters location
+- employees: Employee count range (e.g., ~50, 100-500, 1000-5000, 10000+)
+- remote: Remote work policy (Remote-Friendly, Hybrid, In-Office)
+- openRoles: Estimated number of open positions (numeric)
+- matchScore: Score 0-100 based on alignment with user's CMF criteria
+- matchReasons: Array of 3-4 specific reasons explaining the match score
+- connections: Array of 3-5 similar/related companies in the same space
+- description: 2-3 sentence description of what the company does
 
 Calculate matchScore (0-100) by evaluating:
 1. Alignment with must-have criteria (weighted most heavily)
@@ -129,26 +158,14 @@ Calculate matchScore (0-100) by evaluating:
 3. Relevance to experience background
 4. Match with want-to-have preferences
 
-Be accurate and base analysis on real company information. Return only valid JSON.`;
+Be accurate and base analysis on real company information.`;
 }
 
-// Helper function to parse Anthropic response
+// Helper function to parse Anthropic response with structured outputs
 function parseAnthropicResponse(responseText: string) {
   try {
-    // Since we prefilled with '{', prepend it to complete the JSON
-    const fullJson = '{' + responseText;
-
-    // Clean up potential markdown formatting
-    let cleanedResponse = fullJson
-      .replace(/```json\n?/g, '')
-      .replace(/```\n?/g, '')
-      .trim();
-
-    // Remove markdown bold/italic from JSON keys (e.g., **"key"** -> "key")
-    cleanedResponse = cleanedResponse.replace(/\*\*"([^"]+)"\*\*/g, '"$1"');
-    cleanedResponse = cleanedResponse.replace(/\*"([^"]+)"\*/g, '"$1"');
-
-    const parsed = JSON.parse(cleanedResponse);
+    // With structured outputs, response is guaranteed valid JSON
+    const parsed = JSON.parse(responseText);
 
     // Remove any externalLinks that Claude might have added (we generate these separately)
     if (parsed.externalLinks) {
@@ -157,9 +174,12 @@ function parseAnthropicResponse(responseText: string) {
 
     return parsed;
   } catch (error) {
-    console.error('Failed to parse Claude response:', responseText);
-    console.error('Parse error:', error);
-    throw new Error('Invalid JSON response from Claude API');
+    console.error('❌ Failed to parse Claude response. Raw response text:', responseText);
+    console.error('Parse error details:', error);
+
+    // This should rarely happen with structured outputs
+    const errorMsg = error instanceof Error ? error.message : 'Unknown parsing error';
+    throw new Error(`Invalid JSON response from Claude API: ${errorMsg}. Response length: ${responseText?.length || 0} chars`);
   }
 }
 

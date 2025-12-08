@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { Company } from '../types';
+import { Company, UserCMF } from '../types';
 import { CompanyDetailPanelProps } from '../types/watchlist';
 import { getExternalLinks } from '../utils/externalLinks';
+import JobAlertsModal from './JobAlertsModal';
 
 /**
  * CompanyDetailPanel Component
@@ -24,7 +25,7 @@ import { getExternalLinks } from '../utils/externalLinks';
  * @coverage 100% of component logic and user interactions
  * @regressionProtection Prevents broken company selection, career URLs, and data display
  */
-const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
+const CompanyDetailPanel: React.FC<CompanyDetailPanelProps & { userCMF?: UserCMF }> = ({
   selectedCompany,
   allCompanies,
   onCompanySelect,
@@ -32,9 +33,11 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
   onToggleWatchlist,
   onRequestDelete,
   viewMode,
-  watchlistStats: _watchlistStats
+  watchlistStats: _watchlistStats,
+  userCMF
 }) => {
   const [isMatchReasonsExpanded, setIsMatchReasonsExpanded] = useState(false);
+  const [isJobAlertsModalOpen, setIsJobAlertsModalOpen] = useState(false);
 
   if (!selectedCompany) {
     return (
@@ -56,6 +59,7 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
         <div className="panel-content flex-1 overflow-auto p-6 bg-white/30 backdrop-blur-sm">
           <div className="space-y-3">
             {allCompanies
+              .filter(company => viewMode === 'watchlist' ? isInWatchlist(company.id) : true)
               .sort((a, b) => b.matchScore - a.matchScore)
               .map((company) => (
               <div
@@ -372,12 +376,24 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
 
         {/* Action Buttons */}
         <div className="space-y-3 pt-4 border-t border-slate-200/50">
-          <button 
+          <button
             className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2 px-4 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-sm"
             onClick={() => window.open(selectedCompany.careerUrl, '_blank')}
           >
             View Jobs at {selectedCompany.name}
           </button>
+
+          {/* Setup Job Alerts Button */}
+          <button
+            onClick={() => setIsJobAlertsModalOpen(true)}
+            className="w-full bg-white/60 text-slate-700 border border-slate-200/50 py-2 px-4 rounded-lg hover:bg-white/80 transition-colors flex items-center justify-center space-x-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span>Setup Job Alerts</span>
+          </button>
+
           {/* My Connections Button */}
           <button
             onClick={() => {
@@ -446,6 +462,16 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Job Alerts Modal */}
+      {selectedCompany && (
+        <JobAlertsModal
+          isOpen={isJobAlertsModalOpen}
+          onClose={() => setIsJobAlertsModalOpen(false)}
+          company={selectedCompany}
+          targetRole={userCMF?.targetRole || 'engineer'}
+        />
+      )}
     </div>
   );
 };

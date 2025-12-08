@@ -66,20 +66,12 @@ export async function writeStateToDisk(
 
 /**
  * Check if the development file server is available
+ * DEPRECATED: Using Supabase for persistence now
  */
 export async function checkDevServerAvailable(): Promise<boolean> {
-  if (process.env.NODE_ENV !== 'development') {
-    return false;
-  }
-
-  try {
-    const response = await fetch(`${DEV_API_BASE}/api/dev/health`, {
-      method: 'GET'
-    });
-    return response.ok;
-  } catch {
-    return false;
-  }
+  // Dev file server is deprecated - using Supabase for persistence
+  // Return false to skip health checks and avoid console errors
+  return false;
 }
 
 /**

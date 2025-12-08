@@ -180,6 +180,12 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
       const addedCompany = stateManager.addCompany(newCompany);
       console.log('Company added successfully:', addedCompany.name, 'with ID:', addedCompany.id);
 
+      // Auto-add to watchlist if in watchlist view mode
+      if (viewMode === 'watchlist') {
+        stateManager.toggleWatchlist(addedCompany.id);
+        console.log('Auto-added to watchlist:', addedCompany.name);
+      }
+
       // Set pending selection ID and trigger re-render
       // The useEffect will handle selecting the company after React finishes rendering
       setPendingSelectionId(addedCompany.id);
@@ -188,7 +194,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
       console.error('Failed to add company:', error);
       throw error; // Re-throw to let modal handle the error
     }
-  }, [stateManager, forceUpdate]);
+  }, [stateManager, forceUpdate, viewMode]);
 
   const handleBatchUpdateCompanies = useCallback(async (updatedCompanies: Company[]) => {
     try {
@@ -209,6 +215,12 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
         }
       });
 
+      // Auto-add new company to watchlist if in watchlist view mode
+      if (newCompany && viewMode === 'watchlist') {
+        stateManager.toggleWatchlist(newCompany.id);
+        console.log('Auto-added to watchlist:', newCompany.name);
+      }
+
       console.log(`📊 Batch update completed: ${updatedCompanies.length} companies repositioned`);
 
       // Set pending selection for the new company and trigger re-render
@@ -221,7 +233,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
       console.error('Failed to batch update companies:', error);
       throw error; // Re-throw to let modal handle the error
     }
-  }, [stateManager, forceUpdate]);
+  }, [stateManager, forceUpdate, viewMode]);
 
   const removeCompany = useCallback((companyId: number) => {
     stateManager.removeCompany(companyId);
@@ -429,6 +441,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
           onRequestDelete={handleRemoveRequest}
           viewMode={viewMode}
           watchlistStats={watchlistStats}
+          userCMF={stateManager.getUserCMF()}
         />
       </div>
 
@@ -443,6 +456,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
           onCheckForRemovedCompany={checkForRemovedCompany}
           onRestoreRemovedCompany={restoreRemovedCompany}
           userCMF={userCMF}
+          viewMode={viewMode}
         />
       )}
 

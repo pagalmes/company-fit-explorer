@@ -3,7 +3,8 @@ import Image from 'next/image';
 import { UserCMF, Company } from '../types';
 import { getCompanySuggestions, getPopularCompanies, CompanySuggestion } from '../utils/companySuggestions';
 import { getCompanyPreview, CompanyPreview, validateCompanyData } from '../utils/companyValidation';
-import { getColorForScore, generateCareerUrl } from '../utils/companyPositioning';
+import { getColorForScore, generateCareerUrl, mapConnectionsToExistingCompanies } from '../utils/companyPositioning';
+import { findSmartPositioningSolution, isPositioningSolutionBeneficial } from '../utils/smartPositioning';
 import { llmService } from '../utils/llm/service';
 
 interface AddCompanyModalProps {
@@ -16,6 +17,7 @@ interface AddCompanyModalProps {
   userCMF: UserCMF;
   existingCompanies: Company[];
   onShowLLMSettings?: () => void;
+  viewMode?: 'explore' | 'watchlist';
 }
 
 type ModalStep = 'input' | 'confirm' | 'processing';
@@ -212,10 +214,6 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
         }
       };
 
-      // Import positioning utilities
-      const { mapConnectionsToExistingCompanies } = await import('../utils/companyPositioning');
-      const { findSmartPositioningSolution, isPositioningSolutionBeneficial } = await import('../utils/smartPositioning');
-      
       // Map connections to existing companies (use LLM connections if available)
       const connectionsToMap = companyData.connections || [];
       const connectionTypesForMapping: Record<string, string> = {};

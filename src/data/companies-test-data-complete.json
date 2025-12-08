@@ -63,9 +63,6 @@
       "angle": 0,
       "distance": 75,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=Airbnb%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=Airbnb%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=Airbnb%20on%20Crunchbase",
         "website": "https://airbnb.com"
       }
     },
@@ -101,9 +98,6 @@
       "angle": 30,
       "distance": 80,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=HubSpot%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=HubSpot%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=HubSpot%20on%20Crunchbase",
         "website": "https://hubspot.com"
       }
     },
@@ -139,9 +133,6 @@
       "angle": 60,
       "distance": 85,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=The%20Trade%20Desk%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=The%20Trade%20Desk%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=The%20Trade%20Desk%20on%20Crunchbase",
         "website": "https://thetradedesk.com"
       }
     },
@@ -177,9 +168,6 @@
       "angle": 90,
       "distance": 90,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=Figma%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=Figma%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=Figma%20on%20Crunchbase",
         "website": "https://figma.com"
       }
     },
@@ -215,9 +203,6 @@
       "angle": 120,
       "distance": 95,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=Retool%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=Retool%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=Retool%20on%20Crunchbase",
         "website": "https://retool.com"
       }
     },
@@ -253,9 +238,6 @@
       "angle": 150,
       "distance": 100,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=Clay%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=Clay%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=Clay%20on%20Crunchbase",
         "website": "https://clay.com"
       }
     },
@@ -291,9 +273,6 @@
       "angle": 180,
       "distance": 92,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=Hinge%20Health%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=Hinge%20Health%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=Hinge%20Health%20on%20Crunchbase",
         "website": "https://hingehealth.com"
       }
     },
@@ -329,9 +308,6 @@
       "angle": 210,
       "distance": 105,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=Linear%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=Linear%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=Linear%20on%20Crunchbase",
         "website": "https://linear.app"
       }
     },
@@ -367,9 +343,6 @@
       "angle": 240,
       "distance": 110,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=Oura%20Health%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=Oura%20Health%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=Oura%20Health%20on%20Crunchbase",
         "website": "https://ouraring.com"
       }
     },
@@ -405,9 +378,6 @@
       "angle": 270,
       "distance": 118,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=Dexcom%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=Dexcom%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=Dexcom%20on%20Crunchbase",
         "website": "https://dexcom.com"
       }
     },
@@ -443,9 +413,6 @@
       "angle": 300,
       "distance": 112,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=Udemy%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=Udemy%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=Udemy%20on%20Crunchbase",
         "website": "https://udemy.com"
       }
     },
@@ -481,9 +448,6 @@
       "angle": 330,
       "distance": 88,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=Maze%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=Maze%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=Maze%20on%20Crunchbase",
         "website": "https://maze.co"
       }
     },
@@ -519,9 +483,6 @@
       "angle": 45,
       "distance": 120,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=Gusto%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=Gusto%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=Gusto%20on%20Crunchbase",
         "website": "https://gusto.com"
       }
     },
@@ -557,9 +518,6 @@
       "angle": 75,
       "distance": 118,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=Oscar%20Health%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=Oscar%20Health%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=Oscar%20Health%20on%20Crunchbase",
         "website": "https://hioscar.com"
       }
     },
@@ -595,9 +553,6 @@
       "angle": 103,
       "distance": 115,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=Vetcove%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=Vetcove%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=Vetcove%20on%20Crunchbase",
         "website": "https://vetcove.com"
       }
     },
@@ -633,9 +588,6 @@
       "angle": 130,
       "distance": 120,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=Hinge%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=Hinge%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=Hinge%20on%20Crunchbase",
         "website": "https://hinge.co"
       }
     },
@@ -671,9 +623,6 @@
       "angle": 165,
       "distance": 125,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=ShopBack%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=ShopBack%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=ShopBack%20on%20Crunchbase",
         "website": "https://shopback.com"
       }
     },
@@ -709,9 +658,6 @@
       "angle": 195,
       "distance": 122,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=Netflix%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=Netflix%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=Netflix%20on%20Crunchbase",
         "website": "https://netflix.com"
       }
     },
@@ -747,9 +693,6 @@
       "angle": 225,
       "distance": 130,
       "externalLinks": {
-        "linkedin": "https://www.google.com/search?q=Adobe%20on%20LinkedIn",
-        "glassdoor": "https://www.google.com/search?q=Adobe%20on%20Glassdoor",
-        "crunchbase": "https://www.google.com/search?q=Adobe%20on%20Crunchbase",
         "website": "https://adobe.com"
       }
     }
