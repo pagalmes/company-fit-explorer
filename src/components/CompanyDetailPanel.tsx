@@ -127,29 +127,33 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => {
-                if (filteredCompanies.length === 0) return;
-
                 switch (e.key) {
+                  case 'Escape':
+                    e.preventDefault();
+                    if (searchTerm) {
+                      setSearchTerm('');
+                      setSelectedCompanyIndex(-1);
+                    }
+                    // Blur the search input to remove focus
+                    searchInputRef.current?.blur();
+                    break;
                   case 'ArrowDown':
+                    if (filteredCompanies.length === 0) return;
                     e.preventDefault();
                     setSelectedCompanyIndex(prev =>
                       prev < filteredCompanies.length - 1 ? prev + 1 : prev
                     );
                     break;
                   case 'ArrowUp':
+                    if (filteredCompanies.length === 0) return;
                     e.preventDefault();
                     setSelectedCompanyIndex(prev => prev > 0 ? prev - 1 : -1);
                     break;
                   case 'Enter':
+                    if (filteredCompanies.length === 0) return;
                     e.preventDefault();
                     if (selectedCompanyIndex >= 0 && selectedCompanyIndex < filteredCompanies.length) {
                       onCompanySelect(filteredCompanies[selectedCompanyIndex]);
-                    }
-                    break;
-                  case 'Escape':
-                    if (searchTerm) {
-                      setSearchTerm('');
-                      setSelectedCompanyIndex(-1);
                     }
                     break;
                 }
