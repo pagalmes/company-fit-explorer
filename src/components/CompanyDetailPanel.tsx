@@ -557,35 +557,6 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
             <span>My Connections</span>
           </button>
 
-          {/* Save to Watchlist Button */}
-          <button
-            className={`w-full py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2 ${
-              isInWatchlist && isInWatchlist(selectedCompany.id)
-                ? 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'
-                : 'bg-white/60 text-slate-700 border border-slate-200/50 hover:bg-white/80'
-            }`}
-            onClick={() => onToggleWatchlist && onToggleWatchlist(selectedCompany.id)}
-          >
-            <svg
-              className={`w-5 h-5 ${
-                isInWatchlist && isInWatchlist(selectedCompany.id)
-                  ? 'fill-current'
-                  : 'fill-none stroke-current'
-              }`}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={isInWatchlist && isInWatchlist(selectedCompany.id) ? 0 : 2}
-                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-              />
-            </svg>
-            <span>
-              {isInWatchlist && isInWatchlist(selectedCompany.id) ? 'Remove from Watchlist' : 'Save to Watchlist'}
-            </span>
-          </button>
-          
           {/* Remove Company Button */}
           <button
             onClick={() => onRequestDelete(selectedCompany)}
