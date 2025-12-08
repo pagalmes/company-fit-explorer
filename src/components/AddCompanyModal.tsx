@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Image from 'next/image';
+import { toast } from 'sonner';
 import { UserCMF, Company } from '../types';
 import { getCompanySuggestions, getPopularCompanies, CompanySuggestion } from '../utils/companySuggestions';
 import { getCompanyPreview, CompanyPreview, validateCompanyData } from '../utils/companyValidation';
@@ -14,6 +15,9 @@ interface AddCompanyModalProps {
   onBatchUpdateCompanies?: (companies: Company[]) => Promise<void>; // New: for smart relocation
   onCheckForRemovedCompany?: (companyName: string) => Company | null;
   onRestoreRemovedCompany?: (company: Company) => void;
+  onCompanySelect?: (company: Company) => void;
+  onToggleWatchlist?: (companyId: number) => void;
+  isInWatchlist?: (companyId: number) => boolean;
   userCMF: UserCMF;
   existingCompanies: Company[];
   onShowLLMSettings?: () => void;
@@ -37,9 +41,13 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
   onBatchUpdateCompanies,
   onCheckForRemovedCompany,
   onRestoreRemovedCompany,
+  onCompanySelect,
+  onToggleWatchlist,
+  isInWatchlist,
   userCMF,
   existingCompanies,
   onShowLLMSettings,
+  viewMode = 'explore',
 }) => {
   const [step, setStep] = useState<ModalStep>('input');
   const [companyName, setCompanyName] = useState('');
@@ -48,6 +56,7 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Enhanced error messages for better user experience
@@ -66,12 +75,14 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
     setError('');
     setIsLoading(false);
     setShowSuggestions(false);
+    setSelectedSuggestionIndex(-1);
   };
 
   const handleInputChange = async (value: string) => {
     setCompanyName(value);
     setError('');
-    
+    setSelectedSuggestionIndex(-1); // Reset selection when typing
+
     if (value.length > 1) {
       try {
         const companySuggestions = await getCompanySuggestions(value);
@@ -93,32 +104,121 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
     }
   };
 
-  const handleSuggestionClick = (suggestion: CompanySuggestion) => {
+  const handleSuggestionClick = useCallback(async (suggestion: CompanySuggestion, autoSearch: boolean = false) => {
     setCompanyName(suggestion.name);
     setSuggestions([]);
     setShowSuggestions(false);
-    inputRef.current?.focus();
-  };
+    setSelectedSuggestionIndex(-1);
+
+    if (autoSearch) {
+      // Trigger search immediately
+      setIsLoading(true);
+      setError('');
+
+      try {
+        const preview = await getCompanyPreview(suggestion.name);
+        const validation = validateCompanyData(preview);
+
+        if (!validation.isValid) {
+          setError(errorMessages.notFound);
+          return;
+        }
+
+        // Check if company already exists
+        const existingCompany = existingCompanies.find(
+          c => c.name.toLowerCase() === preview.name.toLowerCase()
+        );
+
+        if (existingCompany) {
+          const inWatchlist = isInWatchlist?.(existingCompany.id) ?? false;
+
+          if (viewMode === 'watchlist' && !inWatchlist && onToggleWatchlist) {
+            onToggleWatchlist(existingCompany.id);
+            toast.success(preview.name, {
+              description: 'Added to watchlist',
+            });
+          } else if (viewMode === 'watchlist' && inWatchlist) {
+            toast.info(preview.name, {
+              description: 'Already in your watchlist',
+            });
+          } else {
+            toast.info(preview.name, {
+              description: 'Already in your company list',
+            });
+          }
+
+          onCompanySelect?.(existingCompany);
+          onClose();
+          resetModal();
+          return;
+        }
+
+        setCompanyPreview(preview);
+        setStep('confirm');
+      } catch (err) {
+        const errorType = (err as Error).message.includes('network') ? 'networkError' : 'notFound';
+        setError(errorMessages[errorType as keyof typeof errorMessages]);
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      inputRef.current?.focus();
+    }
+  }, [errorMessages, existingCompanies, isInWatchlist, onClose, onCompanySelect, onToggleWatchlist, viewMode]);
 
   const handleSearch = useCallback(async () => {
     if (!companyName.trim()) return;
-    
+
     setIsLoading(true);
     setError('');
     setSuggestions([]);
     setShowSuggestions(false);
-    
+
     try {
       const preview = await getCompanyPreview(companyName.trim());
-      
+
       // Validate the preview data
       const validation = validateCompanyData(preview);
-      
+
       if (!validation.isValid) {
         setError(errorMessages.notFound);
         return;
       }
-      
+
+      // Check if company already exists in the list (case-insensitive)
+      const existingCompany = existingCompanies.find(
+        c => c.name.toLowerCase() === preview.name.toLowerCase()
+      );
+
+      if (existingCompany) {
+        // Company exists - smart handling based on context
+        const inWatchlist = isInWatchlist?.(existingCompany.id) ?? false;
+
+        if (viewMode === 'watchlist' && !inWatchlist && onToggleWatchlist) {
+          // In watchlist view and company not watchlisted → Add to watchlist
+          onToggleWatchlist(existingCompany.id);
+          toast.success(preview.name, {
+            description: 'Added to watchlist',
+          });
+        } else if (viewMode === 'watchlist' && inWatchlist) {
+          // Already in watchlist
+          toast.info(preview.name, {
+            description: 'Already in your watchlist',
+          });
+        } else {
+          // In explore view or other cases
+          toast.info(preview.name, {
+            description: 'Already in your company list',
+          });
+        }
+
+        // Select the company and close modal
+        onCompanySelect?.(existingCompany);
+        onClose();
+        resetModal();
+        return;
+      }
+
       setCompanyPreview(preview);
       setStep('confirm');
     } catch (err) {
@@ -127,23 +227,14 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [companyName, errorMessages]);
+  }, [companyName, errorMessages, existingCompanies, isInWatchlist, onClose, onCompanySelect, onToggleWatchlist, viewMode]);
 
   const handleConfirm = useCallback(async () => {
     if (!companyPreview) return;
-    
-    // Check if this company was previously removed and can be restored
-    if (onCheckForRemovedCompany && onRestoreRemovedCompany) {
-      const removedCompany = onCheckForRemovedCompany(companyPreview.name);
-      if (removedCompany) {
-        console.log('Found previously removed company, restoring:', removedCompany.name);
-        onRestoreRemovedCompany(removedCompany);
-        onClose();
-        resetModal();
-        return;
-      }
-    }
-    
+
+    // Check if this company was previously removed
+    const removedCompany = onCheckForRemovedCompany?.(companyPreview.name);
+
     setStep('processing');
     
     try {
@@ -189,8 +280,9 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
       }
 
       // Create base company object with LLM or mock data
+      // If this is a removed company being restored, preserve ID and position
       const baseCompany: Company = {
-        id: Date.now(), // Generate unique ID
+        id: removedCompany ? removedCompany.id : Date.now(), // Preserve ID for removed companies
         name: companyData.name,
         logo: companyPreview.logo || `https://ui-avatars.com/api/?name=${companyData.name}&background=random`,
         matchScore: companyData.matchScore,
@@ -204,8 +296,8 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
         connectionTypes: companyData.connectionTypes || {},
         matchReasons: companyData.matchReasons,
         color: getColorForScore(companyData.matchScore),
-        angle: 0, // Will be set by positioning logic
-        distance: 0, // Will be set by positioning logic
+        angle: removedCompany?.angle ?? 0, // Preserve angle if restoring
+        distance: removedCompany?.distance ?? 0, // Preserve distance if restoring
         careerUrl: generateCareerUrl(companyData.name, companyPreview.domain),
         externalLinks: {
           ...companyData.externalLinks,
@@ -213,6 +305,11 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
           website: companyPreview.domain ? `https://${companyPreview.domain}` : companyData.externalLinks?.website
         }
       };
+
+      console.log(removedCompany
+        ? `🔄 Refreshing removed company: ${removedCompany.name} (preserving ID: ${removedCompany.id})`
+        : `➕ Adding new company: ${companyData.name}`
+      );
 
       // Map connections to existing companies (use LLM connections if available)
       const connectionsToMap = companyData.connections || [];
@@ -229,11 +326,30 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
       }, existingCompanies);
       
       // Create base company with connections
+      // If this is a removed company, merge old connections with new ones
+      const finalConnections = removedCompany
+        ? [
+            ...removedCompany.connections, // Keep old connections
+            ...connectionMapping.connections.filter(id => !removedCompany.connections.includes(id)) // Add new ones
+          ]
+        : connectionMapping.connections;
+
+      const finalConnectionTypes = removedCompany
+        ? {
+            ...removedCompany.connectionTypes, // Keep old connection types
+            ...connectionMapping.connectionTypes // Add/override with new ones
+          }
+        : connectionMapping.connectionTypes;
+
       const companyWithConnections: Company = {
         ...baseCompany,
-        connections: connectionMapping.connections,
-        connectionTypes: connectionMapping.connectionTypes
+        connections: finalConnections,
+        connectionTypes: finalConnectionTypes
       };
+
+      if (removedCompany) {
+        console.log(`🔗 Merged connections: ${removedCompany.connections.length} old + ${connectionMapping.connections.filter(id => !removedCompany.connections.includes(id)).length} new = ${finalConnections.length} total`);
+      }
 
       // Find smart positioning solution
       const positioningSolution = findSmartPositioningSolution(companyWithConnections, existingCompanies);
@@ -245,21 +361,26 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
                                    isPositioningSolutionBeneficial(positioningSolution) &&
                                    onBatchUpdateCompanies;
       
+      // If this is a removed company, restore it first (removes from removedCompanyIds)
+      if (removedCompany && onRestoreRemovedCompany) {
+        onRestoreRemovedCompany(removedCompany);
+      }
+
       if (shouldUseBatchUpdate) {
         console.log(`🎯 Using smart positioning: ${positioningSolution.relocatedCompanies.length} companies positioned`);
-        
+
         // Update all companies (new + relocated)
         const allUpdatedCompanies = [
           ...positioningSolution.stableCompanies,
           ...positioningSolution.relocatedCompanies
         ];
-        
+
         await onBatchUpdateCompanies(allUpdatedCompanies);
       } else {
         console.log('📍 Using simple addition for new company only');
         await onAddCompany(positioningSolution.newCompany);
       }
-      
+
       onClose();
       resetModal();
     } catch (err) {
@@ -287,25 +408,52 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
     }
   }, [isOpen, companyName]);
 
-  // Keyboard accessibility
+  // Keyboard accessibility for suggestions navigation
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions || suggestions.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev =>
+          prev < suggestions.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev => prev > 0 ? prev - 1 : -1);
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < suggestions.length) {
+          handleSuggestionClick(suggestions[selectedSuggestionIndex], true);
+        } else if (companyName.trim()) {
+          handleSearch();
+        }
+        break;
+      case 'Escape':
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+        break;
+    }
+  }, [showSuggestions, suggestions, selectedSuggestionIndex, companyName, handleSearch, handleSuggestionClick]);
+
+  // Global keyboard shortcuts
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) return;
-      
+
       if (e.key === 'Escape') {
         onClose();
-      }
-      if (e.key === 'Enter' && step === 'input' && companyName.trim()) {
-        handleSearch();
       }
       if (e.key === 'Enter' && step === 'confirm') {
         handleConfirm();
       }
     };
-    
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, step, companyName, handleConfirm, handleSearch, onClose]);
+
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    return () => document.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [isOpen, step, handleConfirm, onClose]);
 
   // Enhanced mock data generation when LLM is not available
   const generateEnhancedMockData = useCallback((preview: CompanyPreview, userCMF: UserCMF) => {
@@ -511,6 +659,7 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
                     type="text"
                     value={companyName}
                     onChange={(e) => handleInputChange(e.target.value)}
+                    onKeyDown={handleKeyDown}
                     onFocus={() => {
                       if (suggestions.length > 0) {
                         setShowSuggestions(true);
@@ -537,7 +686,11 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
                         <button
                           key={index}
                           onClick={() => handleSuggestionClick(suggestion)}
-                          className="w-full text-left px-4 py-3 hover:bg-slate-50/80 hover:backdrop-blur-sm flex items-center space-x-3 transition-colors"
+                          className={`w-full text-left px-4 py-3 flex items-center space-x-3 transition-colors border-l-4 ${
+                            index === selectedSuggestionIndex
+                              ? 'bg-blue-100 border-blue-500'
+                              : 'hover:bg-slate-50/80 hover:backdrop-blur-sm border-transparent'
+                          }`}
                         >
                           <div className="relative w-8 h-8 rounded flex-shrink-0 overflow-hidden">
                             <Image 
@@ -552,7 +705,11 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm text-slate-800 truncate">{suggestion.name}</div>
+                            <div className={`text-sm truncate ${
+                              index === selectedSuggestionIndex
+                                ? 'font-semibold text-slate-900'
+                                : 'font-medium text-slate-800'
+                            }`}>{suggestion.name}</div>
                             {suggestion.industry && (
                               <div className="text-xs text-slate-500 truncate">{suggestion.industry}</div>
                             )}

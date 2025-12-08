@@ -97,6 +97,13 @@ span.rounded-full.text-white[style*="background"] {
   line-height: 1 !important; /* tight line height */
 }
 
+/* Sonner toast positioning - center horizontally to match Explore/Watchlist tabs */
+/* Tabs are centered in the left graph container (flex-1), so position at 25% of viewport */
+[data-sonner-toaster][data-position="top-center"] {
+  left: 25% !important;
+  transform: translateX(-50%) !important;
+}
+
 /* Target all possible badge variants */
 .text-lg.font-bold.rounded-full.text-white,
 .text-xs.font-medium.rounded-full.text-white,

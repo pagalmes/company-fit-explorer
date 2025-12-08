@@ -1,9 +1,9 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { ViewMode, Company, UserExplorationState } from '../types';
 import { ExplorationStateManager } from '../services/ExplorationStateManager';
 import { activeUserProfile } from '../data/companies';
 import CompanyGraph from './CompanyGraph';
-import CompanyDetailPanel from './CompanyDetailPanel';
+import CompanyDetailPanel, { CompanyDetailPanelHandle } from './CompanyDetailPanel';
 import AddCompanyModal from './AddCompanyModal';
 import SettingsViewModal from './SettingsViewModal';
 import { RemoveCompanyModal } from './RemoveCompanyModal';
@@ -11,6 +11,7 @@ import EmptyWatchlistModal from './EmptyWatchlistModal';
 import { llmService } from '../utils/llm/service';
 import { loadPanelState, savePanelState } from '../utils/panelStorage';
 import CollapsibleCMFPanel from './CollapsibleCMFPanel';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 // Using inline SVG icons instead of lucide-react
 const SearchIcon = () => (
   <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,7 +71,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   
   // Panel state - default to collapsed for cleaner UI
   const [isCMFPanelCollapsed, setIsCMFPanelCollapsed] = useState<boolean>(true);
-  
+
   // Force re-render trigger for state changes
   const [stateVersion, setStateVersion] = useState(0);
   const forceUpdate = useCallback(() => setStateVersion(v => v + 1), []);
@@ -81,6 +82,39 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   // Separate state for watchlist-only updates (sidebar stats, etc.)
   const [, setWatchlistUpdateTrigger] = useState(0);
   const triggerWatchlistUpdate = useCallback(() => setWatchlistUpdateTrigger(v => v + 1), []);
+
+  // Refs for keyboard shortcuts
+  const companyDetailPanelRef = useRef<CompanyDetailPanelHandle>(null);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    shortcuts: [
+      {
+        key: 'a',
+        description: 'Add company',
+        action: () => setShowAddCompanyModal(true),
+        condition: () => !showAddCompanyModal && !showLLMSettings && !showRemoveConfirmation,
+      },
+      {
+        key: '/',
+        description: 'Focus search',
+        action: () => companyDetailPanelRef.current?.focusSearch(),
+        condition: () => !showAddCompanyModal && !showLLMSettings && !showRemoveConfirmation,
+      },
+      {
+        key: 'e',
+        description: 'Switch to Explore tab',
+        action: () => handleViewModeChange('explore'),
+        condition: () => !showAddCompanyModal && !showLLMSettings && !showRemoveConfirmation,
+      },
+      {
+        key: 'w',
+        description: 'Switch to Watchlist tab',
+        action: () => handleViewModeChange('watchlist'),
+        condition: () => !showAddCompanyModal && !showLLMSettings && !showRemoveConfirmation,
+      },
+    ],
+  });
 
   // Initialize state from companies.ts on mount
   useEffect(() => {
@@ -436,6 +470,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
       {/* Side Panel */}
       <div className="w-96 bg-white border-l border-gray-200 overflow-hidden">
         <CompanyDetailPanel
+          ref={companyDetailPanelRef}
           selectedCompany={selectedCompany}
           allCompanies={allCompanies}
           onCompanySelect={handleCompanySelectFromPanel}
@@ -458,6 +493,9 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
           existingCompanies={allCompanies}
           onCheckForRemovedCompany={checkForRemovedCompany}
           onRestoreRemovedCompany={restoreRemovedCompany}
+          onCompanySelect={handleCompanySelect}
+          onToggleWatchlist={handleToggleWatchlist}
+          isInWatchlist={isInWatchlist}
           userCMF={userCMF}
           viewMode={viewMode}
         />

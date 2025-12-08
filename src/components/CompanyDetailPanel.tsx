@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import Image from 'next/image';
 import { Company, UserCMF } from '../types';
 import { CompanyDetailPanelProps } from '../types/watchlist';
 import { getExternalLinks } from '../utils/externalLinks';
 import JobAlertsModal from './JobAlertsModal';
+
+export interface CompanyDetailPanelHandle {
+  focusSearch: () => void;
+}
 
 /**
  * CompanyDetailPanel Component
@@ -25,7 +29,7 @@ import JobAlertsModal from './JobAlertsModal';
  * @coverage 100% of component logic and user interactions
  * @regressionProtection Prevents broken company selection, career URLs, and data display
  */
-const CompanyDetailPanel: React.FC<CompanyDetailPanelProps & { userCMF?: UserCMF }> = ({
+const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPanelProps & { userCMF?: UserCMF }>(({
   selectedCompany,
   allCompanies,
   onCompanySelect,
@@ -35,10 +39,38 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps & { userCMF?: UserCMF
   viewMode,
   watchlistStats: _watchlistStats,
   userCMF
-}) => {
+}, ref) => {
   const [isMatchReasonsExpanded, setIsMatchReasonsExpanded] = useState(false);
   const [isJobAlertsModalOpen, setIsJobAlertsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCompanyIndex, setSelectedCompanyIndex] = useState(-1);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Expose methods to parent via ref
+  useImperativeHandle(ref, () => ({
+    focusSearch: () => {
+      searchInputRef.current?.focus();
+    },
+  }));
+
+  // Reset selection when search term changes
+  React.useEffect(() => {
+    setSelectedCompanyIndex(-1);
+  }, [searchTerm]);
+
+  // Handle Escape key to deselect company and clear search
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedCompany) {
+        onCompanySelect(null);
+        setSearchTerm('');
+        setSelectedCompanyIndex(-1);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [selectedCompany, onCompanySelect]);
 
   if (!selectedCompany) {
     // Filter companies by search term and view mode
@@ -81,10 +113,39 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps & { userCMF?: UserCMF
           {/* Search Bar */}
           <div className="mt-4 relative">
             <input
+              ref={searchInputRef}
               type="text"
               placeholder="Search companies..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => {
+                if (filteredCompanies.length === 0) return;
+
+                switch (e.key) {
+                  case 'ArrowDown':
+                    e.preventDefault();
+                    setSelectedCompanyIndex(prev =>
+                      prev < filteredCompanies.length - 1 ? prev + 1 : prev
+                    );
+                    break;
+                  case 'ArrowUp':
+                    e.preventDefault();
+                    setSelectedCompanyIndex(prev => prev > 0 ? prev - 1 : -1);
+                    break;
+                  case 'Enter':
+                    e.preventDefault();
+                    if (selectedCompanyIndex >= 0 && selectedCompanyIndex < filteredCompanies.length) {
+                      onCompanySelect(filteredCompanies[selectedCompanyIndex]);
+                    }
+                    break;
+                  case 'Escape':
+                    if (searchTerm) {
+                      setSearchTerm('');
+                      setSelectedCompanyIndex(-1);
+                    }
+                    break;
+                }
+              }}
               className="w-full px-4 py-2 pl-10 pr-10 rounded-lg border border-blue-200 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm placeholder-slate-400"
             />
             <svg
@@ -138,10 +199,14 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps & { userCMF?: UserCMF
             </div>
           ) : (
             <div className="space-y-3">
-              {filteredCompanies.map((company) => (
+              {filteredCompanies.map((company, index) => (
               <div
                 key={company.id}
-                className="flex items-center justify-between p-3 bg-white/50 rounded-lg hover:bg-white/70 cursor-pointer transition-colors border border-blue-100/50"
+                className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors border-l-4 ${
+                  index === selectedCompanyIndex
+                    ? 'bg-blue-100 border-blue-500'
+                    : 'bg-white/50 hover:bg-white/70 border-transparent'
+                } border-r border-t border-b border-blue-100/50`}
                 onClick={() => onCompanySelect(company)}
               >
                 <div className="flex items-center space-x-3">
@@ -165,7 +230,9 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps & { userCMF?: UserCMF
                     )}
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-slate-800">
+                    <h4 className={`text-sm text-slate-800 ${
+                      index === selectedCompanyIndex ? 'font-semibold' : 'font-medium'
+                    }`}>
                       {company.name}
                     </h4>
                     <p className="text-xs text-slate-500">{company.industry}</p>
@@ -552,6 +619,8 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps & { userCMF?: UserCMF
       )}
     </div>
   );
-};
+});
+
+CompanyDetailPanel.displayName = 'CompanyDetailPanel';
 
 export default CompanyDetailPanel;
