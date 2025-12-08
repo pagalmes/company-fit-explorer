@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { LLMSettings } from '../types';
 import { LLM_PROVIDERS } from '../utils/llm/config';
 import { llmService } from '../utils/llm/service';
@@ -50,9 +51,11 @@ const SettingsViewModal: React.FC<SettingsViewModalProps> = ({
                 <div className="flex items-center space-x-3">
                   {selectedProvider ? (
                     <>
-                      <img
+                      <Image
                         src={getCompanyLogo('anthropic.com', 'Anthropic')}
                         alt="Anthropic"
+                        width={48}
+                        height={48}
                         className="w-12 h-12 rounded-lg object-cover"
                       />
                       <div>

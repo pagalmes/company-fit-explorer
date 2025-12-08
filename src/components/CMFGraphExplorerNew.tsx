@@ -114,14 +114,17 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   // Get companies for display based on view mode - include stateVersion to trigger updates
   const displayedCompanies = useMemo(() => {
     return stateManager.getDisplayedCompanies();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateManager, stateVersion]); // Force recalculation on state changes
 
   const allCompanies = useMemo(() => {
     return stateManager.getAllCompanies();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateManager, stateVersion]); // Force recalculation on state changes
 
   const watchlistStats = useMemo(() => {
     return stateManager.getWatchlistStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateManager, stateVersion]); // Force recalculation on state changes
 
   // ===== COMPANY SELECTION =====
