@@ -38,30 +38,107 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps & { userCMF?: UserCMF
 }) => {
   const [isMatchReasonsExpanded, setIsMatchReasonsExpanded] = useState(false);
   const [isJobAlertsModalOpen, setIsJobAlertsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   if (!selectedCompany) {
+    // Filter companies by search term and view mode
+    const filteredCompanies = allCompanies
+      .filter(company => {
+        // View mode filter (watchlist/explore)
+        if (viewMode === 'watchlist' && !isInWatchlist(company.id)) return false;
+
+        // Search filter
+        if (searchTerm) {
+          const term = searchTerm.toLowerCase();
+          return (
+            company.name.toLowerCase().includes(term) ||
+            company.industry.toLowerCase().includes(term) ||
+            company.location.toLowerCase().includes(term)
+          );
+        }
+        return true;
+      })
+      .sort((a, b) => b.matchScore - a.matchScore);
+
+    const totalCompanies = allCompanies.filter(company =>
+      viewMode === 'watchlist' ? isInWatchlist(company.id) : true
+    ).length;
+
     return (
       <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         {/* Header */}
-        <div className="panel-header p-6 border-b border-blue-200/40 bg-white/60 backdrop-blur-sm">
+        <div className="panel-header p-6 pb-4 border-b border-blue-200/40 bg-white/60 backdrop-blur-sm">
           <h2 className="text-xl font-bold text-slate-800">
             {viewMode === 'watchlist' ? 'Your Watchlist' : 'Company Details'}
           </h2>
           <p className="text-sm text-slate-600 mt-1">
-            {viewMode === 'watchlist' 
-              ? 'Companies you\'ve saved for further exploration'
+            {viewMode === 'watchlist'
+              ? 'Companies saved for further exploration'
               : 'Click on a company node to see details'
             }
           </p>
+
+          {/* Search Bar */}
+          <div className="mt-4 relative">
+            <input
+              type="text"
+              placeholder="Search companies..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 pl-10 pr-10 rounded-lg border border-blue-200 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm placeholder-slate-400"
+            />
+            <svg
+              className="absolute left-3 top-2.5 h-5 w-5 text-slate-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+                aria-label="Clear search"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          {/* Results count */}
+          {searchTerm && (
+            <p className="text-xs text-slate-500 mt-2">
+              Showing {filteredCompanies.length} of {totalCompanies} companies
+            </p>
+          )}
         </div>
 
         {/* Company List */}
         <div className="panel-content flex-1 overflow-auto p-6 bg-white/30 backdrop-blur-sm">
-          <div className="space-y-3">
-            {allCompanies
-              .filter(company => viewMode === 'watchlist' ? isInWatchlist(company.id) : true)
-              .sort((a, b) => b.matchScore - a.matchScore)
-              .map((company) => (
+          {filteredCompanies.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center px-4">
+              <svg className="w-16 h-16 text-slate-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <p className="text-slate-600 font-medium">No companies found</p>
+              <p className="text-sm text-slate-500 mt-1">
+                {searchTerm ? `No matches for "${searchTerm}"` : 'No companies available'}
+              </p>
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Clear search
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredCompanies.map((company) => (
               <div
                 key={company.id}
                 className="flex items-center justify-between p-3 bg-white/50 rounded-lg hover:bg-white/70 cursor-pointer transition-colors border border-blue-100/50"
@@ -104,7 +181,8 @@ const CompanyDetailPanel: React.FC<CompanyDetailPanelProps & { userCMF?: UserCMF
                 </div>
               </div>
             ))}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     );
