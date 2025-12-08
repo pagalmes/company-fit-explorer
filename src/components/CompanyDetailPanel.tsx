@@ -58,6 +58,14 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
     setSelectedCompanyIndex(-1);
   }, [searchTerm]);
 
+  // Clear search when company is deselected
+  React.useEffect(() => {
+    if (!selectedCompany) {
+      setSearchTerm('');
+      setSelectedCompanyIndex(-1);
+    }
+  }, [selectedCompany]);
+
   // Handle Escape key to deselect company and clear search
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
