@@ -351,16 +351,34 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
         console.log(`🔗 Merged connections: ${removedCompany.connections.length} old + ${connectionMapping.connections.filter(id => !removedCompany.connections.includes(id)).length} new = ${finalConnections.length} total`);
       }
 
-      // Find smart positioning solution
-      const positioningSolution = findSmartPositioningSolution(companyWithConnections, existingCompanies);
-      
+      // Filter existing companies based on current view for view-specific positioning
+      // In Explore mode: only consider companies NOT in watchlist
+      // In Watchlist mode: only consider companies IN watchlist
+      const viewFilteredCompanies = viewMode === 'watchlist'
+        ? existingCompanies.filter(c => isInWatchlist && isInWatchlist(c.id))
+        : existingCompanies.filter(c => !isInWatchlist || !isInWatchlist(c.id));
+
+      console.log(`🎯 View-specific positioning: ${viewMode} view with ${viewFilteredCompanies.length} companies`);
+
+      // Find smart positioning solution using only companies in current view
+      const positioningSolution = findSmartPositioningSolution(companyWithConnections, viewFilteredCompanies);
+
       console.log(`📍 Positioning solution: ${positioningSolution.reason}`);
-      
+
+      // Store position in view-specific field
+      const newCompanyWithViewPosition = {
+        ...positioningSolution.newCompany,
+        ...(viewMode === 'explore'
+          ? { explorePosition: { angle: positioningSolution.newCompany.angle!, distance: positioningSolution.newCompany.distance! } }
+          : { watchlistPosition: { angle: positioningSolution.newCompany.angle!, distance: positioningSolution.newCompany.distance! } }
+        )
+      };
+
       // Check if we should use batch update (when relocating multiple companies) or simple addition
-      const shouldUseBatchUpdate = positioningSolution.relocatedCompanies.length > 1 && 
+      const shouldUseBatchUpdate = positioningSolution.relocatedCompanies.length > 1 &&
                                    isPositioningSolutionBeneficial(positioningSolution) &&
                                    onBatchUpdateCompanies;
-      
+
       // If this is a removed company, restore it first (removes from removedCompanyIds)
       if (removedCompany && onRestoreRemovedCompany) {
         onRestoreRemovedCompany(removedCompany);
@@ -369,16 +387,18 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
       if (shouldUseBatchUpdate) {
         console.log(`🎯 Using smart positioning: ${positioningSolution.relocatedCompanies.length} companies positioned`);
 
-        // Update all companies (new + relocated)
+        // Update all companies (new + relocated) with view-specific positions
         const allUpdatedCompanies = [
           ...positioningSolution.stableCompanies,
-          ...positioningSolution.relocatedCompanies
+          ...positioningSolution.relocatedCompanies.map(c =>
+            c.id === newCompanyWithViewPosition.id ? newCompanyWithViewPosition : c
+          )
         ];
 
         await onBatchUpdateCompanies(allUpdatedCompanies);
       } else {
         console.log('📍 Using simple addition for new company only');
-        await onAddCompany(positioningSolution.newCompany);
+        await onAddCompany(newCompanyWithViewPosition);
       }
 
       onClose();

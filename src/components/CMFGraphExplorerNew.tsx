@@ -228,6 +228,89 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
 
   // ===== WATCHLIST MANAGEMENT =====
 
+  // Helper to check if a position has no collisions with existing companies
+  const isPositionValid = useCallback((angle: number, distance: number, existingCompanies: Company[]): boolean => {
+    const minAngleSeparation = 10; // 10 degrees
+    const minDistanceSeparation = 50; // 50 pixels
+
+    return !existingCompanies.some(existing => {
+      if (!existing.angle || !existing.distance) return false;
+
+      const angleDiff = Math.min(
+        Math.abs(angle - existing.angle),
+        360 - Math.abs(angle - existing.angle)
+      );
+
+      const distanceDiff = Math.abs(distance - existing.distance);
+
+      // Check for both angle and distance conflicts
+      return (angleDiff < minAngleSeparation && distanceDiff < minDistanceSeparation);
+    });
+  }, []);
+
+  // Helper to recalculate position for a company when moving to a different view
+  const recalculatePositionForView = useCallback((company: Company, targetView: 'explore' | 'watchlist'): Company => {
+    const { findSmartPositioningSolution } = require('../utils/smartPositioning');
+    const { calculateDistanceFromScore } = require('../utils/companyPositioning');
+
+    // Get companies in the target view
+    const viewFilteredCompanies = targetView === 'watchlist'
+      ? allCompanies.filter(c => c.id !== company.id && stateManager.isInWatchlist(c.id))
+      : allCompanies.filter(c => c.id !== company.id && !stateManager.isInWatchlist(c.id));
+
+    console.log(`🔍 Filtering companies for ${targetView}:`);
+    console.log(`   Total companies: ${allCompanies.length}`);
+    console.log(`   Filtered companies: ${viewFilteredCompanies.length}`);
+    console.log(`   Companies in view: ${viewFilteredCompanies.map(c => c.name).join(', ')}`);
+    const adyenCompany = viewFilteredCompanies.find(c => c.name.toLowerCase() === 'adyen');
+    console.log(`   Looking for adyen: ${adyenCompany ? `FOUND at angle=${adyenCompany.angle}°, distance=${adyenCompany.distance}px` : 'NOT FOUND'}`);
+
+    // Try to preserve current position if it's valid in the target view
+    const currentAngle = company.angle;
+    const currentDistance = company.distance;
+    const targetDistance = calculateDistanceFromScore(company.matchScore);
+
+    // Check if we can keep the same position:
+    // 1. Company has a current position
+    // 2. Current distance matches target distance (within tolerance)
+    // 3. No collision with existing companies in target view
+    if (currentAngle !== undefined && currentDistance !== undefined) {
+      const distanceDeviation = Math.abs(currentDistance - targetDistance);
+
+      if (distanceDeviation < 20 && isPositionValid(currentAngle, currentDistance, viewFilteredCompanies)) {
+        console.log(`✅ Preserving position for ${company.name} in ${targetView}: ${currentAngle}°, ${currentDistance}px (no conflicts)`);
+
+        const updatedCompany = {
+          ...company,
+          ...(targetView === 'explore'
+            ? { explorePosition: { angle: currentAngle, distance: currentDistance } }
+            : { watchlistPosition: { angle: currentAngle, distance: currentDistance } }
+          )
+        };
+
+        return updatedCompany;
+      }
+    }
+
+    // Position not valid or doesn't exist - calculate new position
+    console.log(`🔄 Recalculating position for ${company.name} in ${targetView} (current position invalid or doesn't exist)`);
+
+    const positioningSolution = findSmartPositioningSolution(company, viewFilteredCompanies, targetView);
+    const { angle, distance } = positioningSolution.newCompany;
+
+    // Store in view-specific position
+    const updatedCompany = {
+      ...company,
+      ...(targetView === 'explore'
+        ? { explorePosition: { angle: angle!, distance: distance! } }
+        : { watchlistPosition: { angle: angle!, distance: distance! } }
+      )
+    };
+
+    console.log(`📍 New position for ${company.name} in ${targetView}: ${angle}°, ${distance}px`);
+    return updatedCompany;
+  }, [allCompanies, stateManager, isPositionValid]);
+
   // Centralized fade-out helper for smooth transitions
   const startFadeOut = useCallback((companyId: number) => {
     // Add to fading set
@@ -250,7 +333,17 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
     const wasInWatchlist = stateManager.isInWatchlist(companyId);
     const company = allCompanies.find(c => c.id === companyId);
 
+    if (!company) return;
+
+    // Toggle watchlist status FIRST so that recalculation sees the correct state
     stateManager.toggleWatchlist(companyId);
+
+    // Recalculate position for the target view (now with updated watchlist state)
+    const targetView = wasInWatchlist ? 'explore' : 'watchlist';
+    const companyWithNewPosition = recalculatePositionForView(company, targetView);
+
+    // Update company in state manager with new position
+    stateManager.updateCompany(companyWithNewPosition);
 
     // Show toast notification
     if (!wasInWatchlist && company) {
@@ -305,7 +398,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
 
     // Trigger minimal update for sidebar stats without affecting graph rendering
     triggerWatchlistUpdate();
-  }, [stateManager, triggerWatchlistUpdate, forceUpdate, viewMode, allCompanies, fadingCompanyIds, startFadeOut]);
+  }, [stateManager, triggerWatchlistUpdate, forceUpdate, viewMode, allCompanies, fadingCompanyIds, startFadeOut, recalculatePositionForView]);
 
   const isInWatchlist = useCallback((companyId: number): boolean => {
     return stateManager.isInWatchlist(companyId);

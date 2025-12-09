@@ -123,7 +123,7 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       cyInstance.current.destroy();
     }
 
-    const graphData = transformToGraphData(cmf, companies, watchlistCompanyIds);
+    const graphData = transformToGraphData(cmf, companies, watchlistCompanyIds, viewMode);
     
     try {
       cyInstance.current = cytoscape({
@@ -370,7 +370,7 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
         cyInstance.current.destroy();
       }
     };
-  }, [cmf, companies, watchlistCompanyIds]);
+  }, [cmf, companies, watchlistCompanyIds, viewMode]);
 
   // Handle watchlist changes without recreating the graph
   useEffect(() => {

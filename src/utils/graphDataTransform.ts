@@ -19,20 +19,36 @@ import { UserCMF, Company, GraphData } from '../types';
  */
 
 // EXACT positioning algorithm from wireframe - DO NOT modify
-export const calculatePosition = (company: Company, centerX: number, centerY: number, zoom: number = 1) => {
+export const calculatePosition = (company: Company, centerX: number, centerY: number, zoom: number = 1, viewMode?: 'explore' | 'watchlist') => {
+  // Use view-specific position if available, fallback to global position
+  let angle: number;
+  let distance: number;
+
+  if (viewMode === 'explore' && company.explorePosition) {
+    angle = company.explorePosition.angle;
+    distance = company.explorePosition.distance;
+  } else if (viewMode === 'watchlist' && company.watchlistPosition) {
+    angle = company.watchlistPosition.angle;
+    distance = company.watchlistPosition.distance;
+  } else {
+    // Fallback to global position (backward compatibility)
+    angle = company.angle || 0;
+    distance = company.distance || 100;
+  }
+
   // Convert angle to radians
-  const angleRad = ((company.angle || 0) * Math.PI) / 180;
-  
+  const angleRad = (angle * Math.PI) / 180;
+
   // Use the exact distance from our data (NOT calculated from match score)
-  const distance = (company.distance || 100) * zoom;
-  
+  const scaledDistance = distance * zoom;
+
   return {
-    x: centerX + Math.cos(angleRad) * distance,
-    y: centerY + Math.sin(angleRad) * distance
+    x: centerX + Math.cos(angleRad) * scaledDistance,
+    y: centerY + Math.sin(angleRad) * scaledDistance
   };
 };
 
-export const transformToGraphData = (cmf: UserCMF, companies: Company[], _watchlistCompanyIds?: Set<number>): GraphData => {
+export const transformToGraphData = (cmf: UserCMF, companies: Company[], _watchlistCompanyIds?: Set<number>, viewMode?: 'explore' | 'watchlist'): GraphData => {
   const centerX = 400;
   const centerY = 300;
   
@@ -80,12 +96,12 @@ export const transformToGraphData = (cmf: UserCMF, companies: Company[], _watchl
         type: 'company' as const,
         company: company
       },
-      position: calculatePosition(company, centerX, centerY, 1)
+      position: calculatePosition(company, centerX, centerY, 1, viewMode)
     })),
     // Company name labels - positioned below each company
     ...companies.map(company => {
-      const pos = calculatePosition(company, centerX, centerY, 1);
-      
+      const pos = calculatePosition(company, centerX, centerY, 1, viewMode);
+
       return {
         data: {
           id: `name-label-${company.id}`,
@@ -98,7 +114,7 @@ export const transformToGraphData = (cmf: UserCMF, companies: Company[], _watchl
     }),
     // Company percentage labels - positioned below the name labels
     ...companies.map(company => {
-      const pos = calculatePosition(company, centerX, centerY, 1);
+      const pos = calculatePosition(company, centerX, centerY, 1, viewMode);
       return {
         data: {
           id: `percent-label-${company.id}`,
@@ -106,7 +122,7 @@ export const transformToGraphData = (cmf: UserCMF, companies: Company[], _watchl
           type: 'company-percent-label' as const,
           company: company
         },
-        position: { x: pos.x, y: pos.y + 26 } // Closer to the name label
+        position: { x: pos.x, y: pos.y + 26 } // Below the name label
       };
     })
   ];
@@ -251,7 +267,7 @@ export const getCytoscapeStyles = (): any[] => [
       'color': '#dbeafe', // Light blue to match onboarding text (text-blue-100)
       'text-wrap': 'wrap',
       'text-max-width': '55px',
-      'z-index': 5,
+      'z-index': 2, // Below company nodes (z-index: 5)
       'events': 'no'
     }
   },
@@ -272,7 +288,7 @@ export const getCytoscapeStyles = (): any[] => [
       'color': '#6B7280', // Lighter gray color for percentage
       'text-wrap': 'wrap',
       'text-max-width': '55px',
-      'z-index': 5,
+      'z-index': 2, // Below company nodes (z-index: 5)
       'events': 'no'
     }
   },

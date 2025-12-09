@@ -209,15 +209,27 @@ const calculateDistance = (pos1: Position, pos2: Position): number => {
  * Higher scores = closer to center
  */
 export const calculateDistanceFromScore = (matchScore: number): number => {
-  // More nuanced distance calculation for better distribution
-  if (matchScore >= 95) return 75;   // Excellent companies very close
-  if (matchScore >= 90) return 85;   // Excellent range  
-  if (matchScore >= 85) return 100;  // Very good
-  if (matchScore >= 80) return 115;  // Good range
-  if (matchScore >= 75) return 135;  // Decent
-  if (matchScore >= 70) return 155;  // Fair
-  if (matchScore >= 65) return 175;  // Below average
-  return 195; // Poor matches furthest out
+  // Hybrid approach optimized for typical score distribution:
+  // - 90-100%: few companies (5-8) → very compressed at 75-85px
+  // - 70-89%: most companies → spread over 85-240px (main focus area)
+  // - <70%: outliers → compressed at 240-300px
+
+  if (matchScore >= 90) {
+    // Top tier (90-100%): 5-8 companies, very compressed near center
+    // Linear: 100% → 75px, 90% → 85px (10px range for 10%)
+    const distance = 75 + ((100 - matchScore) / 10) * 10;
+    return Math.round(distance);
+  } else if (matchScore >= 70) {
+    // Main range (70-89%): most companies, maximum spread for visual clarity
+    // Linear: 90% → 85px, 70% → 240px (155px range for 20%)
+    const distance = 85 + ((90 - matchScore) / 20) * 155;
+    return Math.round(distance);
+  } else {
+    // Low scores (<70%): outliers, compressed far from center
+    // Linear: 70% → 240px, 0% → 300px (60px range for 70%)
+    const distance = 240 + ((70 - matchScore) / 70) * 60;
+    return Math.round(distance);
+  }
 };
 
 /**

@@ -26,6 +26,9 @@ export interface Company {
   color: string;
   angle?: number;
   distance?: number;
+  // View-specific positions for exclusive Explore/Watchlist views
+  explorePosition?: { angle: number; distance: number };
+  watchlistPosition?: { angle: number; distance: number };
   externalLinks?: {
     website?: string;
     linkedin?: string;
