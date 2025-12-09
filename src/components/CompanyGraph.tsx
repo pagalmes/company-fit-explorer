@@ -546,13 +546,12 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
   }, [fadingCompanyIds]);
 
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full relative" data-cy="cytoscape-container">
       {/* Cytoscape Graph Container */}
-      <div 
-        ref={cyRef} 
+      <div
+        ref={cyRef}
         className="w-full h-full"
         style={{ cursor: 'grab', backgroundColor: 'transparent' }}
-        data-cy="cytoscape-container"
       />
       
       {/* Custom Spark Center Node - positioned to match Cytoscape center */}
