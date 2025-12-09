@@ -7,6 +7,8 @@ import CompanyDetailPanel from './CompanyDetailPanel';
 import AddCompanyModal from './AddCompanyModal';
 import LLMSettingsModal from './LLMSettingsModal';
 import { RemoveCompanyModal } from './RemoveCompanyModal';
+import { SpeedDialFAB } from './SpeedDialFAB';
+import { BatchImportPlaceholderModal } from './BatchImportPlaceholderModal';
 import { loadCustomCompanies, addCustomCompany, setupCrossTabSync } from '../utils/companyStateManager';
 import { llmService } from '../utils/llm/service';
 import { loadRemovedCompaniesFromStorage, saveRemovedCompaniesToStorage } from '../utils/removedCompaniesStorage';
@@ -19,7 +21,11 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userCMF, companies:
   
   // Add Company modal state
   const [showAddCompanyModal, setShowAddCompanyModal] = useState(false);
-  
+
+  // Batch import modal states
+  const [showPasteModal, setShowPasteModal] = useState(false);
+  const [showScreenshotModal, setShowScreenshotModal] = useState(false);
+
   // LLM Settings modal state
   const [showLLMSettings, setShowLLMSettings] = useState(false);
   const [llmConfigured, setLLMConfigured] = useState(llmService.isConfigured());
@@ -440,22 +446,13 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userCMF, companies:
           </div>
         )}
 
-        {/* Add Company Button */}
-        <div className="absolute bottom-6 right-6 z-10">
-          <button
-            onClick={() => setShowAddCompanyModal(true)}
-            className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white 
-              rounded-full shadow-lg hover:shadow-xl 
-              transition-all duration-200 ease-in-out
-              flex items-center justify-center
-              hover:scale-105 active:scale-95
-              focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50"
-            title="Add Company"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
+        {/* Speed Dial FAB */}
+        <div className="absolute bottom-6 right-6">
+          <SpeedDialFAB
+            onAddCompany={() => setShowAddCompanyModal(true)}
+            onPasteList={() => setShowPasteModal(true)}
+            onScreenshotImport={() => setShowScreenshotModal(true)}
+          />
         </div>
       </div>
 
@@ -498,6 +495,18 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userCMF, companies:
         company={companyToRemove}
         onConfirm={handleRemoveConfirm}
         onCancel={handleRemoveCancel}
+      />
+
+      {/* Batch Import Placeholder Modals */}
+      <BatchImportPlaceholderModal
+        isOpen={showPasteModal}
+        onClose={() => setShowPasteModal(false)}
+        type="paste"
+      />
+      <BatchImportPlaceholderModal
+        isOpen={showScreenshotModal}
+        onClose={() => setShowScreenshotModal(false)}
+        type="screenshot"
       />
     </div>
   );

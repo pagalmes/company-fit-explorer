@@ -1,0 +1,182 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { DEFAULT_ANTHROPIC_MODEL } from '@/utils/llm/config';
+
+interface ExtractedCompany {
+  name: string;
+  url?: string;
+  careerUrl?: string;
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const { text, html } = await request.json();
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+
+    if (!apiKey) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'ANTHROPIC_API_KEY not configured in environment variables'
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!text || typeof text !== 'string') {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Text parameter is required'
+        },
+        { status: 400 }
+      );
+    }
+
+    // Clean HTML by extracting only text and links (remove all styling, scripts, metadata)
+    let contentToAnalyze = text;
+    let extractedLinks: Array<{ text: string; url: string }> = [];
+
+    if (html) {
+      try {
+        // Parse HTML and extract links
+        const linkRegex = /<a[^>]*href=["']([^"']+)["'][^>]*>(.*?)<\/a>/gi;
+        let match;
+        while ((match = linkRegex.exec(html)) !== null) {
+          const url = match[1];
+          const linkText = match[2].replace(/<[^>]*>/g, '').trim();
+          if (linkText && !url.startsWith('mailto:') && !url.startsWith('tel:')) {
+            extractedLinks.push({ text: linkText, url });
+          }
+        }
+      } catch (e) {
+        console.error('Failed to parse HTML links:', e);
+      }
+    }
+
+    // Build prompt with clean text and extracted links
+    const prompt = `Extract all company names from the following text. ${extractedLinks.length > 0 ? 'I have provided hyperlinks that may contain useful information.' : ''}
+
+Return company information with:
+- name: The company name
+- url: The company's main website domain (inferred from the company name and any available URLs)
+- careerUrl: The direct careers/jobs page URL if a link was provided
+
+Instructions for inferring "url" (company website):
+- Use the company name as the primary signal
+- Look for clues in any provided URLs (e.g., LinkedIn company slugs, URL paths, subdomains)
+- Examples:
+  * "Teleskope" + "linkedin.com/company/teleskopeai" → url: "https://teleskope.ai"
+  * "Strella" + "www.strella.io/careers" → url: "https://strella.io"
+  * "WellTheory" + "notion.so/Work-at-WellTheory-..." → url: "https://welltheory.com"
+  * "Defakto Security" + "www.defakto.security/careers/" → url: "https://defakto.security"
+- Do NOT use third-party platforms as the company URL: ashbyhq.com, greenhouse.io, lever.co, workable.com, notion.so, gem.com, comeet.com
+- Make your best educated guess based on the company name and context
+
+Instructions for "careerUrl":
+- Use the exact URL provided for that company (can be any platform - Ashby, Greenhouse, Notion, LinkedIn, company website, etc.)
+
+Rules:
+- Extract only real company/organization names, not generic terms
+- Omit fields you cannot confidently determine
+- Return empty companies array if no companies found
+
+Text to analyze:
+${contentToAnalyze}${extractedLinks.length > 0 ? `\n\nHyperlinks found in the text (these are mostly career pages):\n${extractedLinks.map(link => `- "${link.text}" -> ${link.url}`).join('\n')}` : ''}`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-beta': 'structured-outputs-2025-11-13'
+      },
+      body: JSON.stringify({
+        model: DEFAULT_ANTHROPIC_MODEL,
+        max_tokens: 1500,
+        temperature: 0.1, // Low temperature for consistent extraction
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        output_format: {
+          type: 'json_schema',
+          schema: {
+            type: 'object',
+            properties: {
+              companies: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    name: { type: 'string' },
+                    url: { type: 'string' },
+                    careerUrl: { type: 'string' }
+                  },
+                  required: ['name'],
+                  additionalProperties: false
+                }
+              }
+            },
+            required: ['companies'],
+            additionalProperties: false
+          }
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data.content?.[0]?.text;
+
+    if (!content) {
+      throw new Error('No content in response');
+    }
+
+    // Parse the JSON response (with structured outputs, it's guaranteed valid JSON)
+    let result: { companies: ExtractedCompany[] };
+    try {
+      result = JSON.parse(content);
+    } catch (parseError) {
+      console.error('Failed to parse LLM response:', content);
+      throw new Error('Failed to parse company list from LLM response');
+    }
+
+    // Validate the response structure
+    if (!result.companies || !Array.isArray(result.companies)) {
+      throw new Error('LLM response does not contain companies array');
+    }
+
+    // Clean and validate each company
+    const validCompanies = result.companies
+      .filter(c => c && typeof c === 'object' && typeof c.name === 'string')
+      .map(c => ({
+        name: c.name.trim(),
+        ...(c.url && typeof c.url === 'string' && c.url.trim() ? { url: c.url.trim() } : {}),
+        ...(c.careerUrl && typeof c.careerUrl === 'string' && c.careerUrl.trim() ? { careerUrl: c.careerUrl.trim() } : {})
+      }))
+      .filter(c => c.name.length > 0 && c.name.length < 100);
+
+    return NextResponse.json({
+      success: true,
+      companies: validCompanies
+    });
+
+  } catch (error) {
+    console.error('Extract companies API error:', error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to extract companies'
+      },
+      { status: 500 }
+    );
+  }
+}

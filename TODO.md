@@ -10,8 +10,11 @@
 TODO: Think through "Tabs" for new companies
 TODO: "Inbox" to drop new companies to consider
 TODO: "Dailies & Jobs" for new companies to consider from alerts
-TODO: Enable adding more companies
+TODO: Enable batch-adding companies: From a text post
+TODO: Enable batch-adding companies: From a screenshot
 TODO: Extract and generate a few profiles.
+
+
 
 ## Improvements
 
@@ -19,9 +22,17 @@ TODO: Extract and generate a few profiles.
 <!-- DONE: Right pane: Add a search bar to research companies when looking at the full list. -->
 <!-- DONE: Keyboard shortcuts: 'a' - open "add company" modal ; '/' - go to search company -->
 <!-- DONE: Keyboard shortcuts: 'e' - display "explore" tab ; 'w' - display "watchlist" tab -->
-<!-- DONE: Add a list of keyboard shortcuts -->
+<!-- DONE": Keyboard shortcuts: '?' to open modal with keyboard shortcuts -->
+<!-- DONE: Keyboard shortcuts: Add link in 'settings' modal to open the keyboard shortcuts modal -->
+<!-- DONE: Right Pane: Add to Watchlist: Add heart next to the company name & remove button -->
+<!-- DONE: Zoom: define default zoom to view all companies --> 
+<!-- DONE: Explore / Watchlist: Place new companies added better to avoid overlap -->
+<!-- DONE: Explore / Watchlist: Each company is in only one of the views --> 
+<!-- DONE: Explore / Watchlist: Smarter repositionning of company when transitionned from explore/watchlist view --> 
 
-TODO: Allow to manually move companies to reduce overlap
+<!-- DONE: --> 
+
+TODO: (Maybe) Allow to manually move companies to reduce overlap
 
 TODO: Future: Setup Alerts: Implement other ways to setup alerts for new jobs for a specific company. (E.g. Crawling or Welcmo to the jungle...)
 
@@ -29,15 +40,17 @@ TODO: When creating the first company set for a new user, ensure that the layout
 
 TODO: Related Companies: Currently, the relationships between related companies are a bit random. Try to iron that out. E.g. related companies are companies in similar industry / competitors... (E.g. Fintech...) 
 
+### Minor
+
+FIXME: Fix the Sonner toast positionning to be centered under the tabs.
 
 
-## Bug Fixes1
+## Bug Fixes
 
 <!-- DONE: Admin: Masquerade considers deleted companies and watchlist -->
 <!-- DONE: Watchlist Right Pane: Display only companies in the Watchlist. -->
 <!-- DONE: Watchlist: When adding a company from the Watchlist view, add it to the watchlist. (currently not the case) -->
-
-WIP: When adding a new company, check if the company is already present. 1: if company already in the list (and not removed) then just state already in the list. 2: if company was removed by the user, then re-add it. (with refresh the data)
+<!-- DONE: When adding a new company, check if the company is already present. 1: if company already in the list (and not removed) then just state already in the list. 2: if company was removed by the user, then re-add it. (with refresh the data) -->
 
 FIXME: Right pane: Company reserach buttons behave differently from action buttons
 FIXME: Right pane: disappears when changing browser zoom levels

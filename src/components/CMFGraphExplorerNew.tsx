@@ -11,6 +11,7 @@ import EmptyWatchlistModal from './EmptyWatchlistModal';
 import KeyboardShortcutsModal from './KeyboardShortcutsModal';
 import { SpeedDialFAB } from './SpeedDialFAB';
 import { BatchImportPlaceholderModal } from './BatchImportPlaceholderModal';
+import { PasteCompanyListModal } from './PasteCompanyListModal';
 import { llmService } from '../utils/llm/service';
 import { loadPanelState, savePanelState } from '../utils/panelStorage';
 import CollapsibleCMFPanel from './CollapsibleCMFPanel';
@@ -431,6 +432,129 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
     }
   }, [stateManager, forceUpdate, viewMode]);
 
+  const handleBatchAddCompanies = useCallback(async (companiesData: Array<{ name: string; logo: string; careerUrl?: string; domain?: string }>) => {
+    try {
+      console.log(`🚀 Starting batch import of ${companiesData.length} companies`);
+
+      const { toast } = await import('sonner');
+      const userCMF = stateManager.getUserCMF();
+
+      let successCount = 0;
+      let failureCount = 0;
+
+      // Import each company with full LLM analysis
+      for (const companyData of companiesData) {
+        try {
+          console.log(`📊 Analyzing ${companyData.name}...`);
+
+          let fullCompanyData;
+
+          if (llmService.isConfigured()) {
+            const llmResponse = await llmService.analyzeCompany({
+              companyName: companyData.name,
+              userCMF: {
+                targetRole: userCMF.targetRole || 'Exploring career opportunities',
+                mustHaves: userCMF.mustHaves || [],
+                wantToHave: userCMF.wantToHave || [],
+                experience: userCMF.experience || [],
+                targetCompanies: userCMF.targetCompanies || 'Open to exploring various companies and industries'
+              },
+              isNewUser: !userCMF.targetRole && userCMF.mustHaves.length === 0
+            });
+
+            if (llmResponse.success && llmResponse.data) {
+              fullCompanyData = llmResponse.data;
+            } else {
+              console.warn(`LLM analysis failed for ${companyData.name}, skipping`);
+              failureCount++;
+              continue; // Skip this company
+            }
+          } else {
+            console.warn(`LLM not configured, skipping ${companyData.name}`);
+            failureCount++;
+            continue; // Skip this company
+          }
+
+          // Get current companies for positioning (view-specific)
+          const currentCompanies = stateManager.getAllCompanies();
+          const viewFilteredCompanies = viewMode === 'watchlist'
+            ? currentCompanies.filter(c => stateManager.isInWatchlist(c.id))
+            : currentCompanies.filter(c => !stateManager.isInWatchlist(c.id));
+
+          // Create full Company object
+          const newCompany: Company = {
+            id: Date.now() + successCount,
+            name: fullCompanyData.name,
+            logo: companyData.logo,
+            careerUrl: companyData.careerUrl || '',
+            matchScore: fullCompanyData.matchScore,
+            industry: fullCompanyData.industry,
+            stage: fullCompanyData.stage,
+            location: fullCompanyData.location,
+            employees: fullCompanyData.employees,
+            remote: fullCompanyData.remote,
+            openRoles: fullCompanyData.openRoles,
+            connections: fullCompanyData.connections || [],
+            connectionTypes: fullCompanyData.connectionTypes || {},
+            matchReasons: fullCompanyData.matchReasons,
+            description: fullCompanyData.description,
+            color: `hsl(${(successCount * 360) / companiesData.length}, 70%, 60%)`,
+          };
+
+          // Calculate smart position for this company
+          const { findSmartPositioningSolution } = require('../utils/smartPositioning');
+          const positioningSolution = findSmartPositioningSolution(newCompany, viewFilteredCompanies);
+
+          // Apply position to company
+          const positionedCompany = {
+            ...positioningSolution.newCompany,
+            ...(viewMode === 'explore'
+              ? { explorePosition: { angle: positioningSolution.newCompany.angle!, distance: positioningSolution.newCompany.distance! } }
+              : { watchlistPosition: { angle: positioningSolution.newCompany.angle!, distance: positioningSolution.newCompany.distance! } }
+            )
+          };
+
+          // Add company to state
+          const addedCompany = stateManager.addCompany(positionedCompany);
+
+          // Auto-add to watchlist if in watchlist view mode
+          if (viewMode === 'watchlist') {
+            stateManager.toggleWatchlist(addedCompany.id);
+          }
+
+          successCount++;
+          console.log(`✅ Added ${companyData.name} (${successCount}/${companiesData.length})`);
+
+          // Force re-render to show this company
+          forceUpdate();
+
+        } catch (error) {
+          console.error(`❌ Failed to import ${companyData.name}:`, error);
+          failureCount++;
+        }
+      }
+
+      // Dismiss loading toast and show result
+      toast.dismiss('batch-import');
+
+      if (failureCount === 0) {
+        toast.success(`Successfully imported ${successCount} ${successCount === 1 ? 'company' : 'companies'}`);
+      } else {
+        toast.warning(`Imported ${successCount} companies`, {
+          description: `${failureCount} ${failureCount === 1 ? 'company' : 'companies'} failed to import`
+        });
+      }
+
+    } catch (error) {
+      console.error('Batch import error:', error);
+      const { toast } = await import('sonner');
+      toast.dismiss('batch-import');
+      toast.error('Failed to import companies', {
+        description: error instanceof Error ? error.message : 'Please try again'
+      });
+    }
+  }, [stateManager, forceUpdate, viewMode]);
+
   const handleBatchUpdateCompanies = useCallback(async (updatedCompanies: Company[]) => {
     try {
       console.log('🎯 Performing batch company update with smart repositioning');
@@ -713,12 +837,17 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
         onClose={() => setShowKeyboardShortcuts(false)}
       />
 
-      {/* Batch Import Placeholder Modals */}
-      <BatchImportPlaceholderModal
+      {/* Paste Company List Modal */}
+      <PasteCompanyListModal
         isOpen={showPasteModal}
         onClose={() => setShowPasteModal(false)}
-        type="paste"
+        onImportCompanies={handleBatchAddCompanies}
+        existingCompanies={stateManager.getAllCompanies()}
+        viewMode={viewMode}
+        onShowLLMSettings={() => setShowLLMSettings(true)}
       />
+
+      {/* Screenshot Import Placeholder Modal */}
       <BatchImportPlaceholderModal
         isOpen={showScreenshotModal}
         onClose={() => setShowScreenshotModal(false)}

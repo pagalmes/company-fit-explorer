@@ -96,6 +96,43 @@ export class LLMService {
   }
 
   /**
+   * Extract company names from text using LLM
+   * @param text - The text to extract company names from
+   * @param html - Optional HTML content with hyperlinks
+   */
+  async extractCompanies(text: string, html?: string): Promise<{ name: string; url?: string; careerUrl?: string }[]> {
+    if (!this.isConfigured()) {
+      throw new Error('LLM not configured. Please configure your API key in settings.');
+    }
+
+    try {
+      const response = await fetch('/api/llm/anthropic/extract-companies', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text, html })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to extract companies');
+      }
+
+      return data.companies || [];
+    } catch (error) {
+      console.error('Extract companies failed:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Estimate cost for a company analysis
    */
   async estimateCost(companyName: string, userCMF: any): Promise<number> {
