@@ -9,6 +9,8 @@ import SettingsViewModal from './SettingsViewModal';
 import { RemoveCompanyModal } from './RemoveCompanyModal';
 import EmptyWatchlistModal from './EmptyWatchlistModal';
 import KeyboardShortcutsModal from './KeyboardShortcutsModal';
+import { SpeedDialFAB } from './SpeedDialFAB';
+import { BatchImportPlaceholderModal } from './BatchImportPlaceholderModal';
 import { llmService } from '../utils/llm/service';
 import { loadPanelState, savePanelState } from '../utils/panelStorage';
 import CollapsibleCMFPanel from './CollapsibleCMFPanel';
@@ -65,6 +67,8 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   
   // Modal states
   const [showAddCompanyModal, setShowAddCompanyModal] = useState(false);
+  const [showPasteModal, setShowPasteModal] = useState(false);
+  const [showScreenshotModal, setShowScreenshotModal] = useState(false);
   const [showLLMSettings, setShowLLMSettings] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
   const [llmConfigured, setLLMConfigured] = useState(llmService.isConfigured());
@@ -620,22 +624,13 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
           fadingCompanyIds={fadingCompanyIds}
         />
 
-        {/* Add Company Button */}
-        <div className="absolute bottom-6 right-6 z-10">
-          <button
-            onClick={() => setShowAddCompanyModal(true)}
-            className="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white 
-              rounded-full shadow-lg hover:shadow-xl 
-              transition-all duration-200 ease-in-out
-              flex items-center justify-center
-              hover:scale-105 active:scale-95
-              focus:outline-none"
-            title="Add Company"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
+        {/* Speed Dial FAB */}
+        <div className="absolute bottom-6 right-6">
+          <SpeedDialFAB
+            onAddCompany={() => setShowAddCompanyModal(true)}
+            onPasteList={() => setShowPasteModal(true)}
+            onScreenshotImport={() => setShowScreenshotModal(true)}
+          />
         </div>
 
         {/* LLM Settings */}
@@ -716,6 +711,18 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
       <KeyboardShortcutsModal
         isOpen={showKeyboardShortcuts}
         onClose={() => setShowKeyboardShortcuts(false)}
+      />
+
+      {/* Batch Import Placeholder Modals */}
+      <BatchImportPlaceholderModal
+        isOpen={showPasteModal}
+        onClose={() => setShowPasteModal(false)}
+        type="paste"
+      />
+      <BatchImportPlaceholderModal
+        isOpen={showScreenshotModal}
+        onClose={() => setShowScreenshotModal(false)}
+        type="screenshot"
       />
 
       <EmptyWatchlistModal
