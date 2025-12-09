@@ -481,6 +481,16 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
             ? currentCompanies.filter(c => stateManager.isInWatchlist(c.id))
             : currentCompanies.filter(c => !stateManager.isInWatchlist(c.id));
 
+          // Map connection names to IDs
+          const { mapConnectionsToExistingCompanies } = require('../utils/companyPositioning');
+          const connectionTypesForMapping = fullCompanyData.connectionTypes || {};
+          const baseCompanyForMapping = {
+            id: Date.now() + successCount,
+            name: fullCompanyData.name,
+            connectionTypes: connectionTypesForMapping
+          };
+          const connectionMapping = mapConnectionsToExistingCompanies(baseCompanyForMapping as Company, currentCompanies);
+
           // Create full Company object
           const newCompany: Company = {
             id: Date.now() + successCount,
@@ -494,10 +504,9 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
             employees: fullCompanyData.employees,
             remote: fullCompanyData.remote,
             openRoles: fullCompanyData.openRoles,
-            connections: fullCompanyData.connections || [],
-            connectionTypes: fullCompanyData.connectionTypes || {},
+            connections: connectionMapping.connections,
+            connectionTypes: connectionMapping.connectionTypes,
             matchReasons: fullCompanyData.matchReasons,
-            description: fullCompanyData.description,
             color: `hsl(${(successCount * 360) / companiesData.length}, 70%, 60%)`,
           };
 
