@@ -58,17 +58,22 @@ export class ExplorationStateManager {
 
   /**
    * Get companies for current view mode
+   * Explore view excludes watchlisted companies for cleaner discovery
+   * Watchlist view shows only watchlisted companies
    */
   getDisplayedCompanies(): Company[] {
     const allCompanies = this.getAllCompanies();
-    
+
     if (this.currentState.viewMode === 'watchlist') {
       return allCompanies.filter(company =>
         this.currentState.watchlistCompanyIds.includes(company.id)
       );
     }
-    
-    return allCompanies;
+
+    // Explore mode: exclude watchlisted companies (exclusive views)
+    return allCompanies.filter(company =>
+      !this.currentState.watchlistCompanyIds.includes(company.id)
+    );
   }
 
   /**

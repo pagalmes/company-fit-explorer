@@ -90,7 +90,8 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
   onCMFToggle,
   watchlistCompanyIds = new Set(),
   viewMode = 'explore',
-  hideCenter = false
+  hideCenter = false,
+  fadingCompanyIds = new Set()
 }) => {
   const cyRef = useRef<HTMLDivElement>(null);
   const cyInstance = useRef<cytoscape.Core | null>(null);
@@ -480,6 +481,69 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCompany]);
+
+  // Apply fading animation to companies being added to watchlist
+  useEffect(() => {
+    const cy = cyInstance.current;
+    if (!cy) return;
+
+    // Get all company nodes to reset opacity for companies no longer fading
+    const allCompanyNodes = cy.nodes('[type="company"]');
+    const allNameLabels = cy.nodes('[type="company-name-label"]');
+    const allPercentLabels = cy.nodes('[type="company-percent-label"]');
+
+    // Reset opacity for companies that are no longer in fading set
+    allCompanyNodes.forEach((node: any) => {
+      const companyId = node.data('company')?.id;
+      if (companyId && !fadingCompanyIds.has(companyId)) {
+        // Stop any ongoing animation and reset opacity
+        node.stop(true, false).style('opacity', 1);
+      }
+    });
+
+    allNameLabels.forEach((label: any) => {
+      const companyId = parseInt(label.id().replace('name-label-', ''));
+      if (companyId && !fadingCompanyIds.has(companyId)) {
+        label.stop(true, false).style('opacity', 1);
+      }
+    });
+
+    allPercentLabels.forEach((label: any) => {
+      const companyId = parseInt(label.id().replace('percent-label-', ''));
+      if (companyId && !fadingCompanyIds.has(companyId)) {
+        label.stop(true, false).style('opacity', 1);
+      }
+    });
+
+    // Animate companies in the fading set to opacity 0
+    fadingCompanyIds.forEach(companyId => {
+      const node = cy.getElementById(`company-${companyId}`);
+      const nameLabel = cy.getElementById(`name-label-${companyId}`);
+      const percentLabel = cy.getElementById(`percent-label-${companyId}`);
+
+      if (node.length > 0) {
+        node.animate({
+          style: { opacity: 0 },
+          duration: 4000,
+          easing: 'ease-out'
+        });
+      }
+      if (nameLabel.length > 0) {
+        nameLabel.animate({
+          style: { opacity: 0 },
+          duration: 4000,
+          easing: 'ease-out'
+        });
+      }
+      if (percentLabel.length > 0) {
+        percentLabel.animate({
+          style: { opacity: 0 },
+          duration: 4000,
+          easing: 'ease-out'
+        });
+      }
+    });
+  }, [fadingCompanyIds]);
 
   return (
     <div className="w-full h-full relative">

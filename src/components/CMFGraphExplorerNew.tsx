@@ -85,6 +85,9 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   const [, setWatchlistUpdateTrigger] = useState(0);
   const triggerWatchlistUpdate = useCallback(() => setWatchlistUpdateTrigger(v => v + 1), []);
 
+  // Track companies that are fading out (added to watchlist in Explore mode)
+  const [fadingCompanyIds, setFadingCompanyIds] = useState<Set<number>>(new Set());
+
   // Refs for keyboard shortcuts
   const companyDetailPanelRef = useRef<CompanyDetailPanelHandle>(null);
 
@@ -154,21 +157,37 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
     // });
   }, [stateManager]);
 
-  // Get companies for display based on view mode - include stateVersion to trigger updates
-  const displayedCompanies = useMemo(() => {
-    return stateManager.getDisplayedCompanies();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stateManager, stateVersion]); // Force recalculation on state changes
-
   const allCompanies = useMemo(() => {
     return stateManager.getAllCompanies();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateManager, stateVersion]); // Force recalculation on state changes
 
+  // Get companies for display based on view mode - include stateVersion to trigger updates
+  // Also include fading companies so they can animate out smoothly
+  const displayedCompanies = useMemo(() => {
+    const baseCompanies = stateManager.getDisplayedCompanies();
+
+    // Add back fading companies in both modes so they can animate out
+    // - In Explore mode: fading companies are being added to watchlist
+    // - In Watchlist mode: fading companies are being removed from watchlist
+    if (fadingCompanyIds.size > 0) {
+      const fadingCompanies = allCompanies.filter(c => fadingCompanyIds.has(c.id));
+      return [...baseCompanies, ...fadingCompanies];
+    }
+
+    return baseCompanies;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stateManager, stateVersion, viewMode, fadingCompanyIds, allCompanies]); // Force recalculation on state changes
+
   const watchlistStats = useMemo(() => {
     return stateManager.getWatchlistStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateManager, stateVersion]); // Force recalculation on state changes
+
+  // Count of companies in Explore mode (not in watchlist)
+  const exploreCompaniesCount = useMemo(() => {
+    return allCompanies.filter(c => !stateManager.isInWatchlist(c.id)).length;
+  }, [allCompanies, stateManager, stateVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ===== COMPANY SELECTION =====
 
@@ -209,11 +228,84 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
 
   // ===== WATCHLIST MANAGEMENT =====
 
+  // Centralized fade-out helper for smooth transitions
+  const startFadeOut = useCallback((companyId: number) => {
+    // Add to fading set
+    setFadingCompanyIds(prev => new Set(prev).add(companyId));
+
+    // After 4 seconds, remove from fading set (but keep selected)
+    setTimeout(() => {
+      setFadingCompanyIds(prev => {
+        const next = new Set(prev);
+        next.delete(companyId);
+        return next;
+      });
+
+      // Force update to remove from graph (company stays selected in detail panel)
+      forceUpdate();
+    }, 4000); // 4 second fade-out
+  }, [forceUpdate]);
+
   const handleToggleWatchlist = useCallback((companyId: number) => {
+    const wasInWatchlist = stateManager.isInWatchlist(companyId);
+    const company = allCompanies.find(c => c.id === companyId);
+
     stateManager.toggleWatchlist(companyId);
+
+    // Show toast notification
+    if (!wasInWatchlist && company) {
+      // Added to watchlist
+      const { toast } = require('sonner');
+      toast.success(`${company.name} moved to Watchlist`, {
+        description: 'Switch to Watchlist tab to see all saved companies',
+        duration: 3000,
+      });
+
+      // If it was fading (being removed), cancel the fade and show immediately
+      if (fadingCompanyIds.has(companyId)) {
+        setFadingCompanyIds(prev => {
+          const next = new Set(prev);
+          next.delete(companyId);
+          return next;
+        });
+        // Force update to show company back in Watchlist immediately
+        forceUpdate();
+      } else if (viewMode === 'explore') {
+        // Start fade-out animation in Explore mode
+        startFadeOut(companyId);
+      } else {
+        // In Watchlist mode, just force update to show it
+        forceUpdate();
+      }
+    } else if (company) {
+      // Removed from watchlist - fade out from Watchlist, reappear in Explore
+      const { toast } = require('sonner');
+      toast(`${company.name} removed from Watchlist`, {
+        description: 'Company is back in Explore tab',
+        duration: 3000,
+      });
+
+      // If it was already fading (e.g., added then removed quickly), stop the fade and reset
+      if (fadingCompanyIds.has(companyId)) {
+        setFadingCompanyIds(prev => {
+          const next = new Set(prev);
+          next.delete(companyId);
+          return next;
+        });
+        // Force update to show company back immediately
+        forceUpdate();
+      } else if (viewMode === 'watchlist') {
+        // Start fade-out animation in Watchlist mode (company will reappear in Explore)
+        startFadeOut(companyId);
+      } else {
+        // In Explore mode, just force update to show it
+        forceUpdate();
+      }
+    }
+
     // Trigger minimal update for sidebar stats without affecting graph rendering
     triggerWatchlistUpdate();
-  }, [stateManager, triggerWatchlistUpdate]);
+  }, [stateManager, triggerWatchlistUpdate, forceUpdate, viewMode, allCompanies, fadingCompanyIds, startFadeOut]);
 
   const isInWatchlist = useCallback((companyId: number): boolean => {
     return stateManager.isInWatchlist(companyId);
@@ -342,14 +434,14 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   const handleViewModeChange = useCallback((newMode: ViewMode) => {
     setViewMode(newMode);
     stateManager.setViewMode(newMode);
-    
-    // Clear selection when switching to watchlist if selected company is not watchlisted
-    if (selectedCompany && newMode === 'watchlist' && !isInWatchlist(selectedCompany.id)) {
+
+    // Always clear selection when switching views
+    if (selectedCompany) {
       handleCompanySelect(null);
     }
-    
+
     forceUpdate(); // Force re-render for new view
-  }, [stateManager, selectedCompany, isInWatchlist, handleCompanySelect, forceUpdate]);
+  }, [stateManager, selectedCompany, handleCompanySelect, forceUpdate]);
 
   // ===== PANEL MANAGEMENT =====
 
@@ -397,7 +489,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
               }`}
             >
               <SearchIcon />
-              <span>Explore Companies ({allCompanies.length})</span>
+              <span>Explore Companies ({exploreCompaniesCount})</span>
             </button>
             <button
               onClick={() => handleViewModeChange('watchlist')}
@@ -432,6 +524,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
           watchlistCompanyIds={new Set(stateManager.getCurrentState().watchlistCompanyIds)}
           viewMode={viewMode}
           hideCenter={viewMode === 'watchlist' && stateManager.getCurrentState().watchlistCompanyIds.length === 0}
+          fadingCompanyIds={fadingCompanyIds}
         />
 
         {/* Add Company Button */}

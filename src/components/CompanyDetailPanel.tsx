@@ -101,7 +101,7 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
       .sort((a, b) => b.matchScore - a.matchScore);
 
     const totalCompanies = allCompanies.filter(company =>
-      viewMode === 'watchlist' ? isInWatchlist(company.id) : true
+      viewMode === 'watchlist' ? isInWatchlist(company.id) : !isInWatchlist(company.id)
     ).length;
 
     return (
@@ -109,12 +109,12 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
         {/* Header */}
         <div className="panel-header p-6 pb-4 border-b border-blue-200/40 bg-white/60 backdrop-blur-sm">
           <h2 className="text-xl font-bold text-slate-800">
-            {viewMode === 'watchlist' ? 'Your Watchlist' : 'Company Details'}
+            {viewMode === 'watchlist' ? 'Your Watchlist' : 'Explore Companies'}
           </h2>
           <p className="text-sm text-slate-600 mt-1">
             {viewMode === 'watchlist'
-              ? 'Companies saved for further exploration'
-              : 'Click on a company node to see details'
+              ? 'Companies you\'re tracking - remove from watchlist to explore again'
+              : 'Discover companies - add to watchlist to save for later'
             }
           </p>
 

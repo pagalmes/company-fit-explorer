@@ -323,7 +323,7 @@ export const getCytoscapeStyles = (): any[] => [
       'transition-timing-function': 'ease-in-out'
     }
   },
-  // Dimmed company percentage label nodes  
+  // Dimmed company percentage label nodes
   {
     selector: 'node[type="company-percent-label"].dimmed',
     style: {

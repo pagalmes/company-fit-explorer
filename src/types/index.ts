@@ -84,6 +84,7 @@ export interface CompanyGraphProps {
   watchlistCompanyIds?: Set<number>;
   viewMode?: import('./watchlist').ViewMode;
   hideCenter?: boolean; // Hide center node when modals are open
+  fadingCompanyIds?: Set<number>; // Companies that are fading out (added to watchlist)
 }
 
 export interface CompanyDetailPanelProps {
