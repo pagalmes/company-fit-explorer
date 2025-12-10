@@ -99,8 +99,9 @@ export class LLMService {
    * Extract company names from text using LLM
    * @param text - The text to extract company names from
    * @param html - Optional HTML content with hyperlinks
+   * @returns Object with companies array and optional warning message
    */
-  async extractCompanies(text: string, html?: string): Promise<{ name: string; url?: string; careerUrl?: string }[]> {
+  async extractCompanies(text: string, html?: string): Promise<{ companies: { name: string; url?: string; careerUrl?: string }[]; warning?: string }> {
     if (!this.isConfigured()) {
       throw new Error('LLM not configured. Please configure your API key in settings.');
     }
@@ -125,7 +126,10 @@ export class LLMService {
         throw new Error(data.error || 'Failed to extract companies');
       }
 
-      return data.companies || [];
+      return {
+        companies: data.companies || [],
+        warning: data.warning
+      };
     } catch (error) {
       console.error('Extract companies failed:', error);
       throw error;

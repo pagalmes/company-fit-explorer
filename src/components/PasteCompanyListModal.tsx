@@ -115,7 +115,14 @@ export const PasteCompanyListModal: React.FC<PasteCompanyListModalProps> = ({
     try {
       // Use LLM to extract company names and URLs
       // Pass HTML if available (contains hyperlinks), otherwise just text
-      const extractedCompanies = await llmService.extractCompanies(pastedText, pastedHtml);
+      const { companies: extractedCompanies, warning } = await llmService.extractCompanies(pastedText, pastedHtml);
+
+      // Show warning if companies were limited to 25
+      if (warning) {
+        toast.warning(warning, {
+          duration: 8000,
+        });
+      }
 
       if (extractedCompanies.length === 0) {
         toast.error('No companies found in the text', {

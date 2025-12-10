@@ -178,6 +178,13 @@ ${contentToAnalyze}${extractedLinks.length > 0 ? `\n\nHyperlinks found in the te
       throw new Error('LLM response does not contain companies array');
     }
 
+    // Enforce company limit (25 max per batch)
+    let warning: string | undefined;
+    if (result.companies.length > 25) {
+      warning = `Detected ${result.companies.length} companies, but only processing the first 25 to ensure optimal performance. Please paste remaining companies in a separate batch.`;
+      result.companies = result.companies.slice(0, 25);
+    }
+
     // Clean and validate each company
     const validCompanies = result.companies
       .filter(c => c && typeof c === 'object' && typeof c.name === 'string')
@@ -202,7 +209,8 @@ ${contentToAnalyze}${extractedLinks.length > 0 ? `\n\nHyperlinks found in the te
 
     return NextResponse.json({
       success: true,
-      companies: validCompanies
+      companies: validCompanies,
+      ...(warning ? { warning } : {})
     });
 
   } catch (error) {
