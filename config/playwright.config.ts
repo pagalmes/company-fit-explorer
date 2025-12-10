@@ -47,7 +47,7 @@ export default defineConfig({
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
-        storageState: '../tests/e2e/.auth/user.json',
+        storageState: resolve(__dirname, '../tests/e2e/.auth/user.json'),
       },
       dependencies: ['setup'],
     },
@@ -56,7 +56,7 @@ export default defineConfig({
       name: 'firefox',
       use: {
         ...devices['Desktop Firefox'],
-        storageState: '../tests/e2e/.auth/user.json',
+        storageState: resolve(__dirname, '../tests/e2e/.auth/user.json'),
       },
       dependencies: ['setup'],
     },
@@ -65,7 +65,7 @@ export default defineConfig({
       name: 'webkit',
       use: {
         ...devices['Desktop Safari'],
-        storageState: '../tests/e2e/.auth/user.json',
+        storageState: resolve(__dirname, '../tests/e2e/.auth/user.json'),
       },
       dependencies: ['setup'],
     },
