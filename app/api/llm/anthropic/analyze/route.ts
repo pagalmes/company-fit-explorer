@@ -57,9 +57,10 @@ export async function POST(request: NextRequest) {
                 type: 'array',
                 items: { type: 'string' }
               },
-              description: { type: 'string' }
+              description: { type: 'string' },
+              websiteUrl: { type: 'string' }
             },
-            required: ['name', 'industry', 'stage', 'location', 'employees', 'remote', 'openRoles', 'matchScore', 'matchReasons', 'connections', 'description'],
+            required: ['name', 'industry', 'stage', 'location', 'employees', 'remote', 'openRoles', 'matchScore', 'matchReasons', 'connections', 'description', 'websiteUrl'],
             additionalProperties: false
           }
         }
@@ -151,6 +152,7 @@ Provide the following information:
 - matchReasons: Array of 3-4 specific reasons explaining the match score
 - connections: Array of 3-5 similar/related companies in the same space
 - description: 2-3 sentence description of what the company does
+- websiteUrl: The company's primary website domain (e.g., "welltheory.com", "anthropic.com"). IMPORTANT: Infer the actual company website, NOT third-party platforms like notion.so, greenhouse.com, lever.co, ashbyhq.com, etc.
 
 Calculate matchScore (0-100) by evaluating:
 1. Alignment with must-have criteria (weighted most heavily)

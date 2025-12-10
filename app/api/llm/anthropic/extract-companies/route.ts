@@ -62,15 +62,19 @@ Return company information with:
 - careerUrl: The direct careers/jobs page URL if a link was provided
 
 Instructions for inferring "url" (company website):
-- Use the company name as the primary signal
-- Look for clues in any provided URLs (e.g., LinkedIn company slugs, URL paths, subdomains)
-- Examples:
+CRITICAL: The "url" field must be the company's OWN website, NOT a third-party hosting platform.
+
+- Use the company name as the PRIMARY signal to infer the actual company domain
+- If you see a career page URL on a third-party platform (notion.so, greenhouse.io, lever.co, ashbyhq.com, etc.), you MUST infer the company's real website instead
+- Examples of CORRECT inference:
   * "Teleskope" + "linkedin.com/company/teleskopeai" → url: "https://teleskope.ai"
   * "Strella" + "www.strella.io/careers" → url: "https://strella.io"
-  * "WellTheory" + "notion.so/Work-at-WellTheory-..." → url: "https://welltheory.com"
+  * "WellTheory" + "notion.so/Work-at-WellTheory-..." → url: "https://welltheory.com" (NOT notion.so!)
   * "Defakto Security" + "www.defakto.security/careers/" → url: "https://defakto.security"
-- Do NOT use third-party platforms as the company URL: ashbyhq.com, greenhouse.io, lever.co, workable.com, notion.so, gem.com, comeet.com
-- Make your best educated guess based on the company name and context
+
+NEVER return these as the company URL: ashbyhq.com, greenhouse.io, lever.co, workable.com, notion.so, gem.com, comeet.com, linkedin.com, bamboohr.com, jobvite.com
+
+When you see a company name like "WellTheory", infer it would have a website like "welltheory.com" or "welltheory.co" based on typical naming patterns.
 
 Instructions for "careerUrl":
 - Use the exact URL provided for that company (can be any platform - Ashby, Greenhouse, Notion, LinkedIn, company website, etc.)
