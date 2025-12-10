@@ -223,50 +223,9 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
         // onCompanyHover(company);
         
         if (!selectedCompanyRef.current) {
-          // Apply highlighting immediately - CSS transitions will handle the smooth visual changes
-          
-          // First clear any existing state
-          cy.nodes().removeClass('dimmed');
+          // Clear any existing edge highlights and apply new ones
           cy.edges().removeClass('highlighted');
-          
-          // Get all nodes to dim them first
-          const allCompanyNodes = cy.nodes('[type="company"]');
-          const allNameLabelNodes = cy.nodes('[type="company-name-label"]');
-          const allPercentLabelNodes = cy.nodes('[type="company-percent-label"]');
-          
-          // Dim all company and label nodes first
-          allCompanyNodes.addClass('dimmed');
-          allNameLabelNodes.addClass('dimmed');
-          allPercentLabelNodes.addClass('dimmed');
-            
-          // Highlight current node
-          event.target.removeClass('dimmed');
-          
-          // Highlight only nodes that the hovered company declares connections to
-          company.connections.forEach((connId: number) => {
-            const connectedNode = cy.getElementById(`company-${connId}`);
-            if (connectedNode.length > 0 && !connectedNode.hasClass('view-hidden')) {
-              connectedNode.removeClass('dimmed');
-            }
-          });
-            
-          // Also highlight the labels for current and connected companies
-          const currentNameLabel = cy.getElementById(`name-label-${company.id}`);
-          const currentPercentLabel = cy.getElementById(`percent-label-${company.id}`);
-          currentNameLabel.removeClass('dimmed');
-          currentPercentLabel.removeClass('dimmed');
-          
-          company.connections.forEach((connId: number) => {
-            const connNameLabel = cy.getElementById(`name-label-${connId}`);
-            const connPercentLabel = cy.getElementById(`percent-label-${connId}`);
-            if (connNameLabel.length > 0 && !connNameLabel.hasClass('view-hidden')) {
-              connNameLabel.removeClass('dimmed');
-            }
-            if (connPercentLabel.length > 0 && !connPercentLabel.hasClass('view-hidden')) {
-              connPercentLabel.removeClass('dimmed');
-            }
-          });
-            
+
           // Highlight only outgoing edges from hovered node to its declared connections
           company.connections.forEach((connId: number) => {
             const edge = cy.getElementById(`edge-${company.id}-${connId}`);
@@ -274,10 +233,10 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
               edge.addClass('highlighted');
             }
           });
-            
+
           // Optimized: highlight edges between connected companies (same optimization as selection)
           const directlyConnectedSet = new Set(company.connections.map((id: number) => `company-${id}`));
-          
+
           company.connections.forEach((connId: number) => {
             const connectedCompany = companies.find(c => c.id === connId);
             if (connectedCompany) {
@@ -306,9 +265,8 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
         
         // Remove hovered class to return to default style
         event.target.removeClass('hovered');
-        
+
         if (!selectedCompanyRef.current) {
-          cy.nodes().removeClass('dimmed');
           cy.edges().removeClass('highlighted');
         }
         hoverTimeout = null;
