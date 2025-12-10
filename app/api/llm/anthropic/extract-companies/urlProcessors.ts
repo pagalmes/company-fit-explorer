@@ -231,6 +231,25 @@ class GenericProcessor implements UrlProcessor {
 }
 
 /**
+ * Glassdoor URL Processor
+ *
+ * Filters out Glassdoor job listing URLs (third-party job board)
+ * These are not company career pages and often have massive tracking params
+ */
+class GlassdoorProcessor implements UrlProcessor {
+  matches(hostname: string): boolean {
+    return hostname.includes('glassdoor.com');
+  }
+
+  process(_url: URL, _companyName?: string): ProcessedUrl {
+    return {
+      url: null,
+      reason: 'Glassdoor job post (third-party job board - discarded)'
+    };
+  }
+}
+
+/**
  * Email Tracking URL Processor
  *
  * Filters out email click-tracking wrapper URLs (SendGrid, Mailchimp, etc.)
@@ -258,6 +277,7 @@ class EmailTrackingProcessor implements UrlProcessor {
  */
 const processors: UrlProcessor[] = [
   new EmailTrackingProcessor(), // Filter email tracking first
+  new GlassdoorProcessor(),
   new LinkedInProcessor(),
   new IndeedProcessor(),
   new WelcomeToTheJungleProcessor(),
