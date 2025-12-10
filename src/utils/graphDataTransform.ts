@@ -268,7 +268,10 @@ export const getCytoscapeStyles = (): any[] => [
       'text-wrap': 'wrap',
       'text-max-width': '55px',
       'z-index': 2, // Below company nodes (z-index: 5)
-      'events': 'no'
+      'events': 'no',
+      'transition-property': 'opacity',
+      'transition-duration': '1s',
+      'transition-timing-function': 'ease-in-out'
     }
   },
   // Company Percentage Label Nodes - match percentages below company names
@@ -289,7 +292,10 @@ export const getCytoscapeStyles = (): any[] => [
       'text-wrap': 'wrap',
       'text-max-width': '55px',
       'z-index': 2, // Below company nodes (z-index: 5)
-      'events': 'no'
+      'events': 'no',
+      'transition-property': 'opacity',
+      'transition-duration': '1s',
+      'transition-timing-function': 'ease-in-out'
     }
   },
   // Connection Lines - hidden by default, only visible when highlighted
@@ -322,10 +328,7 @@ export const getCytoscapeStyles = (): any[] => [
     selector: 'node[type="company"].dimmed',
     style: {
       'opacity': 0.3,
-      'z-index': -4,
-      'transition-property': 'opacity',
-      'transition-duration': '0.3s',
-      'transition-timing-function': 'ease-in-out'
+      'z-index': -4
     }
   },
   // Dimmed company name label nodes
@@ -333,10 +336,7 @@ export const getCytoscapeStyles = (): any[] => [
     selector: 'node[type="company-name-label"].dimmed',
     style: {
       'opacity': 0.2,
-      'z-index': -4,
-      'transition-property': 'opacity',
-      'transition-duration': '0.3s',
-      'transition-timing-function': 'ease-in-out'
+      'z-index': -4
     }
   },
   // Dimmed company percentage label nodes
@@ -344,10 +344,7 @@ export const getCytoscapeStyles = (): any[] => [
     selector: 'node[type="company-percent-label"].dimmed',
     style: {
       'opacity': 0.2,
-      'z-index': -4,
-      'transition-property': 'opacity',
-      'transition-duration': '0.3s',
-      'transition-timing-function': 'ease-in-out'
+      'z-index': -4
     }
   },
   // Ensure zone nodes maintain their background z-index regardless of other rules
@@ -375,9 +372,9 @@ export const getCytoscapeStyles = (): any[] => [
       //'border-color': 'black',
       'label': '', // Remove text label since we're using logos
       'z-index': 5,
-      'transition-property': 'width, height, border-color',
-      'transition-duration': '0.25s',
-      'transition-timing-function': 'ease-out'
+      'transition-property': 'opacity',
+      'transition-duration': '1s',
+      'transition-timing-function': 'ease-in-out'
     }
   },
   // Selected Node Styles - black border and larger with transition

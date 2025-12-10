@@ -6,15 +6,11 @@
 <!-- DONE: Admin: Masquerade user. (eye logo) -->
 <!-- DONE: "Why This Match" > Add a "more..." / "less..." button -->
 <!-- DONE: Add a "setup Alert" button. -->
+<!-- TODO: Enable batch-adding companies: From a text post -->
 
-TODO: Enable batch-adding companies: From a text post
 TODO: Enable batch-adding companies: From a screenshot
-
-TODO: Think through "Tabs" for new companies
-TODO: "Inbox" to drop new companies to consider
 TODO: "Dailies & Jobs" for new companies to consider from alerts
 TODO: Extract and generate a few profiles.
-
 
 
 ## Improvements
@@ -34,7 +30,7 @@ TODO: Extract and generate a few profiles.
 <!-- DONE: --> 
 
 TODO: Hover node: do not grey out on hover. Just on selection
-
+TODO: Edit companies: Allow to edit companies details: website, career page...
 
 TODO: (Maybe) Allow to manually move companies to reduce overlap
 
@@ -64,9 +60,10 @@ FIXME: The "Sun" node appears over the right panel
 ## Technical Debt
 
 <!-- DONE: e2e tests failing inconsistently. Ensure all tests pass. -->
+<!-- DONE: Setup Evals for the LLM extraction calls. (e.g. company + domain+career-page-url extraction [give a set and expected results from linkedin posts, websites...]) -->
 
 TODO: Setup a commit hook to run tests at commit time. (husky)
-TODO: Setup Evals for the LLM calls. (e.g. company + domain+career-page-url extraction [give a set and expected results from linkedin posts, websites...])
+
 
 ## Documentation
 
