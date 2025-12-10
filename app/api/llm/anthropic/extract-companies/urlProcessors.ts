@@ -231,10 +231,33 @@ class GenericProcessor implements UrlProcessor {
 }
 
 /**
+ * Email Tracking URL Processor
+ *
+ * Filters out email click-tracking wrapper URLs (SendGrid, Mailchimp, etc.)
+ * These are massive redirect URLs that don't provide useful career page info
+ */
+class EmailTrackingProcessor implements UrlProcessor {
+  matches(hostname: string): boolean {
+    return hostname.includes('sendgrid.net') ||
+           hostname.includes('mailchimp.com') ||
+           hostname.includes('click.') ||
+           hostname.match(/\.ct\./i) !== null; // Click tracking domains
+  }
+
+  process(url: URL, _companyName?: string): ProcessedUrl {
+    return {
+      url: null,
+      reason: 'Email tracking wrapper (discarded - not useful)'
+    };
+  }
+}
+
+/**
  * Registry of all URL processors
  * Order matters: first match wins (except Generic which is last)
  */
 const processors: UrlProcessor[] = [
+  new EmailTrackingProcessor(), // Filter email tracking first
   new LinkedInProcessor(),
   new IndeedProcessor(),
   new WelcomeToTheJungleProcessor(),
