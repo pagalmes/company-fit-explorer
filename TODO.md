@@ -8,9 +8,9 @@
 <!-- DONE: Add a "setup Alert" button. -->
 <!-- TODO: Enable batch-adding companies: From a text post -->
 
-TODO: Enable batch-adding companies: From a screenshot
 TODO: "Dailies & Jobs" for new companies to consider from alerts
 TODO: Extract and generate a few profiles.
+TODO: Enable batch-adding companies: From a screenshot
 
 
 ## Improvements
@@ -51,7 +51,9 @@ FIXME: Fix the Sonner toast positionning to be centered under the tabs.
 <!-- DONE: Watchlist Right Pane: Display only companies in the Watchlist. -->
 <!-- DONE: Watchlist: When adding a company from the Watchlist view, add it to the watchlist. (currently not the case) -->
 <!-- DONE: When adding a new company, check if the company is already present. 1: if company already in the list (and not removed) then just state already in the list. 2: if company was removed by the user, then re-add it. (with refresh the data) -->
+<!-- DONE: Explore companies: Right pane shows all companies including the ones in the watchlist -->
 
+FIXME: Right pane: Colors for the match scores are inconsistent. They are set by the llm when logic should be centralized.
 FIXME: Right pane: Company reserach buttons behave differently from action buttons
 FIXME: Right pane: disappears when changing browser zoom levels
 FIXME: The "Sun" node appears over the right panel
