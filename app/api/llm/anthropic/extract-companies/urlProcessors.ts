@@ -244,7 +244,7 @@ class EmailTrackingProcessor implements UrlProcessor {
            hostname.match(/\.ct\./i) !== null; // Click tracking domains
   }
 
-  process(url: URL, _companyName?: string): ProcessedUrl {
+  process(_url: URL, _companyName?: string): ProcessedUrl {
     return {
       url: null,
       reason: 'Email tracking wrapper (discarded - not useful)'
