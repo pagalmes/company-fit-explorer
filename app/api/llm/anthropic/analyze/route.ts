@@ -58,7 +58,8 @@ export async function POST(request: NextRequest) {
                 items: { type: 'string' }
               },
               description: { type: 'string' },
-              websiteUrl: { type: 'string' }
+              websiteUrl: { type: 'string' },
+              careerUrl: { type: 'string' }
             },
             required: ['name', 'industry', 'stage', 'location', 'employees', 'remote', 'openRoles', 'matchScore', 'matchReasons', 'connections', 'description', 'websiteUrl'],
             additionalProperties: false
@@ -153,6 +154,7 @@ Provide the following information:
 - connections: Array of 3-5 similar/related companies in the same space
 - description: 2-3 sentence description of what the company does
 - websiteUrl: The company's primary website domain (e.g., "welltheory.com", "anthropic.com"). IMPORTANT: Infer the actual company website, NOT third-party platforms like notion.so, greenhouse.com, lever.co, ashbyhq.com, etc.
+- careerUrl: OPTIONAL - Only provide if you are highly confident about the company's actual careers/jobs page URL (e.g., "https://anthropic.com/careers", "https://stripe.com/jobs"). Do NOT guess or use generic patterns. Do NOT include third-party job board URLs. Omit this field if uncertain.
 
 Calculate matchScore (0-100) by evaluating:
 1. Alignment with must-have criteria (weighted most heavily)

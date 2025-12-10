@@ -427,18 +427,44 @@ export const getColorForScore = (score: number): string => {
 };
 
 /**
- * Generate a career URL for a company
+ * Generate a career URL for a company (fallback when no URL provided)
  */
 export const generateCareerUrl = (companyName: string, domain?: string): string => {
   if (domain) {
     return `https://${domain}/careers`;
   }
-  
+
   // Generate based on company name
   const normalizedName = companyName
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, '')
     .replace(/\s+/g, '');
-  
+
   return `https://${normalizedName}.com/careers`;
+};
+
+/**
+ * Resolve career URL with priority system
+ *
+ * Priority order:
+ * 1. Extraction API careerUrl (from pasted email, already filtered by URL processors)
+ * 2. Analysis API careerUrl (from LLM research, only if LLM is confident)
+ * 3. Generated from domain ({domain}/careers)
+ * 4. Generated from company name ({normalized-name}.com/careers)
+ *
+ * @param extractionCareerUrl - From extraction API (optional, filtered)
+ * @param analysisCareerUrl - From analysis API (optional, LLM confident)
+ * @param companyName - Company name for fallback generation
+ * @param domain - Company domain for fallback generation
+ * @returns Resolved career URL
+ */
+export const resolveCareerUrl = (
+  extractionCareerUrl: string | undefined,
+  analysisCareerUrl: string | undefined,
+  companyName: string,
+  domain?: string
+): string => {
+  return extractionCareerUrl ||
+         analysisCareerUrl ||
+         generateCareerUrl(companyName, domain);
 };

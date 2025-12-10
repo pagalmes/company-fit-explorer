@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { UserCMF, Company } from '../types';
 import { getCompanySuggestions, getPopularCompanies, CompanySuggestion } from '../utils/companySuggestions';
 import { getCompanyPreview, CompanyPreview, validateCompanyData } from '../utils/companyValidation';
-import { getColorForScore, generateCareerUrl, mapConnectionsToExistingCompanies } from '../utils/companyPositioning';
+import { getColorForScore, resolveCareerUrl, mapConnectionsToExistingCompanies } from '../utils/companyPositioning';
 import { findSmartPositioningSolution, isPositioningSolutionBeneficial } from '../utils/smartPositioning';
 import { llmService } from '../utils/llm/service';
 
@@ -298,7 +298,7 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
         color: getColorForScore(companyData.matchScore),
         angle: removedCompany?.angle ?? 0, // Preserve angle if restoring
         distance: removedCompany?.distance ?? 0, // Preserve distance if restoring
-        careerUrl: generateCareerUrl(companyData.name, companyPreview.domain),
+        careerUrl: resolveCareerUrl(undefined, 'careerUrl' in companyData ? companyData.careerUrl : undefined, companyData.name, companyPreview.domain),
         externalLinks: {
           ...companyData.externalLinks,
           // Add website URL from preview domain if available

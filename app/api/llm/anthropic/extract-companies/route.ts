@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DEFAULT_ANTHROPIC_MODEL } from '@/utils/llm/config';
+import { processCareerUrl } from './urlProcessors';
 
 interface ExtractedCompany {
   name: string;
@@ -45,7 +46,12 @@ export async function POST(request: NextRequest) {
           const url = match[1];
           const linkText = match[2].replace(/<[^>]*>/g, '').trim();
           if (linkText && !url.startsWith('mailto:') && !url.startsWith('tel:')) {
-            extractedLinks.push({ text: linkText, url });
+            // Pre-process URL to remove useless job post URLs and clean tracking params
+            const processedUrl = processCareerUrl(url);
+            // Only include if URL wasn't filtered out (processedUrl !== null)
+            if (processedUrl) {
+              extractedLinks.push({ text: linkText, url: processedUrl });
+            }
           }
         }
       } catch (e) {
@@ -112,7 +118,7 @@ ${contentToAnalyze}${extractedLinks.length > 0 ? `\n\nHyperlinks found in the te
       },
       body: JSON.stringify({
         model: DEFAULT_ANTHROPIC_MODEL,
-        max_tokens: 4096,
+        max_tokens: 2048, // Reduced from 4096 - URLs are pre-processed before sending to LLM
         temperature: 0.1, // Low temperature for consistent extraction
         messages: [
           {
@@ -175,11 +181,23 @@ ${contentToAnalyze}${extractedLinks.length > 0 ? `\n\nHyperlinks found in the te
     // Clean and validate each company
     const validCompanies = result.companies
       .filter(c => c && typeof c === 'object' && typeof c.name === 'string')
-      .map(c => ({
-        name: c.name.trim(),
-        ...(c.url && typeof c.url === 'string' && c.url.trim() ? { url: c.url.trim() } : {}),
-        ...(c.careerUrl && typeof c.careerUrl === 'string' && c.careerUrl.trim() ? { careerUrl: c.careerUrl.trim() } : {})
-      }))
+      .map(c => {
+        const name = c.name.trim();
+        const url = c.url && typeof c.url === 'string' && c.url.trim() ? c.url.trim() : undefined;
+
+        // Process careerUrl using platform-specific logic
+        let careerUrl: string | undefined;
+        if (c.careerUrl && typeof c.careerUrl === 'string' && c.careerUrl.trim()) {
+          const processedUrl = processCareerUrl(c.careerUrl.trim(), name);
+          careerUrl = processedUrl || undefined; // Convert null to undefined
+        }
+
+        return {
+          name,
+          ...(url ? { url } : {}),
+          ...(careerUrl ? { careerUrl } : {})
+        };
+      })
       .filter(c => c.name.length > 0 && c.name.length < 100);
 
     return NextResponse.json({

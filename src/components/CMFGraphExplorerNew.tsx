@@ -489,7 +489,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
             : currentCompanies.filter(c => !stateManager.isInWatchlist(c.id));
 
           // Map connection names to IDs
-          const { mapConnectionsToExistingCompanies } = require('../utils/companyPositioning');
+          const { mapConnectionsToExistingCompanies, resolveCareerUrl } = require('../utils/companyPositioning');
           const connectionTypesForMapping = fullCompanyData.connectionTypes || {};
           const baseCompanyForMapping = {
             id: Date.now() + successCount,
@@ -498,12 +498,20 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
           };
           const connectionMapping = mapConnectionsToExistingCompanies(baseCompanyForMapping as Company, currentCompanies);
 
+          // Resolve career URL using centralized priority logic
+          const careerUrl = resolveCareerUrl(
+            companyData.careerUrl,      // From extraction API (filtered)
+            fullCompanyData.careerUrl,  // From analysis API (LLM confident)
+            fullCompanyData.name,       // Company name for fallback
+            companyData.domain          // Domain for fallback
+          );
+
           // Create full Company object
           const newCompany: Company = {
             id: Date.now() + successCount,
             name: fullCompanyData.name,
             logo: companyData.logo,
-            careerUrl: companyData.careerUrl || '',
+            careerUrl,
             matchScore: fullCompanyData.matchScore,
             industry: fullCompanyData.industry,
             stage: fullCompanyData.stage,
