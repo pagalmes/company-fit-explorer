@@ -7,7 +7,14 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Critical User Interactions', () => {
   test.beforeEach(async ({ page }) => {
-    // Skip first-time experience for consistent testing
+    // Authenticate first
+    await page.goto('/login');
+    await page.fill('input[type="email"]', process.env.E2E_TEST_EMAIL || 'test@example.com');
+    await page.fill('input[type="password"]', process.env.E2E_TEST_PASSWORD || 'testpassword123');
+    await page.click('button:has-text("Sign In")');
+
+    // Wait for redirect and skip first-time experience
+    await page.waitForURL('/', { timeout: 10000 });
     await page.goto('/?skip-intro=true');
     await page.waitForLoadState('networkidle');
   });
