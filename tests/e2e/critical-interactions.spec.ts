@@ -6,16 +6,15 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('Critical User Interactions', () => {
-  test.beforeEach(async ({ page }) => {
-    // Navigate to app with skip-intro
+  // Helper function for common page setup
+  async function setupPage(page: any) {
     await page.goto('/?skip-intro=true');
     await page.waitForLoadState('networkidle');
-
-    // Give the app extra time to fully load and render
     await page.waitForTimeout(2000);
-  });
+  }
 
   test('should maintain node selection without flickering', async ({ page }) => {
+    await setupPage(page);
     // Wait for graph to load
     await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 20000 });
     
@@ -47,34 +46,34 @@ test.describe('Critical User Interactions', () => {
   });
 
   test('should not trigger infinite API calls on page load', async ({ page }) => {
-    let apiCallCount = 0;
+    const apiCalls: string[] = [];
     const startTime = Date.now();
 
-    // Monitor API calls
+    // Set up monitoring BEFORE navigation
     page.on('request', request => {
       if (request.url().includes('/api/user/data')) {
-        apiCallCount++;
+        apiCalls.push(request.url());
       }
     });
 
-    await page.goto('/?skip-intro=true');
-    
-    // Wait for initial load
-    await page.waitForLoadState('networkidle');
-    
+    // Navigate and load
+    await setupPage(page);
+
     // Wait additional time to catch any delayed infinite loops
-    await page.waitForTimeout(5000);
-    
+    await page.waitForTimeout(3000);
+
     const duration = Date.now() - startTime;
-    
-    // Should not make excessive API calls
-    expect(apiCallCount).toBeLessThan(3);
-    
+
+    // Should make at most 2 API calls (initial load + possible one refresh)
+    // If there's an infinite loop, we'd see many more
+    expect(apiCalls.length).toBeLessThanOrEqual(2);
+
     // Should not take excessively long due to infinite loops
     expect(duration).toBeLessThan(15000); // 15 seconds max
   });
 
   test('should handle rapid user interactions without breaking', async ({ page }) => {
+    await setupPage(page);
     await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 20000 });
     
     const canvas = page.locator('[data-cy="cytoscape-container"] canvas').first();
@@ -95,7 +94,7 @@ test.describe('Critical User Interactions', () => {
   });
 
   test('should maintain performance under load', async ({ page }) => {
-    // Monitor console errors that might indicate infinite loops
+    // Set up console monitoring BEFORE navigation
     const consoleErrors: string[] = [];
     page.on('console', msg => {
       if (msg.type() === 'error') {
@@ -103,8 +102,8 @@ test.describe('Critical User Interactions', () => {
       }
     });
 
-    await page.goto('/?skip-intro=true');
-    await page.waitForLoadState('networkidle');
+    // Navigate and load
+    await setupPage(page);
 
     // Interact with various UI elements
     const canvas = page.locator('[data-cy="cytoscape-container"] canvas').first();
@@ -126,7 +125,7 @@ test.describe('Critical User Interactions', () => {
   });
 
   test('should recover gracefully from errors', async ({ page }) => {
-    // Force an error condition by mocking API failure
+    // Set up route mock BEFORE navigation
     await page.route('/api/user/data', route => {
       route.fulfill({
         status: 500,
@@ -134,8 +133,10 @@ test.describe('Critical User Interactions', () => {
       });
     });
 
+    // Navigate with mocked error response
     await page.goto('/?skip-intro=true');
     await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
     // Should handle error gracefully without crashing
     // The app should still render (not white screen of death)
