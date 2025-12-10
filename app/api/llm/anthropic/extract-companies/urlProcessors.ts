@@ -252,13 +252,14 @@ class GlassdoorProcessor implements UrlProcessor {
 /**
  * Email Tracking URL Processor
  *
- * Filters out email click-tracking wrapper URLs (SendGrid, Mailchimp, etc.)
+ * Filters out email click-tracking wrapper URLs (SendGrid, Mailchimp, Google, etc.)
  * These are massive redirect URLs that don't provide useful career page info
  */
 class EmailTrackingProcessor implements UrlProcessor {
   matches(hostname: string): boolean {
     return hostname.includes('sendgrid.net') ||
            hostname.includes('mailchimp.com') ||
+           hostname.includes('notifications.googleapis.com') ||
            hostname.includes('click.') ||
            hostname.match(/\.ct\./i) !== null; // Click tracking domains
   }
