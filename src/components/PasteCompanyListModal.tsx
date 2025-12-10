@@ -135,9 +135,13 @@ export const PasteCompanyListModal: React.FC<PasteCompanyListModalProps> = ({
           // Store the original company name from LLM (not the preview name which might be the URL)
           const companyName = extracted.name;
 
-          // Store careerUrl on the preview for later use
+          // Store careerUrl and LLM-inferred URL on the preview for later use
           if (extracted.careerUrl) {
             (preview as any).careerUrl = extracted.careerUrl;
+          }
+          // Store the LLM-inferred company URL (not the logo provider's domain)
+          if (extracted.url) {
+            (preview as any).inferredUrl = extracted.url;
           }
 
           const isDuplicate = existingCompanies.some(
@@ -200,7 +204,8 @@ export const PasteCompanyListModal: React.FC<PasteCompanyListModalProps> = ({
       name: detected.name, // Use the LLM-extracted name
       logo: detected.preview.logo,
       careerUrl: (detected.preview as any).careerUrl || '',
-      domain: detected.preview.domain,
+      // Use LLM-inferred URL if available, otherwise fall back to preview.domain
+      domain: (detected.preview as any).inferredUrl || detected.preview.domain,
     }));
 
     // Close modal immediately
