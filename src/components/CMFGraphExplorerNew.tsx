@@ -508,6 +508,10 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
             connectionTypes: connectionMapping.connectionTypes,
             matchReasons: fullCompanyData.matchReasons,
             color: `hsl(${(successCount * 360) / companiesData.length}, 70%, 60%)`,
+            // Include LLM-inferred website URL from batch import
+            externalLinks: companyData.domain ? {
+              website: companyData.domain.startsWith('http') ? companyData.domain : `https://${companyData.domain}`
+            } : undefined
           };
 
           // Calculate smart position for this company
