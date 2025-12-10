@@ -268,10 +268,7 @@ export const getCytoscapeStyles = (): any[] => [
       'text-wrap': 'wrap',
       'text-max-width': '55px',
       'z-index': 2, // Below company nodes (z-index: 5)
-      'events': 'no',
-      'transition-property': 'opacity',
-      'transition-duration': '1s',
-      'transition-timing-function': 'ease-in-out'
+      'events': 'no'
     }
   },
   // Company Percentage Label Nodes - match percentages below company names
@@ -292,10 +289,7 @@ export const getCytoscapeStyles = (): any[] => [
       'text-wrap': 'wrap',
       'text-max-width': '55px',
       'z-index': 2, // Below company nodes (z-index: 5)
-      'events': 'no',
-      'transition-property': 'opacity',
-      'transition-duration': '1s',
-      'transition-timing-function': 'ease-in-out'
+      'events': 'no'
     }
   },
   // Connection Lines - hidden by default, only visible when highlighted
@@ -372,9 +366,9 @@ export const getCytoscapeStyles = (): any[] => [
       //'border-color': 'black',
       'label': '', // Remove text label since we're using logos
       'z-index': 5,
-      'transition-property': 'opacity',
-      'transition-duration': '1s',
-      'transition-timing-function': 'ease-in-out'
+      'transition-property': 'width, height, border-color',
+      'transition-duration': '0.25s',
+      'transition-timing-function': 'ease-out'
     }
   },
   // Selected Node Styles - black border and larger with transition

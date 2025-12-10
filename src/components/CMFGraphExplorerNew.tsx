@@ -83,6 +83,13 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   const [stateVersion, setStateVersion] = useState(0);
   const forceUpdate = useCallback(() => setStateVersion(v => v + 1), []);
 
+  // Separate version counter for companies data (add/remove companies, not selection)
+  const [companiesVersion, setCompaniesVersion] = useState(0);
+  const forceCompaniesUpdate = useCallback(() => {
+    setCompaniesVersion(v => v + 1);
+    setStateVersion(v => v + 1); // Also trigger general state update
+  }, []);
+
   // Track pending company selection after state update
   const [pendingSelectionId, setPendingSelectionId] = useState<number | null>(null);
 
@@ -165,9 +172,9 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   const allCompanies = useMemo(() => {
     return stateManager.getAllCompanies();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stateManager, stateVersion]); // Force recalculation on state changes
+  }, [stateManager, companiesVersion]); // Only recalculate when companies data changes (add/remove)
 
-  // Get companies for display based on view mode - include stateVersion to trigger updates
+  // Get companies for display based on view mode - only recalculate when companies or view changes
   // Also include fading companies so they can animate out smoothly
   const displayedCompanies = useMemo(() => {
     const baseCompanies = stateManager.getDisplayedCompanies();
@@ -182,7 +189,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
 
     return baseCompanies;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stateManager, stateVersion, viewMode, fadingCompanyIds, allCompanies]); // Force recalculation on state changes
+  }, [stateManager, companiesVersion, viewMode, fadingCompanyIds, allCompanies]); // Only when companies/view changes
 
   const watchlistStats = useMemo(() => {
     return stateManager.getWatchlistStats();
@@ -330,9 +337,9 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
       });
 
       // Force update to remove from graph (company stays selected in detail panel)
-      forceUpdate();
+      forceCompaniesUpdate();
     }, 4000); // 4 second fade-out
-  }, [forceUpdate]);
+  }, [forceCompaniesUpdate]);
 
   const handleToggleWatchlist = useCallback((companyId: number) => {
     const wasInWatchlist = stateManager.isInWatchlist(companyId);
@@ -425,12 +432,12 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
       // Set pending selection ID and trigger re-render
       // The useEffect will handle selecting the company after React finishes rendering
       setPendingSelectionId(addedCompany.id);
-      forceUpdate(); // Force re-render to show new company
+      forceCompaniesUpdate(); // Force re-render to show new company
     } catch (error) {
       console.error('Failed to add company:', error);
       throw error; // Re-throw to let modal handle the error
     }
-  }, [stateManager, forceUpdate, viewMode]);
+  }, [stateManager, forceCompaniesUpdate, viewMode]);
 
   const handleBatchAddCompanies = useCallback(async (companiesData: Array<{ name: string; logo: string; careerUrl?: string; domain?: string }>) => {
     try {
@@ -539,7 +546,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
           console.log(`✅ Added ${companyData.name} (${successCount}/${companiesData.length})`);
 
           // Force re-render to show this company
-          forceUpdate();
+          forceCompaniesUpdate();
 
         } catch (error) {
           console.error(`❌ Failed to import ${companyData.name}:`, error);
@@ -566,7 +573,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
         description: error instanceof Error ? error.message : 'Please try again'
       });
     }
-  }, [stateManager, forceUpdate, viewMode]);
+  }, [stateManager, forceCompaniesUpdate, viewMode]);
 
   const handleBatchUpdateCompanies = useCallback(async (updatedCompanies: Company[]) => {
     try {
@@ -600,12 +607,12 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
       if (newCompany) {
         setPendingSelectionId(newCompany.id);
       }
-      forceUpdate(); // Force re-render to show repositioned companies
+      forceCompaniesUpdate(); // Force re-render to show repositioned companies
     } catch (error) {
       console.error('Failed to batch update companies:', error);
       throw error; // Re-throw to let modal handle the error
     }
-  }, [stateManager, forceUpdate, viewMode]);
+  }, [stateManager, forceCompaniesUpdate, viewMode]);
 
   const removeCompany = useCallback((companyId: number) => {
     stateManager.removeCompany(companyId);
@@ -618,8 +625,8 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
     // Close confirmation modal
     setShowRemoveConfirmation(false);
     setCompanyToRemove(null);
-    forceUpdate(); // Force re-render to update UI
-  }, [stateManager, selectedCompany, handleCompanySelect, forceUpdate]);
+    forceCompaniesUpdate(); // Force re-render to update UI
+  }, [stateManager, selectedCompany, handleCompanySelect, forceCompaniesUpdate]);
 
   const handleRemoveRequest = useCallback((company: Company) => {
     setCompanyToRemove(company);
@@ -653,7 +660,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
 
   const restoreRemovedCompany = useCallback((company: Company) => {
     stateManager.restoreCompany(company.id);
-    forceUpdate(); // Force re-render to show restored company
+    forceCompaniesUpdate(); // Force re-render to show restored company
     
     // Auto-select the restored company
     setTimeout(() => {
@@ -661,7 +668,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
     }, 1000);
     
     console.log('Company restored successfully:', company.name);
-  }, [stateManager, forceUpdate, handleCompanySelect]);
+  }, [stateManager, forceCompaniesUpdate, handleCompanySelect]);
 
   // ===== VIEW MODE MANAGEMENT =====
 
