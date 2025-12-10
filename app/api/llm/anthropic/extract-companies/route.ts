@@ -112,7 +112,7 @@ ${contentToAnalyze}${extractedLinks.length > 0 ? `\n\nHyperlinks found in the te
       },
       body: JSON.stringify({
         model: DEFAULT_ANTHROPIC_MODEL,
-        max_tokens: 1500,
+        max_tokens: 4096,
         temperature: 0.1, // Low temperature for consistent extraction
         messages: [
           {

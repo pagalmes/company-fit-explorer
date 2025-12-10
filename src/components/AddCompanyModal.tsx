@@ -361,7 +361,7 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
       console.log(`🎯 View-specific positioning: ${viewMode} view with ${viewFilteredCompanies.length} companies`);
 
       // Find smart positioning solution using only companies in current view
-      const positioningSolution = findSmartPositioningSolution(companyWithConnections, viewFilteredCompanies);
+      const positioningSolution = findSmartPositioningSolution(companyWithConnections, viewFilteredCompanies, viewMode);
 
       console.log(`📍 Positioning solution: ${positioningSolution.reason}`);
 

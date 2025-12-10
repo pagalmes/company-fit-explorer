@@ -86,6 +86,7 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
       .filter(company => {
         // View mode filter (watchlist/explore)
         if (viewMode === 'watchlist' && !isInWatchlist(company.id)) return false;
+        if (viewMode === 'explore' && isInWatchlist(company.id)) return false;
 
         // Search filter
         if (searchTerm) {

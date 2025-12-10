@@ -523,7 +523,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
 
           // Calculate smart position for this company
           const { findSmartPositioningSolution } = require('../utils/smartPositioning');
-          const positioningSolution = findSmartPositioningSolution(newCompany, viewFilteredCompanies);
+          const positioningSolution = findSmartPositioningSolution(newCompany, viewFilteredCompanies, viewMode);
 
           // Apply position to company
           const positionedCompany = {
