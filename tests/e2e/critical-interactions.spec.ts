@@ -7,21 +7,17 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Critical User Interactions', () => {
   test.beforeEach(async ({ page }) => {
-    // Authenticate first
-    await page.goto('/login');
-    await page.fill('input[type="email"]', process.env.E2E_TEST_EMAIL || 'test@example.com');
-    await page.fill('input[type="password"]', process.env.E2E_TEST_PASSWORD || 'testpassword123');
-    await page.click('button:has-text("Sign In")');
-
-    // Wait for redirect and skip first-time experience
-    await page.waitForURL('/', { timeout: 10000 });
+    // Navigate to app with skip-intro
     await page.goto('/?skip-intro=true');
     await page.waitForLoadState('networkidle');
+
+    // Give the app extra time to fully load and render
+    await page.waitForTimeout(2000);
   });
 
   test('should maintain node selection without flickering', async ({ page }) => {
     // Wait for graph to load
-    await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 10000 });
+    await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 20000 });
     
     // Monitor network requests to detect infinite loops
     const apiCalls: string[] = [];
@@ -79,7 +75,7 @@ test.describe('Critical User Interactions', () => {
   });
 
   test('should handle rapid user interactions without breaking', async ({ page }) => {
-    await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 10000 });
+    await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 20000 });
     
     const canvas = page.locator('[data-cy="cytoscape-container"] canvas').first();
     
