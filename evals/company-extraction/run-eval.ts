@@ -70,15 +70,29 @@ function scoreResult(testCase: TestCase, actual: any): EvalResult['scores'] {
   // URL correctness - normalize URLs for comparison
   const normalizeUrl = (url?: string) => {
     if (!url) return '';
-    return url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '').toLowerCase();
+    return url
+      .replace(/^https?:\/\/(www\.)?/, '')  // Remove protocol and www
+      .replace(/#.*$/, '')                    // Remove hash anchors
+      .replace(/\/$/, '')                     // Remove trailing slash
+      .toLowerCase();
   };
 
   const urlCorrect = normalizeUrl(actual.url) === normalizeUrl(expected.url);
 
-  // Career URL correctness (optional field)
-  const careerUrlCorrect = expected.careerUrl
-    ? normalizeUrl(actual.careerUrl) === normalizeUrl(expected.careerUrl)
-    : true;  // If no expected careerUrl, don't penalize
+  // Career URL correctness (optional field, can be multiple valid options)
+  const careerUrlCorrect = (() => {
+    if (!expected.careerUrl) return true;  // If no expected careerUrl, don't penalize
+
+    const normalizedActual = normalizeUrl(actual.careerUrl);
+
+    // Handle multiple valid career URLs
+    if (Array.isArray(expected.careerUrl)) {
+      return expected.careerUrl.some(url => normalizeUrl(url) === normalizedActual);
+    }
+
+    // Single career URL
+    return normalizedActual === normalizeUrl(expected.careerUrl);
+  })();
 
   // Check that URL is NOT a third-party platform
   const thirdPartyPlatforms = [
@@ -93,6 +107,8 @@ function scoreResult(testCase: TestCase, actual: any): EvalResult['scores'] {
     'workable.com',
     'gem.com',
     'comeet.com',
+    'ycombinator.com',
+    'dover.com',
   ];
 
   const actualUrl = normalizeUrl(actual.url);
@@ -237,7 +253,7 @@ async function runEvaluation() {
   console.log(`  Average Latency: ${avgLatency.toFixed(0)}ms`);
 
   // Category breakdown
-  const categories = ['notion', 'greenhouse', 'lever', 'ashby', 'linkedin', 'direct'] as const;
+  const categories = ['notion', 'greenhouse', 'ashby', 'linkedin', 'workable', 'comeet', 'gem', 'ycombinator', 'dover', 'direct'] as const;
   console.log(`\n📊 Breakdown by Category:`);
 
   for (const category of categories) {
@@ -255,14 +271,12 @@ async function runEvaluation() {
   console.log(`\n✅ Evaluation complete! View results at: ${process.env.LANGFUSE_HOST || 'https://cloud.langfuse.com'}`);
 }
 
-// Run if called directly
-if (require.main === module) {
-  runEvaluation()
-    .then(() => process.exit(0))
-    .catch((error) => {
-      console.error('Evaluation failed:', error);
-      process.exit(1);
-    });
-}
+// Run evaluation
+runEvaluation()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error('Evaluation failed:', error);
+    process.exit(1);
+  });
 
 export { runEvaluation };

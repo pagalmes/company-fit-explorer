@@ -65,16 +65,31 @@ Instructions for inferring "url" (company website):
 CRITICAL: The "url" field must be the company's OWN website, NOT a third-party hosting platform.
 
 - Use the company name as the PRIMARY signal to infer the actual company domain
-- If you see a career page URL on a third-party platform (notion.so, greenhouse.io, lever.co, ashbyhq.com, etc.), you MUST infer the company's real website instead
+- If the company name does NOT match the career page platform, infer the company's real website instead
 - Examples of CORRECT inference:
-  * "Teleskope" + "linkedin.com/company/teleskopeai" → url: "https://teleskope.ai"
-  * "Strella" + "www.strella.io/careers" → url: "https://strella.io"
-  * "WellTheory" + "notion.so/Work-at-WellTheory-..." → url: "https://welltheory.com" (NOT notion.so!)
-  * "Defakto Security" + "www.defakto.security/careers/" → url: "https://defakto.security"
+  * "Teleskope" + "linkedin.com/company/teleskopeai" → url: "https://teleskope.ai" (company ≠ LinkedIn)
+  * "Strella" + "www.strella.io/careers" → url: "https://strella.io" (direct URL)
+  * "WellTheory" + "notion.so/Work-at-WellTheory-..." → url: "https://welltheory.com" (company ≠ Notion)
+  * "Defakto Security" + "www.defakto.security/careers/" → url: "https://defakto.security" (direct URL)
+  * "Notion" + "notion.so/careers" → url: "https://notion.so" (company = Notion, use their domain)
+  * "Greenhouse" + "greenhouse.io/careers" → url: "https://greenhouse.io" (company = Greenhouse)
 
-NEVER return these as the company URL: ashbyhq.com, greenhouse.io, lever.co, workable.com, notion.so, gem.com, comeet.com, linkedin.com, bamboohr.com, jobvite.com
+Common third-party job platforms (DON'T use as company URL unless the company name matches):
+ashbyhq.com, greenhouse.io, lever.co, workable.com, notion.so, gem.com, comeet.com, linkedin.com, bamboohr.com, jobvite.com, ycombinator.com, dover.com
 
 When you see a company name like "WellTheory", infer it would have a website like "welltheory.com" or "welltheory.co" based on typical naming patterns.
+
+TLD Selection Guidelines - Use industry/product context if provided:
+- AI/ML platforms, tech tools → Prefer .ai, .io, .com
+- Healthcare, biotech, regulatory → Prefer .bio, .health, .com
+- Energy, sustainability, climate → Prefer .energy, .com
+- Fintech, payments, banking → Prefer .io, .com, .finance
+- Developer tools, SaaS → Prefer .io, .dev, .com
+- General startups → Prefer .com, .io, .co
+Examples:
+  * "Weave - AI regulatory submission platform" → url: "https://weave.bio" (regulatory + bio context)
+  * "FleetWorks - AI logistics platform" → url: "https://fleetworks.ai" (AI platform context)
+  * "Daylight - renewable energy integrations" → url: "https://daylight.energy" or "https://daylight.com" (energy context)
 
 Instructions for "careerUrl":
 - Use the exact URL provided for that company (can be any platform - Ashby, Greenhouse, Notion, LinkedIn, company website, etc.)

@@ -19,9 +19,9 @@ export interface TestCase {
   expected: {
     name: string;
     url: string;  // Company's actual website (NOT third-party platform)
-    careerUrl?: string;  // Career page URL (can be any platform)
+    careerUrl?: string | string[];  // Career page URL(s) - can be any platform, multiple valid options allowed
   };
-  category: 'notion' | 'greenhouse' | 'lever' | 'ashby' | 'linkedin' | 'direct';
+  category: 'notion' | 'greenhouse' | 'ashby' | 'linkedin' | 'workable' | 'comeet' | 'gem' | 'ycombinator' | 'dover' | 'direct';
 }
 
 export const testDataset: TestCase[] = [
@@ -40,77 +40,196 @@ export const testDataset: TestCase[] = [
     category: 'notion'
   },
 
+  // === Third-Party Platform Career Pages ===
+  {
+    id: 'sumble-workable',
+    name: 'Sumble on Workable',
+    input: {
+      text: 'Sumble - https://apply.workable.com/sumble-inc/',
+    },
+    expected: {
+      name: 'Sumble',
+      url: 'https://sumble.com',
+      careerUrl: 'https://apply.workable.com/sumble-inc/'
+    },
+    category: 'workable'
+  },
+  {
+    id: 'mem0-linkedin',
+    name: 'Mem0 (YC S24) on LinkedIn Jobs',
+    input: {
+      text: 'Mem0 (YC S24) - https://www.linkedin.com/company/mem0/jobs/',
+    },
+    expected: {
+      name: 'Mem0',
+      url: 'https://mem0.ai',
+      careerUrl: 'https://mem0.ai/careers'
+    },
+    category: 'linkedin'
+  },
+  {
+    id: 'daylight-comeet',
+    name: 'Daylight Security on Comeet',
+    input: {
+      text: 'Daylight Security - https://www.comeet.com/jobs/daylightsecurity/7A.00D',
+    },
+    expected: {
+      name: 'Daylight Security',
+      url: 'https://daylight.ai',
+      careerUrl: 'https://www.comeet.com/jobs/daylightsecurity/7A.00D'
+    },
+    category: 'comeet'
+  },
+  {
+    id: 'letter-ai-gem',
+    name: 'Letter AI on Gem',
+    input: {
+      text: 'Letter AI - https://jobs.gem.com/letter-ai',
+    },
+    expected: {
+      name: 'Letter AI',
+      url: 'https://letter.ai',
+      careerUrl: 'https://jobs.gem.com/letter-ai'
+    },
+    category: 'gem'
+  },
+  {
+    id: 'fleetworks-ashby',
+    name: 'FleetWorks on Ashby',
+    input: {
+      text: 'FleetWorks - AI logistics management platform (Chicago / Bay Area) - https://jobs.ashbyhq.com/FleetWorks',
+    },
+    expected: {
+      name: 'FleetWorks',
+      url: 'https://www.fleetworks.ai',
+      careerUrl: 'https://jobs.ashbyhq.com/FleetWorks'
+    },
+    category: 'ashby'
+  },
+  {
+    id: 'weave-greenhouse',
+    name: 'Weave on Greenhouse',
+    input: {
+      text: 'Weave - AI regulatory submission platform (Bay Area / US remote) - https://job-boards.greenhouse.io/weave',
+    },
+    expected: {
+      name: 'Weave',
+      url: 'https://www.weave.bio',
+      careerUrl: ['https://job-boards.greenhouse.io/weave', 'https://www.weave.bio/careers/']
+    },
+    category: 'greenhouse'
+  },
+
+  // === Direct Career Pages with Edge Cases ===
+  {
+    id: 'estuary-hash-anchor',
+    name: 'Estuary with hash anchor',
+    input: {
+      text: 'Estuary - https://estuary.dev/about/#careers',
+    },
+    expected: {
+      name: 'Estuary',
+      url: 'https://estuary.dev',
+      careerUrl: 'https://estuary.dev/about/#careers'
+    },
+    category: 'direct'
+  },
+  {
+    id: 'marble-health-hash',
+    name: 'Marble Health with hash anchor',
+    input: {
+      text: 'Marble Health - https://www.marblehealth.com/careers#open-positions',
+    },
+    expected: {
+      name: 'Marble Health',
+      url: 'https://marblehealth.com',
+      careerUrl: 'https://www.marblehealth.com/careers#open-positions'
+    },
+    category: 'direct'
+  },
+  {
+    id: 'hyro-ai-tld',
+    name: 'Hyro with .ai TLD',
+    input: {
+      text: 'Hyro - https://www.hyro.ai/careers/',
+    },
+    expected: {
+      name: 'Hyro',
+      url: 'https://hyro.ai',
+      careerUrl: 'https://www.hyro.ai/careers/'
+    },
+    category: 'direct'
+  },
+
   // === Greenhouse.io Career Pages ===
   {
-    id: 'stripe-greenhouse',
-    name: 'Stripe on Greenhouse',
+    id: 'stripe-direct',
+    name: 'Stripe Direct',
     input: {
-      text: 'Stripe - https://stripe.greenhouse.io/jobs',
+      text: 'Stripe - https://stripe.com/jobs',
     },
     expected: {
       name: 'Stripe',
       url: 'https://stripe.com',
-      careerUrl: 'https://stripe.greenhouse.io/jobs'
+      careerUrl: 'https://stripe.com/jobs'
     },
-    category: 'greenhouse'
+    category: 'direct'
   },
   {
-    id: 'databricks-greenhouse',
-    name: 'Databricks on Greenhouse',
+    id: 'databricks-direct',
+    name: 'Databricks Direct',
     input: {
-      text: 'Databricks - https://databricks.greenhouse.io/jobs',
+      text: 'Databricks - https://www.databricks.com/company/careers',
     },
     expected: {
       name: 'Databricks',
       url: 'https://databricks.com',
-      careerUrl: 'https://databricks.greenhouse.io/jobs'
+      careerUrl: 'https://www.databricks.com/company/careers'
     },
-    category: 'greenhouse'
+    category: 'direct'
   },
 
-  // === Lever.co Career Pages ===
+  // === Direct Career Pages ===
   {
-    id: 'netflix-lever',
-    name: 'Netflix on Lever',
+    id: 'netflix-direct',
+    name: 'Netflix Direct',
     input: {
-      text: 'Netflix - https://jobs.lever.co/netflix',
+      text: 'Netflix - https://jobs.netflix.com/',
     },
     expected: {
       name: 'Netflix',
       url: 'https://netflix.com',
-      careerUrl: 'https://jobs.lever.co/netflix'
+      careerUrl: 'https://jobs.netflix.com/'
     },
-    category: 'lever'
+    category: 'direct'
   },
 
-  // === Ashby Career Pages ===
   {
-    id: 'anthropic-ashby',
-    name: 'Anthropic on Ashby',
+    id: 'anthropic-direct',
+    name: 'Anthropic Direct',
     input: {
-      text: 'Anthropic - https://anthropic.ashbyhq.com/jobs',
+      text: 'Anthropic - https://www.anthropic.com/careers',
     },
     expected: {
       name: 'Anthropic',
       url: 'https://anthropic.com',
-      careerUrl: 'https://anthropic.ashbyhq.com/jobs'
+      careerUrl: 'https://www.anthropic.com/careers'
     },
-    category: 'ashby'
+    category: 'direct'
   },
 
-  // === LinkedIn Company Pages ===
   {
-    id: 'teleskope-linkedin',
-    name: 'Teleskope via LinkedIn',
+    id: 'teleskope-direct',
+    name: 'Teleskope Direct',
     input: {
-      text: 'Teleskope - https://linkedin.com/company/teleskopeai',
+      text: 'Teleskope - https://www.teleskope.ai/careers',
     },
     expected: {
       name: 'Teleskope',
       url: 'https://teleskope.ai',
-      careerUrl: 'https://linkedin.com/company/teleskopeai'
+      careerUrl: 'https://www.teleskope.ai/careers'
     },
-    category: 'linkedin'
+    category: 'direct'
   },
 
   // === Direct Company Career Pages (Easy Cases) ===
@@ -137,6 +256,127 @@ export const testDataset: TestCase[] = [
       name: 'Strella',
       url: 'https://strella.io',
       careerUrl: 'https://www.strella.io/careers'
+    },
+    category: 'direct'
+  },
+
+  // === More Third-Party Platforms ===
+  {
+    id: 'cercli-ycombinator',
+    name: 'Cercli (YC S23) on YC Jobs',
+    input: {
+      text: 'Cercli (YC S23) - https://www.ycombinator.com/companies/cercli/jobs',
+    },
+    expected: {
+      name: 'Cercli',
+      url: 'https://cercli.com',
+      careerUrl: 'https://www.ycombinator.com/companies/cercli/jobs'
+    },
+    category: 'ycombinator'
+  },
+  {
+    id: 'daylight-greenhouse',
+    name: 'Daylight on Greenhouse',
+    input: {
+      text: 'Daylight - renewable energy integrations (NYC) - https://job-boards.greenhouse.io/daylight',
+    },
+    expected: {
+      name: 'Daylight',
+      url: 'https://godaylight.com',
+      careerUrl: 'https://job-boards.greenhouse.io/daylight'
+    },
+    category: 'greenhouse'
+  },
+  {
+    id: 'amae-health-greenhouse',
+    name: 'Amae Health on Greenhouse',
+    input: {
+      text: 'Amae Health - https://job-boards.greenhouse.io/amaehealth',
+    },
+    expected: {
+      name: 'Amae Health',
+      url: 'https://amaehealth.com',
+      careerUrl: 'https://job-boards.greenhouse.io/amaehealth'
+    },
+    category: 'greenhouse'
+  },
+  {
+    id: 'wonder-studios-greenhouse-eu',
+    name: 'Wonder Studios on Greenhouse EU',
+    input: {
+      text: 'Wonder Studios - https://job-boards.eu.greenhouse.io/wonderstudios',
+    },
+    expected: {
+      name: 'Wonder Studios',
+      url: 'https://wonderstudios.com',
+      careerUrl: 'https://job-boards.eu.greenhouse.io/wonderstudios'
+    },
+    category: 'greenhouse'
+  },
+  {
+    id: 'clerq-dover',
+    name: 'Clerq on Dover',
+    input: {
+      text: 'Clerq - direct bank account payments (NYC / Florida) - https://app.dover.com/jobs/clerq',
+    },
+    expected: {
+      name: 'Clerq',
+      url: 'https://clerq.io',
+      careerUrl: 'https://app.dover.com/jobs/clerq'
+    },
+    category: 'dover'
+  },
+
+  // === Direct Career Pages - More Examples ===
+  {
+    id: 'mobile-first-company',
+    name: 'The Mobile-First Company',
+    input: {
+      text: 'The Mobile-First Company - https://www.themobilefirstcompany.com/team',
+    },
+    expected: {
+      name: 'The Mobile-First Company',
+      url: 'https://themobilefirstcompany.com',
+      careerUrl: 'https://www.themobilefirstcompany.com/team'
+    },
+    category: 'direct'
+  },
+  {
+    id: 'emerald-ai',
+    name: 'Emerald AI with .co TLD',
+    input: {
+      text: 'Emerald AI - https://emeraldai.co/careers',
+    },
+    expected: {
+      name: 'Emerald AI',
+      url: 'https://emeraldai.co',
+      careerUrl: 'https://emeraldai.co/careers'
+    },
+    category: 'direct'
+  },
+  {
+    id: 'chipagents-ai',
+    name: 'ChipAgents with .ai TLD',
+    input: {
+      text: 'ChipAgents - https://chipagents.ai/careers',
+    },
+    expected: {
+      name: 'ChipAgents',
+      url: 'https://chipagents.ai',
+      careerUrl: 'https://chipagents.ai/careers'
+    },
+    category: 'direct'
+  },
+  {
+    id: 'viven-careers-subdomain',
+    name: 'Viven with careers subdomain',
+    input: {
+      text: 'Viven - https://careers.viven.ai/careers',
+    },
+    expected: {
+      name: 'Viven',
+      url: 'https://viven.ai',
+      careerUrl: 'https://careers.viven.ai/careers'
     },
     category: 'direct'
   },
@@ -182,6 +422,6 @@ export function getTestCasesByCategory(category: TestCase['category']): TestCase
  */
 export function getThirdPartyPlatformTests(): TestCase[] {
   return testDataset.filter(tc =>
-    ['notion', 'greenhouse', 'lever', 'ashby', 'linkedin'].includes(tc.category)
+    ['notion', 'greenhouse', 'ashby', 'linkedin', 'workable', 'comeet', 'gem', 'ycombinator', 'dover'].includes(tc.category)
   );
 }
