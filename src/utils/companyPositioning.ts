@@ -428,13 +428,27 @@ export const getColorForScore = (score: number): string => {
 
 /**
  * Generate a career URL for a company (fallback when no URL provided)
+ *
+ * Handles both full URLs and clean domains:
+ * - "https://bevel.health" → "https://bevel.health/careers"
+ * - "bevel.health" → "https://bevel.health/careers"
+ * - "https://www.stripe.com" → "https://stripe.com/careers"
  */
 export const generateCareerUrl = (companyName: string, domain?: string): string => {
   if (domain) {
-    return `https://${domain}/careers`;
+    // Extract clean domain from URL if full URL provided
+    // Handles: "https://bevel.health", "www.bevel.health", "bevel.health/"
+    let cleanDomain = domain
+      .replace(/^https?:\/\//, '')  // Remove protocol
+      .replace(/^www\./, '')         // Remove www prefix only
+      .replace(/\/$/, '')            // Remove trailing slash
+      .split('/')[0];                // Take only domain part (ignore paths)
+
+    return `https://${cleanDomain}/careers`;
   }
 
-  // Generate based on company name
+  // Generate based on company name (last resort fallback)
+  // Note: This should rarely be hit with improved domain passing from Extraction API
   const normalizedName = companyName
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, '')
