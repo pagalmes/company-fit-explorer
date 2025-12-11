@@ -1,6 +1,6 @@
 {
   "name": "Company Fit Explorer",
-  "short_name": "CFE",
+  "short_name": "Cosmos",
   "description": "Interactive company graph explorer to find companies that fit your career preferences",
   "start_url": "/",
   "display": "standalone",
