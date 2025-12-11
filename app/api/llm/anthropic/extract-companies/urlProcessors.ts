@@ -23,8 +23,8 @@ export interface ProcessedUrl {
  * Base interface for platform-specific URL processors
  */
 interface UrlProcessor {
-  /** Check if this processor handles the given hostname */
-  matches(hostname: string): boolean;
+  /** Check if this processor handles the given hostname/URL */
+  matches(hostname: string, url?: URL): boolean;
   /** Process the URL and return result */
   process(url: URL, companyName?: string): ProcessedUrl;
 }
@@ -252,16 +252,46 @@ class GlassdoorProcessor implements UrlProcessor {
 /**
  * Email Tracking URL Processor
  *
- * Filters out email click-tracking wrapper URLs (SendGrid, Mailchimp, Google, etc.)
+ * Filters out email click-tracking wrapper URLs (SendGrid, Mailchimp, Google, SparkPost, etc.)
  * These are massive redirect URLs that don't provide useful career page info
+ *
+ * Patterns filtered:
+ * - Known ESP domains: sendgrid.net, mandrillapp.com, mclk.com, spgo.io, notifications.googleapis.com
+ * - Tracking subdomains: click.*, link.*, track.*, mkt.*, trk.*, url.*, go.*, redirect.*
+ * - Click tracking patterns: *.ct.*, click?, /ls/click
+ * - Long URLs: > 500 characters (typically tracking wrappers)
  */
 class EmailTrackingProcessor implements UrlProcessor {
-  matches(hostname: string): boolean {
-    return hostname.includes('sendgrid.net') ||
-           hostname.includes('mailchimp.com') ||
-           hostname.includes('notifications.googleapis.com') ||
-           hostname.includes('click.') ||
-           hostname.match(/\.ct\./i) !== null; // Click tracking domains
+  matches(hostname: string, url?: URL): boolean {
+    // Length check: URLs > 500 chars are almost always tracking wrappers
+    if (url && url.href.length > 500) {
+      return true;
+    }
+
+    // Known ESP tracking domains
+    if (hostname.includes('sendgrid.net') ||
+        hostname.includes('mailchimp.com') ||
+        hostname.includes('mandrillapp.com') ||
+        hostname.includes('mclk.com') ||
+        hostname.includes('spgo.io') ||
+        hostname.includes('eu.spgo.io') ||
+        hostname.includes('appcast.io') ||
+        hostname.includes('notifications.googleapis.com')) {
+      return true;
+    }
+
+    // Tracking subdomain patterns
+    const trackingSubdomains = ['click.', 'link.', 'track.', 'mkt.', 'trk.', 'url.', 'go.', 'redirect.'];
+    if (trackingSubdomains.some(pattern => hostname.includes(pattern))) {
+      return true;
+    }
+
+    // Click tracking patterns
+    if (hostname.match(/\.ct\./i) || hostname.includes('click?') || url?.pathname.includes('/ls/click')) {
+      return true;
+    }
+
+    return false;
   }
 
   process(_url: URL, _companyName?: string): ProcessedUrl {
@@ -298,8 +328,8 @@ export function processCareerUrl(url: string, companyName?: string): string | nu
     const urlObj = new URL(url);
     const hostname = urlObj.hostname.toLowerCase();
 
-    // Find the first matching processor
-    const processor = processors.find(p => p.matches(hostname));
+    // Find the first matching processor (pass both hostname and URL object)
+    const processor = processors.find(p => p.matches(hostname, urlObj));
 
     if (!processor) {
       // Should never happen due to GenericProcessor fallback

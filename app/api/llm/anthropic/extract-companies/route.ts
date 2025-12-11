@@ -98,7 +98,33 @@ Examples:
   * "Daylight - renewable energy integrations" → url: "https://daylight.energy" or "https://daylight.com" (energy context)
 
 Instructions for "careerUrl":
-- Use the exact URL provided for that company (can be any platform - Ashby, Greenhouse, Notion, LinkedIn, company website, etc.)
+IMPORTANT: Determine from context and URL patterns if a link is truly a company career page.
+
+You will see many types of URLs that are NOT career pages:
+- Job board links (LinkedIn, Glassdoor, Indeed)
+- Specific job postings (single role, not company careers page)
+- Email tracking redirects (long URLs with tracking parameters)
+- Marketing redirects (click trackers, analytics wrappers)
+
+ONLY include careerUrl if:
+1. The URL is clearly a company's own careers/jobs page (e.g., "company.com/careers", "careers.company.com")
+2. The link text or context indicates it's a careers page (e.g., "View all jobs at Company")
+3. It's NOT a third-party job board or single job posting
+
+Do NOT include careerUrl if:
+- It's the company's main website without /careers path
+- It's a job board URL (even if it links to company's jobs)
+- It's a specific job posting (not the general careers page)
+- It's a tracking/redirect URL
+- You're uncertain - when in doubt, omit this field
+
+Examples:
+  * "Webflow" + link "webflow.com/careers" → careerUrl: "https://webflow.com/careers" ✓
+  * "Webflow" + link "jobs.webflow.com" → careerUrl: "https://jobs.webflow.com" ✓
+  * "Webflow" + link "linkedin.com/company/webflow/jobs" → careerUrl: omitted (job board) ✓
+  * "Webflow" + link "webflow.com/careers/senior-engineer" → careerUrl: omitted (specific job) ✓
+  * "Webflow" + link "webflow.com" → careerUrl: omitted (main site, not careers) ✓
+  * "Webflow" + no links → careerUrl: omitted ✓
 
 Rules:
 - Extract only real company/organization names, not generic terms

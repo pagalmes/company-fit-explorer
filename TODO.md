@@ -26,7 +26,10 @@ TODO: Enable batch-adding companies: From a screenshot
 <!-- DONE: Explore / Watchlist: Place new companies added better to avoid overlap -->
 <!-- DONE: Explore / Watchlist: Each company is in only one of the views --> 
 <!-- DONE: Explore / Watchlist: Smarter repositionning of company when transitionned from explore/watchlist view --> 
+<!-- DONE: Batch Import: 25-company batch limit with graceful handling --> 
 
+<!-- DONE: Batch Import: Support for paste from emails from LinkedIn, Glassdoor, Google Alerts, Welcome to the jungle --> 
+<!-- DONE: --> 
 <!-- DONE: --> 
 
 TODO: Hover node: do not grey out on hover. Just on selection
