@@ -1,15 +1,38 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Toaster } from 'sonner'
 import '../src/styles/index.css'
 
 export const metadata: Metadata = {
-  title: 'CMF Explorer',
-  description: 'Interactive company graph explorer to find companies that fit your preferences',
-  icons: {
-    icon: '/favicon.svg',
-    shortcut: '/favicon.svg',
-    apple: '/favicon.svg',
+  title: 'Company Fit Explorer',
+  description: 'Interactive company graph explorer to find companies that fit your career preferences',
+  applicationName: 'Company Fit Explorer',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Company Fit Explorer',
   },
+  formatDetection: {
+    telephone: false,
+  },
+  manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/company-fit-explorer-icon.svg', sizes: '64x64', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.svg',
+    apple: [
+      { url: '/company-fit-explorer-icon.svg', sizes: '180x180', type: 'image/svg+xml' },
+    ],
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#3B82F6',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({
