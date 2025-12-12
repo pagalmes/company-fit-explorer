@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { ViewMode, Company, UserExplorationState } from '../types';
 import { ExplorationStateManager } from '../services/ExplorationStateManager';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { activeUserProfile } from '../data/companies';
 import CompanyGraph from './CompanyGraph';
 import CompanyDetailPanel, { CompanyDetailPanelHandle } from './CompanyDetailPanel';
@@ -49,9 +50,12 @@ interface CMFGraphExplorerProps {
  * is loaded from provided userProfile or defaults to companies.ts.
  */
 const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
+  // Mobile detection
+  const isMobile = useIsMobile();
+
   // Initialize state manager from provided profile or default
   const [stateManager, setStateManager] = useState(() => new ExplorationStateManager(userProfile || activeUserProfile, 'teeKProfile'));
-  
+
   // Update state manager when userProfile changes
   useEffect(() => {
     if (userProfile) {
@@ -59,11 +63,12 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
       setStateManager(new ExplorationStateManager(userProfile, 'teeKProfile'));
     }
   }, [userProfile]);
-  
+
   // UI state
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [hoveredCompany, setHoveredCompany] = useState<Company | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('explore');
+  const [mobileView, setMobileView] = useState<'cosmos' | 'list' | 'detail'>('cosmos');
   const [isLoading, setIsLoading] = useState(true);
   
   // Modal states
@@ -721,10 +726,27 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
 
   return (
     <div className="flex h-screen bg-transparent">
-      {/* Main Graph Area */}
-      <div className="flex-1 relative">
-        {/* Development indicator disabled to avoid conflict with CMF panel */}
-
+      {/* Main Graph Area - on mobile: only show when in cosmos view */}
+      {(!isMobile || mobileView === 'cosmos') && (
+        <div className="flex-1 relative">
+        {/* Mobile: Company List Toggle Button */}
+        {isMobile && (
+          <button
+            onClick={() => setMobileView(mobileView === 'list' ? 'cosmos' : 'list')}
+            className="absolute top-4 right-4 z-10 p-3 bg-white rounded-lg shadow-lg hover:shadow-xl transition-all"
+            aria-label={mobileView === 'list' ? 'Show cosmos view' : 'Show company list'}
+          >
+            {mobileView === 'list' ? (
+              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              </svg>
+            ) : (
+              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
+        )}
 
         {/* View Mode Toggle */}
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-white rounded-lg shadow-lg overflow-hidden">
@@ -806,24 +828,44 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
             </div>
           )}
         </div>
+        </div>
+      )}
 
-      </div>
+      {/* Side Panel - Desktop: always visible, Mobile: only when in list or detail view */}
+      {(!isMobile || mobileView === 'list' || mobileView === 'detail') && (
+        <div className={`
+          ${isMobile && (mobileView === 'list' || mobileView === 'detail')
+            ? 'fixed inset-0 z-50 animate-slide-in-right'
+            : 'w-96'}
+          bg-white border-l border-gray-200 overflow-hidden
+        `}>
+          {/* Mobile: Back button */}
+          {isMobile && mobileView === 'list' && (
+            <button
+              onClick={() => setMobileView('cosmos')}
+              className="absolute top-4 left-4 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg"
+              aria-label="Back to cosmos view"
+            >
+              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
 
-      {/* Side Panel */}
-      <div className="w-96 bg-white border-l border-gray-200 overflow-hidden">
-        <CompanyDetailPanel
-          ref={companyDetailPanelRef}
-          selectedCompany={selectedCompany}
-          allCompanies={allCompanies}
-          onCompanySelect={handleCompanySelectFromPanel}
-          isInWatchlist={isInWatchlist}
-          onToggleWatchlist={handleToggleWatchlist}
-          onRequestDelete={handleRemoveRequest}
-          viewMode={viewMode}
-          watchlistStats={watchlistStats}
-          userCMF={stateManager.getUserCMF()}
-        />
-      </div>
+          <CompanyDetailPanel
+            ref={companyDetailPanelRef}
+            selectedCompany={mobileView === 'list' ? null : selectedCompany}
+            allCompanies={allCompanies}
+            onCompanySelect={handleCompanySelectFromPanel}
+            isInWatchlist={isInWatchlist}
+            onToggleWatchlist={handleToggleWatchlist}
+            onRequestDelete={handleRemoveRequest}
+            viewMode={viewMode}
+            watchlistStats={watchlistStats}
+            userCMF={stateManager.getUserCMF()}
+          />
+        </div>
+      )}
 
       {/* Modals */}
       {showAddCompanyModal && (
