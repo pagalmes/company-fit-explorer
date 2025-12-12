@@ -213,10 +213,18 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
     // Only update state manager for selection without triggering re-render
     if (company) {
       stateManager.setSelectedCompany(company.id);
+      // On mobile, switch to detail view when selecting a company
+      if (isMobile) {
+        setMobileView('detail');
+      }
     } else {
       stateManager.setSelectedCompany(null);
+      // On mobile, go back to cosmos view when deselecting
+      if (isMobile && mobileView === 'detail') {
+        setMobileView('cosmos');
+      }
     }
-  }, [stateManager]);
+  }, [stateManager, isMobile, mobileView]);
 
   const handleCompanyHover = useCallback((company: Company | null) => {
     setHoveredCompany(company);
@@ -729,59 +737,62 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
       {/* Main Graph Area - on mobile: only show when in cosmos view */}
       {(!isMobile || mobileView === 'cosmos') && (
         <div className="flex-1 relative">
-        {/* Mobile: Company List Toggle Button */}
+        {/* Mobile: Company List Toggle Button - bottom left, matching FAB style */}
         {isMobile && (
           <button
             onClick={() => setMobileView(mobileView === 'list' ? 'cosmos' : 'list')}
-            className="absolute top-4 right-4 z-10 p-3 bg-white rounded-lg shadow-lg hover:shadow-xl transition-all"
+            className="absolute bottom-6 left-6 z-10 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white
+              rounded-full shadow-lg hover:shadow-xl
+              transition-all duration-200 ease-in-out
+              flex items-center justify-center
+              hover:scale-105 active:scale-95
+              focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50"
             aria-label={mobileView === 'list' ? 'Show cosmos view' : 'Show company list'}
           >
-            {mobileView === 'list' ? (
-              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-              </svg>
-            ) : (
-              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            )}
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
           </button>
         )}
 
-        {/* View Mode Toggle */}
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-white rounded-lg shadow-lg overflow-hidden">
+        {/* View Mode Toggle - Floating mini-tabs on mobile, full tabs on desktop */}
+        <div className={`absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-white rounded-lg shadow-lg overflow-hidden ${
+          isMobile ? 'scale-90' : ''
+        }`}>
           <div className="flex">
             <button
               onClick={() => handleViewModeChange('explore')}
-              className={`w-56 px-4 py-3 font-medium transition-colors flex items-center justify-center space-x-2 whitespace-nowrap ${
+              className={`${isMobile ? 'px-3 py-2 text-xs' : 'w-56 px-4 py-3 text-base'} font-medium transition-colors flex items-center justify-center space-x-1 whitespace-nowrap ${
                 viewMode === 'explore'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               <SearchIcon />
-              <span>Explore Companies ({exploreCompaniesCount})</span>
+              <span>{isMobile ? `Explore (${exploreCompaniesCount})` : `Explore Companies (${exploreCompaniesCount})`}</span>
             </button>
             <button
               onClick={() => handleViewModeChange('watchlist')}
-              className={`w-56 px-4 py-3 font-medium transition-colors flex items-center justify-center space-x-2 whitespace-nowrap ${
+              className={`${isMobile ? 'px-3 py-2 text-xs' : 'w-56 px-4 py-3 text-base'} font-medium transition-colors flex items-center justify-center space-x-1 whitespace-nowrap ${
                 viewMode === 'watchlist'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               <HeartIcon />
-              <span>Your Watchlist ({watchlistStats.totalCompanies})</span>
+              <span>{isMobile ? `Saved (${watchlistStats.totalCompanies})` : `Your Watchlist (${watchlistStats.totalCompanies})`}</span>
             </button>
           </div>
         </div>
 
-        {/* CMF Panel */}
-        <CollapsibleCMFPanel
-          userCMF={userCMF}
-          isCollapsed={isCMFPanelCollapsed}
-          onToggle={toggleCMFPanel}
-        />
+        {/* CMF Panel - hidden on mobile */}
+        {!isMobile && (
+          <CollapsibleCMFPanel
+            userCMF={userCMF}
+            isCollapsed={isCMFPanelCollapsed}
+            onToggle={toggleCMFPanel}
+          />
+        )}
 
         {/* Graph Component */}
         <CompanyGraph
@@ -807,27 +818,29 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
           />
         </div>
 
-        {/* LLM Settings */}
-        <div className="absolute bottom-6 left-6 z-10 flex items-center space-x-2">
-          <button
-            onClick={() => setShowLLMSettings(true)}
-            className={`w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center hover:scale-105 active:scale-95 focus:outline-none ${
-              llmConfigured
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-orange-500 text-white hover:bg-orange-600'
-            }`}
-            title={llmConfigured ? 'LLM Settings' : 'Configure LLM'}
-          >
-            <GearIcon />
-          </button>
-          {/* LLM Status indicator */}
-          {llmConfigured && (
-            <div className="px-3 py-1.5 bg-green-50 border border-green-200 text-green-700 text-xs rounded-full flex items-center shadow-sm">
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-              <span className="font-medium">{llmService.getSettings().provider.toUpperCase()} AI</span>
-            </div>
-          )}
-        </div>
+        {/* LLM Settings - hidden on mobile */}
+        {!isMobile && (
+          <div className="absolute bottom-6 left-6 z-10 flex items-center space-x-2">
+            <button
+              onClick={() => setShowLLMSettings(true)}
+              className={`w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center hover:scale-105 active:scale-95 focus:outline-none ${
+                llmConfigured
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-orange-500 text-white hover:bg-orange-600'
+              }`}
+              title={llmConfigured ? 'LLM Settings' : 'Configure LLM'}
+            >
+              <GearIcon />
+            </button>
+            {/* LLM Status indicator */}
+            {llmConfigured && (
+              <div className="px-3 py-1.5 bg-green-50 border border-green-200 text-green-700 text-xs rounded-full flex items-center shadow-sm">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                <span className="font-medium">{llmService.getSettings().provider.toUpperCase()} AI</span>
+              </div>
+            )}
+          </div>
+        )}
         </div>
       )}
 
@@ -839,10 +852,15 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
             : 'w-96'}
           bg-white border-l border-gray-200 overflow-hidden
         `}>
-          {/* Mobile: Back button */}
-          {isMobile && mobileView === 'list' && (
+          {/* Mobile: Back button for list and detail views */}
+          {isMobile && (mobileView === 'list' || mobileView === 'detail') && (
             <button
-              onClick={() => setMobileView('cosmos')}
+              onClick={() => {
+                setMobileView('cosmos');
+                if (mobileView === 'detail') {
+                  setSelectedCompany(null);
+                }
+              }}
               className="absolute top-4 left-4 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg"
               aria-label="Back to cosmos view"
             >
