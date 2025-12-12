@@ -8,9 +8,14 @@
 <!-- DONE: Add a "setup Alert" button. -->
 <!-- TODO: Enable batch-adding companies: From a text post -->
 
+TODO: Support mobile
+TODO: Network! WOrk your network
+TODO: Evolve my profile / needs as my understanding evolves
+TODO: Multiple research: My dream job is private equity and have my current research right now. (in IT - Project management) Could I manage mutliple research that are fairly different. 
 TODO: "Dailies & Jobs" for new companies to consider from alerts
 TODO: Extract and generate a few profiles.
 TODO: Enable batch-adding companies: From a screenshot
+
 
 
 ## Improvements
@@ -27,10 +32,17 @@ TODO: Enable batch-adding companies: From a screenshot
 <!-- DONE: Explore / Watchlist: Each company is in only one of the views --> 
 <!-- DONE: Explore / Watchlist: Smarter repositionning of company when transitionned from explore/watchlist view --> 
 <!-- DONE: Batch Import: 25-company batch limit with graceful handling --> 
-
 <!-- DONE: Batch Import: Support for paste from emails from LinkedIn, Glassdoor, Google Alerts, Welcome to the jungle --> 
+<!-- DONE: iOS/Android: Progressive Web App: Allow "add to homescreen" --> 
+
 <!-- DONE: --> 
 <!-- DONE: --> 
+<!-- DONE: --> 
+
+TODO: Admin: Add confirmation to the delete account button
+
+TODO: Mobile friendly UI: Users can add & review companies from their mobile. (When I'm scrolling LinkedIn and see a cool company, I want to be able to see if it's a fit for me and/or save it for later review)
+
 
 TODO: Hover node: do not grey out on hover. Just on selection
 TODO: Edit companies: Allow to edit companies details: website, career page...
@@ -74,6 +86,3 @@ TODO: Setup a commit hook to run tests at commit time. (husky)
 
 <!-- NOTE: Need to document the company data schema -->
 <!-- TODO: Create contribution guidelines for new developers -->
-
-
-

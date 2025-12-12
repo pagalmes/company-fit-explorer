@@ -852,24 +852,6 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
             : 'w-96'}
           bg-white border-l border-gray-200 overflow-hidden
         `}>
-          {/* Mobile: Back button for list and detail views */}
-          {isMobile && (mobileView === 'list' || mobileView === 'detail') && (
-            <button
-              onClick={() => {
-                setMobileView('cosmos');
-                if (mobileView === 'detail') {
-                  setSelectedCompany(null);
-                }
-              }}
-              className="absolute top-4 left-4 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg"
-              aria-label="Back to cosmos view"
-            >
-              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-          )}
-
           <CompanyDetailPanel
             ref={companyDetailPanelRef}
             selectedCompany={mobileView === 'list' ? null : selectedCompany}
@@ -881,6 +863,13 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
             viewMode={viewMode}
             watchlistStats={watchlistStats}
             userCMF={stateManager.getUserCMF()}
+            isMobile={isMobile}
+            onBack={() => {
+              setMobileView('cosmos');
+              if (mobileView === 'detail') {
+                setSelectedCompany(null);
+              }
+            }}
           />
         </div>
       )}
