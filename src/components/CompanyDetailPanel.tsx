@@ -109,57 +109,39 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
 
     return (
       <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-        {/* Mobile Header Bar - Compact header with back button */}
-        {isMobile && onBack && (
-          <div className="flex items-center px-4 py-3 border-b border-blue-200/40 bg-white/80 backdrop-blur-sm" style={{ zIndex: 100 }}>
-            {/* Back Button */}
-            <button
-              onClick={onBack}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors mr-3"
-              aria-label="Back"
-            >
-              <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-
-            {/* Title */}
-            <h2 className="text-base font-semibold text-slate-800 flex-1 truncate">
-              {(selectedCompany as Company | null)?.name || (viewMode === 'watchlist' ? 'Your Watchlist' : 'Company List')}
-            </h2>
-
-            {/* Watchlist Heart (only for detail view with selected company) */}
-            {selectedCompany && (
-              <button
-                onClick={() => onToggleWatchlist((selectedCompany as Company).id)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors ml-2"
-                aria-label={isInWatchlist((selectedCompany as Company).id) ? 'Remove from watchlist' : 'Add to watchlist'}
-              >
-                <svg
-                  className={`w-5 h-5 ${isInWatchlist((selectedCompany as Company).id) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
-                  fill={isInWatchlist((selectedCompany as Company).id) ? 'currentColor' : 'none'}
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Desktop Header - Full header with title and description */}
-        {!isMobile && (
+        {/* Header - Desktop and Mobile List View */}
+        {(!isMobile || (isMobile && onBack)) && (
           <div className="panel-header p-6 pb-4 border-b border-blue-200/40 bg-white/60 backdrop-blur-sm">
-            <h2 className="text-xl font-bold text-slate-800">
-              {viewMode === 'watchlist' ? 'Your Watchlist' : 'Company Details'}
-            </h2>
-            <p className="text-sm text-slate-600 mt-1">
-              {viewMode === 'watchlist'
-                ? 'Companies saved for further exploration'
-                : 'Click on a company node to see details'
-              }
-            </p>
+            {/* Header with optional back button for mobile */}
+            <div className="flex items-start gap-2">
+              {isMobile && onBack && (
+                <button
+                  onClick={onBack}
+                  className="p-2 -ml-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+                  aria-label="Back"
+                >
+                  <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
+              <div className="flex-1">
+                <h2 className={isMobile ? "text-2xl font-bold text-slate-800" : "text-xl font-bold text-slate-800"}>
+                  {isMobile
+                    ? (viewMode === 'watchlist' ? 'Your Watchlist' : 'Explore Companies')
+                    : (viewMode === 'watchlist' ? 'Your Watchlist' : 'Company Details')
+                  }
+                </h2>
+                {!isMobile && (
+                  <p className="text-sm text-slate-600 mt-1">
+                    {viewMode === 'watchlist'
+                      ? 'Companies saved for further exploration'
+                      : 'Click on a company node to see details'
+                    }
+                  </p>
+                )}
+              </div>
+            </div>
 
           {/* Search Bar */}
           <div className="mt-4 relative">
@@ -231,80 +213,6 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
             </p>
           )}
         </div>
-        )}
-
-        {/* Mobile Search Bar - Outside header for more space */}
-        {isMobile && !selectedCompany && (
-          <div className="px-4 py-3 border-b border-blue-200/40 bg-white/60">
-            <div className="relative">
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder="Search companies..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => {
-                  switch (e.key) {
-                    case 'Escape':
-                      e.preventDefault();
-                      if (searchTerm) {
-                        setSearchTerm('');
-                        setSelectedCompanyIndex(-1);
-                      }
-                      searchInputRef.current?.blur();
-                      break;
-                    case 'ArrowDown':
-                      if (filteredCompanies.length === 0) return;
-                      e.preventDefault();
-                      setSelectedCompanyIndex(prev =>
-                        prev < filteredCompanies.length - 1 ? prev + 1 : prev
-                      );
-                      break;
-                    case 'ArrowUp':
-                      if (filteredCompanies.length === 0) return;
-                      e.preventDefault();
-                      setSelectedCompanyIndex(prev => prev > 0 ? prev - 1 : -1);
-                      break;
-                    case 'Enter':
-                      if (filteredCompanies.length === 0) return;
-                      e.preventDefault();
-                      if (selectedCompanyIndex >= 0 && selectedCompanyIndex < filteredCompanies.length) {
-                        onCompanySelect(filteredCompanies[selectedCompanyIndex]);
-                      }
-                      break;
-                  }
-                }}
-                className="w-full px-4 py-2 pl-10 pr-10 rounded-lg border border-blue-200 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm placeholder-slate-400"
-              />
-              <svg
-                className="absolute left-3 top-2.5 h-5 w-5 text-slate-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-              {searchTerm && (
-                <button
-                  onClick={() => {
-                    setSearchTerm('');
-                    setSelectedCompanyIndex(-1);
-                  }}
-                  className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
-                  aria-label="Clear search"
-                >
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-            </div>
-          </div>
         )}
 
         {/* Company List */}
@@ -400,20 +308,20 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
     <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Mobile Header Bar - Centered logo design (detail view only) */}
       {isMobile && onBack && selectedCompany && (
-        <div className="flex items-center justify-between px-4 py-3 border-b border-blue-200/40 bg-white/80 backdrop-blur-sm" style={{ zIndex: 100 }}>
+        <div className="flex items-start justify-between px-4 py-3 border-b border-blue-200/40 bg-white/80 backdrop-blur-sm" style={{ zIndex: 100 }}>
           {/* Back Button */}
           <button
             onClick={onBack}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 -ml-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
             aria-label="Back"
           >
-            <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
 
           {/* Center: Company Logo and Name */}
-          <div className="flex flex-col items-center flex-1 mx-4">
+          <div className="flex flex-col items-center flex-1 mx-2">
             <div
               className="w-12 h-12 rounded-lg bg-white/80 border border-blue-200/60 shadow-sm mb-2"
               style={{
@@ -433,11 +341,11 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
           {/* Watchlist Heart */}
           <button
             onClick={() => onToggleWatchlist(selectedCompany.id)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 -mr-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
             aria-label={isInWatchlist(selectedCompany.id) ? 'Remove from watchlist' : 'Add to watchlist'}
           >
             <svg
-              className={`w-6 h-6 ${isInWatchlist(selectedCompany.id) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
+              className={`w-5 h-5 ${isInWatchlist(selectedCompany.id) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
               fill={isInWatchlist(selectedCompany.id) ? 'currentColor' : 'none'}
               stroke="currentColor"
               viewBox="0 0 24 24"
