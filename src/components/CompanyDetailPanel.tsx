@@ -435,34 +435,34 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
         </div>
       )}
 
-      {/* Mobile Match Score Bar */}
-      {isMobile && (
-        <div className="px-4 py-3 border-b border-blue-200/40 bg-white/60 backdrop-blur-sm">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-slate-700">
-              Candidate Market Fit Score
-            </span>
-            <span
-              className="text-base font-bold px-2 py-1 rounded-full text-white"
-              style={{ backgroundColor: selectedCompany.color }}
-            >
-              {selectedCompany.matchScore}%
-            </span>
-          </div>
-          <div className="w-full bg-slate-200/60 rounded-full h-2">
-            <div
-              className="h-2 rounded-full transition-all duration-300"
-              style={{
-                width: `${selectedCompany.matchScore}%`,
-                backgroundColor: selectedCompany.color
-              }}
-            ></div>
-          </div>
-        </div>
-      )}
-
       {/* Content */}
       <div className={`panel-content flex-1 overflow-auto bg-white/30 backdrop-blur-sm ${isMobile ? 'px-4 py-6 space-y-6' : 'p-6 space-y-6'}`}>
+        {/* Mobile Match Score - First item in scrollable content */}
+        {isMobile && (
+          <div className="bg-white/60 rounded-lg p-4 border border-blue-100/50">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-slate-700">
+                Candidate Market Fit Score
+              </span>
+              <span
+                className="text-lg font-bold px-3 py-1.5 rounded-full text-white shadow-sm"
+                style={{ backgroundColor: selectedCompany.color }}
+              >
+                {selectedCompany.matchScore}%
+              </span>
+            </div>
+            <div className="w-full bg-slate-200/60 rounded-full h-2.5">
+              <div
+                className="h-2.5 rounded-full transition-all duration-300"
+                style={{
+                  width: `${selectedCompany.matchScore}%`,
+                  backgroundColor: selectedCompany.color
+                }}
+              ></div>
+            </div>
+          </div>
+        )}
+
         {/* Company Info */}
         <div className="pb-6 border-b border-slate-200/50">
           <h3 className={`section-title font-semibold text-slate-800 mb-4 ${isMobile ? 'text-xl' : 'text-lg'}`}>
