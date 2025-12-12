@@ -316,11 +316,11 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
     <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Mobile Header Bar - Stacked centered profile design (detail view only) */}
       {isMobile && onBack && selectedCompany && (
-        <div className="relative px-4 pt-4 pb-6 border-b border-blue-200/40 bg-white/80 backdrop-blur-sm" style={{ zIndex: 100 }}>
+        <div className="relative px-4 pt-3 pb-4 border-b border-blue-200/40 bg-white/80 backdrop-blur-sm" style={{ zIndex: 100 }}>
           {/* Back Button - Top Left */}
           <button
             onClick={onBack}
-            className="absolute top-4 left-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="absolute top-3 left-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
             aria-label="Back"
           >
             <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -331,7 +331,7 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
           {/* Watchlist Heart - Top Right */}
           <button
             onClick={() => onToggleWatchlist(selectedCompany.id)}
-            className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="absolute top-3 right-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
             aria-label={isInWatchlist(selectedCompany.id) ? 'Remove from watchlist' : 'Add to watchlist'}
           >
             <svg
@@ -345,9 +345,9 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
           </button>
 
           {/* Centered: Company Logo and Name */}
-          <div className="flex flex-col items-center pt-8">
+          <div className="flex flex-col items-center pt-5">
             <div
-              className="w-24 h-24 rounded-full bg-white shadow-lg mb-4"
+              className="w-20 h-20 rounded-full bg-white shadow-lg mb-3"
               style={{
                 backgroundImage: `url(${selectedCompany.logo})`,
                 backgroundSize: 'cover',
@@ -356,10 +356,10 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
               }}
               aria-label={`${selectedCompany.name} logo`}
             />
-            <h2 className="text-2xl font-bold text-slate-900 text-center px-4">
+            <h2 className="text-xl font-bold text-slate-900 text-center px-4">
               {selectedCompany.name}
             </h2>
-            <p className="text-base text-slate-600 mt-1">{selectedCompany.industry}</p>
+            <p className="text-sm text-slate-600 mt-0.5">{selectedCompany.industry}</p>
           </div>
         </div>
       )}
