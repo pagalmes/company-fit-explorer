@@ -865,9 +865,13 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
             userCMF={stateManager.getUserCMF()}
             isMobile={isMobile}
             onBack={() => {
-              setMobileView('cosmos');
               if (mobileView === 'detail') {
+                // Go back to list view from detail
+                setMobileView('list');
                 setSelectedCompany(null);
+              } else if (mobileView === 'list') {
+                // Go back to cosmos from list
+                setMobileView('cosmos');
               }
             }}
           />

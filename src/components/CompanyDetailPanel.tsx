@@ -111,7 +111,7 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
       <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         {/* Mobile Header Bar - Compact header with back button */}
         {isMobile && onBack && (
-          <div className="flex items-center px-4 py-3 border-b border-blue-200/40 bg-white/80 backdrop-blur-sm">
+          <div className="flex items-center px-4 py-3 border-b border-blue-200/40 bg-white/80 backdrop-blur-sm" style={{ zIndex: 100 }}>
             {/* Back Button */}
             <button
               onClick={onBack}
@@ -398,12 +398,24 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
 
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Header */}
-      <div className="panel-header p-6 border-b border-blue-200/40 bg-white/60 backdrop-blur-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+      {/* Mobile Header Bar - Centered logo design (detail view only) */}
+      {isMobile && onBack && selectedCompany && (
+        <div className="flex items-center justify-between px-4 py-3 border-b border-blue-200/40 bg-white/80 backdrop-blur-sm" style={{ zIndex: 100 }}>
+          {/* Back Button */}
+          <button
+            onClick={onBack}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Back"
+          >
+            <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          {/* Center: Company Logo and Name */}
+          <div className="flex flex-col items-center flex-1 mx-4">
             <div
-              className="company-logo w-12 h-12 rounded bg-white/80 border border-blue-200/60 shadow-sm"
+              className="w-12 h-12 rounded-lg bg-white/80 border border-blue-200/60 shadow-sm mb-2"
               style={{
                 backgroundImage: `url(${selectedCompany.logo})`,
                 backgroundSize: 'contain',
@@ -412,38 +424,77 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
               }}
               aria-label={`${selectedCompany.name} logo`}
             />
-            <div>
-              <h2 className="company-title text-xl font-bold text-slate-800">
-                {selectedCompany.name}
-              </h2>
-              <p className="text-sm text-slate-600">{selectedCompany.industry}</p>
-            </div>
+            <h2 className="text-sm font-semibold text-slate-800 text-center">
+              {selectedCompany.name}
+            </h2>
+            <p className="text-xs text-slate-600">{selectedCompany.industry}</p>
           </div>
+
+          {/* Watchlist Heart */}
           <button
             onClick={() => onToggleWatchlist(selectedCompany.id)}
-            className={`transition-all ${
-              isInWatchlist(selectedCompany.id)
-                ? 'text-red-500 hover:text-red-600'
-                : 'text-slate-300 hover:text-slate-500'
-            }`}
-            title={isInWatchlist(selectedCompany.id) ? 'Remove from watchlist' : 'Add to watchlist'}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label={isInWatchlist(selectedCompany.id) ? 'Remove from watchlist' : 'Add to watchlist'}
           >
             <svg
-              className="w-6 h-6"
-              viewBox="0 0 24 24"
-              fill="none"
+              className={`w-6 h-6 ${isInWatchlist(selectedCompany.id) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
+              fill={isInWatchlist(selectedCompany.id) ? 'currentColor' : 'none'}
               stroke="currentColor"
-              strokeWidth={isInWatchlist(selectedCompany.id) ? 2.5 : 2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              viewBox="0 0 24 24"
             >
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
             </svg>
           </button>
         </div>
+      )}
 
-        {/* Match Score */}
-        <div className="mt-4">
+      {/* Desktop Header */}
+      {!isMobile && (
+        <div className="panel-header p-6 border-b border-blue-200/40 bg-white/60 backdrop-blur-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div
+                className="company-logo w-12 h-12 rounded bg-white/80 border border-blue-200/60 shadow-sm"
+                style={{
+                  backgroundImage: `url(${selectedCompany.logo})`,
+                  backgroundSize: 'contain',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat'
+                }}
+                aria-label={`${selectedCompany.name} logo`}
+              />
+              <div>
+                <h2 className="company-title text-xl font-bold text-slate-800">
+                  {selectedCompany.name}
+                </h2>
+                <p className="text-sm text-slate-600">{selectedCompany.industry}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => onToggleWatchlist(selectedCompany.id)}
+              className={`transition-all ${
+                isInWatchlist(selectedCompany.id)
+                  ? 'text-red-500 hover:text-red-600'
+                  : 'text-slate-300 hover:text-slate-500'
+              }`}
+              title={isInWatchlist(selectedCompany.id) ? 'Remove from watchlist' : 'Add to watchlist'}
+            >
+              <svg
+                className="w-6 h-6"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={isInWatchlist(selectedCompany.id) ? 2.5 : 2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </button>
+          </div>
+
+          {/* Match Score */}
+          <div className="mt-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-slate-700">
               Candidate Market Fit Score
@@ -464,9 +515,35 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
               }}
             ></div>
           </div>
+          </div>
         </div>
-      </div>
+      )}
 
+      {/* Mobile Match Score Bar */}
+      {isMobile && (
+        <div className="px-4 py-3 border-b border-blue-200/40 bg-white/60 backdrop-blur-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-slate-700">
+              Candidate Market Fit Score
+            </span>
+            <span
+              className="text-base font-bold px-2 py-1 rounded-full text-white"
+              style={{ backgroundColor: selectedCompany.color }}
+            >
+              {selectedCompany.matchScore}%
+            </span>
+          </div>
+          <div className="w-full bg-slate-200/60 rounded-full h-2">
+            <div
+              className="h-2 rounded-full transition-all duration-300"
+              style={{
+                width: `${selectedCompany.matchScore}%`,
+                backgroundColor: selectedCompany.color
+              }}
+            ></div>
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       <div className="panel-content flex-1 overflow-auto p-6 space-y-6 bg-white/30 backdrop-blur-sm">
