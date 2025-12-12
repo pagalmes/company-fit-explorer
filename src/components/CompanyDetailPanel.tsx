@@ -236,21 +236,23 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
               )}
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className={isMobile ? "space-y-4" : "space-y-3"}>
               {filteredCompanies.map((company, index) => (
               <div
                 key={company.id}
-                className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors border-l-4 ${
+                className={`flex items-center justify-between rounded-lg cursor-pointer transition-all border-l-4 ${
+                  isMobile ? 'p-4 active:scale-98' : 'p-3'
+                } ${
                   index === selectedCompanyIndex
-                    ? 'bg-blue-100 border-blue-500'
-                    : 'bg-white/50 hover:bg-white/70 border-transparent'
+                    ? 'bg-blue-100 border-blue-500 shadow-sm'
+                    : 'bg-white/50 hover:bg-white/70 active:bg-white/80 border-transparent hover:shadow-sm'
                 } border-r border-t border-b border-blue-100/50`}
                 onClick={() => onCompanySelect(company)}
               >
-                <div className="flex items-center space-x-3">
-                  <div className="relative">
+                <div className="flex items-center space-x-3 flex-1 min-w-0">
+                  <div className="relative flex-shrink-0">
                     <div
-                      className="w-8 h-8 rounded bg-white/80 border border-blue-200/50"
+                      className={isMobile ? "w-12 h-12 rounded-lg bg-white/80 border border-blue-200/50 shadow-sm" : "w-8 h-8 rounded bg-white/80 border border-blue-200/50"}
                       style={{
                         backgroundImage: `url(${company.logo})`,
                         backgroundSize: 'contain',
@@ -260,25 +262,31 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
                       aria-label={`${company.name} logo`}
                     />
                     {isInWatchlist && isInWatchlist(company.id) && (
-                      <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center shadow-sm border border-white">
-                        <svg className="w-1.5 h-1.5 text-white fill-current" viewBox="0 0 24 24">
+                      <div className={`absolute -bottom-0.5 -right-0.5 bg-red-500 rounded-full flex items-center justify-center shadow-sm border border-white ${
+                        isMobile ? 'w-4 h-4' : 'w-3 h-3'
+                      }`}>
+                        <svg className={`text-white fill-current ${isMobile ? 'w-2 h-2' : 'w-1.5 h-1.5'}`} viewBox="0 0 24 24">
                           <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                         </svg>
                       </div>
                     )}
                   </div>
-                  <div>
-                    <h4 className={`text-sm text-slate-800 ${
+                  <div className="flex-1 min-w-0">
+                    <h4 className={`text-slate-800 truncate ${
+                      isMobile ? 'text-base font-semibold' : 'text-sm'
+                    } ${
                       index === selectedCompanyIndex ? 'font-semibold' : 'font-medium'
                     }`}>
                       {company.name}
                     </h4>
-                    <p className="text-xs text-slate-500">{company.industry}</p>
+                    <p className={`text-slate-500 truncate ${isMobile ? 'text-sm mt-0.5' : 'text-xs'}`}>{company.industry}</p>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right ml-3 flex-shrink-0">
                   <div
-                    className="text-xs font-medium px-2 py-1 rounded-full text-white"
+                    className={`font-semibold rounded-full text-white ${
+                      isMobile ? 'text-sm px-3 py-1.5 min-w-[56px]' : 'text-xs px-2 py-1'
+                    }`}
                     style={{ backgroundColor: company.color }}
                   >
                     {company.matchScore}%
