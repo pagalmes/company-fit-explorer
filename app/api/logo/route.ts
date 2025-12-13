@@ -36,14 +36,14 @@ export async function GET(request: NextRequest) {
       contentType = 'image/png'; // ui-avatars returns PNG
     } else {
       // Regular Logo.dev request
-      const apiKey = process.env.NEXT_PUBLIC_LOGO_DEV_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_LOGO_DEV_KEY;
 
-      if (!apiKey) {
-        return NextResponse.json(
-          { error: 'Logo.dev API key not configured' },
-          { status: 500 }
-        );
-      }
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: 'Logo.dev API key not configured' },
+      { status: 500 }
+    );
+  }
 
       logoUrl = `https://img.logo.dev/${domain}?token=${apiKey}&format=webp&size=128`;
       contentType = 'image/webp';
