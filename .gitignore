@@ -119,4 +119,4 @@ src/data/companies.ts
 
 # Database setup and diagnostic scripts (one-time use, environment-specific)
 supabase/*.sql
-!supabase/migrations/
+!supabase/migrations/tests/e2e/.auth/

@@ -6,11 +6,12 @@ import { transformToGraphData, getCytoscapeStyles } from '../utils/graphDataTran
 // Helper function to apply selection highlighting
 const applySelectionHighlighting = (cy: cytoscape.Core, selectedCompany: Company | null, companies: Company[]) => {
   // Clear previous selections
-  cy.nodes().removeClass('selected dimmed');
+  cy.nodes().removeClass('selected');
   cy.edges().removeClass('highlighted');
 
-  // If no company is selected, just return after clearing
+  // If no company is selected, remove dimmed from all nodes
   if (!selectedCompany) {
+    cy.nodes().removeClass('dimmed');
     return;
   }
 
@@ -19,39 +20,59 @@ const applySelectionHighlighting = (cy: cytoscape.Core, selectedCompany: Company
   const allCompanyNodes = cy.nodes('[type="company"]');
   const allNameLabelNodes = cy.nodes('[type="company-name-label"]');
   const allPercentLabelNodes = cy.nodes('[type="company-percent-label"]');
-  
-  // Dim all company and label nodes first
-  allCompanyNodes.addClass('dimmed');
-  allNameLabelNodes.addClass('dimmed');
-  allPercentLabelNodes.addClass('dimmed');
-  
-  // Highlight selected node
-  selectedNode.removeClass('dimmed').addClass('selected');
-  
-  // Highlight only nodes that the selected company declares connections to
-  selectedCompany.connections.forEach((connId: number) => {
-    const connectedNode = cy.getElementById(`company-${connId}`);
-    if (connectedNode.length > 0 && !connectedNode.hasClass('view-hidden')) {
-      connectedNode.removeClass('dimmed');
+
+  // Build set of IDs that should NOT be dimmed
+  const highlightedIds = new Set([selectedCompany.id, ...selectedCompany.connections]);
+
+  // Selectively add/remove dimmed based on whether node should be highlighted
+  allCompanyNodes.forEach((node: any) => {
+    const companyId = node.data('company')?.id;
+    const isDimmed = node.hasClass('dimmed');
+    const isHidden = node.hasClass('view-hidden');
+    const shouldBeDimmed = !highlightedIds.has(companyId) && !isHidden;
+
+    if (isDimmed !== shouldBeDimmed) {
+      // Only change the class if the state needs to change
+      if (shouldBeDimmed) {
+        node.addClass('dimmed');
+      } else {
+        node.removeClass('dimmed');
+      }
     }
   });
-  
-  // Also highlight the labels for selected and connected companies
-  const selectedNameLabel = cy.getElementById(`name-label-${selectedCompany.id}`);
-  const selectedPercentLabel = cy.getElementById(`percent-label-${selectedCompany.id}`);
-  selectedNameLabel.removeClass('dimmed');
-  selectedPercentLabel.removeClass('dimmed');
-  
-  selectedCompany.connections.forEach((connId: number) => {
-    const connNameLabel = cy.getElementById(`name-label-${connId}`);
-    const connPercentLabel = cy.getElementById(`percent-label-${connId}`);
-    if (connNameLabel.length > 0 && !connNameLabel.hasClass('view-hidden')) {
-      connNameLabel.removeClass('dimmed');
-    }
-    if (connPercentLabel.length > 0 && !connPercentLabel.hasClass('view-hidden')) {
-      connPercentLabel.removeClass('dimmed');
+
+  // Same pattern for name labels
+  allNameLabelNodes.forEach((label: any) => {
+    const companyId = parseInt(label.id().replace('name-label-', ''));
+    const isDimmed = label.hasClass('dimmed');
+    const shouldBeDimmed = !highlightedIds.has(companyId) && !label.hasClass('view-hidden');
+
+    if (isDimmed !== shouldBeDimmed) {
+      if (shouldBeDimmed) {
+        label.addClass('dimmed');
+      } else {
+        label.removeClass('dimmed');
+      }
     }
   });
+
+  // Same pattern for percent labels
+  allPercentLabelNodes.forEach((label: any) => {
+    const companyId = parseInt(label.id().replace('percent-label-', ''));
+    const isDimmed = label.hasClass('dimmed');
+    const shouldBeDimmed = !highlightedIds.has(companyId) && !label.hasClass('view-hidden');
+
+    if (isDimmed !== shouldBeDimmed) {
+      if (shouldBeDimmed) {
+        label.addClass('dimmed');
+      } else {
+        label.removeClass('dimmed');
+      }
+    }
+  });
+
+  // Mark selected node
+  selectedNode.addClass('selected');
   
   // Highlight only outgoing edges from selected node to its declared connections
   selectedCompany.connections.forEach((connId: number) => {
@@ -90,7 +111,8 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
   onCMFToggle,
   watchlistCompanyIds = new Set(),
   viewMode = 'explore',
-  hideCenter = false
+  hideCenter = false,
+  fadingCompanyIds = new Set()
 }) => {
   const cyRef = useRef<HTMLDivElement>(null);
   const cyInstance = useRef<cytoscape.Core | null>(null);
@@ -122,7 +144,7 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       cyInstance.current.destroy();
     }
 
-    const graphData = transformToGraphData(cmf, companies, watchlistCompanyIds);
+    const graphData = transformToGraphData(cmf, companies, watchlistCompanyIds, viewMode);
     
     try {
       cyInstance.current = cytoscape({
@@ -168,9 +190,16 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       cy.zoom(viewStateRef.current.zoom);
       cy.pan(viewStateRef.current.pan);
     } else {
-      // First time load - fit based on the fixed background zones to maintain consistent centering
-      const zoneNodes = cy.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
-      cy.fit(zoneNodes, 120); // Fit to background zones with more padding for companies
+      // First time load - fit to show all companies if any exist, otherwise fit to zones
+      const companyNodes = cy.nodes('[type="company"]');
+      if (companyNodes.length > 0) {
+        // Fit to all company nodes with generous padding to ensure all are visible
+        cy.fit(companyNodes, 80);
+      } else {
+        // No companies - fit to background zones
+        const zoneNodes = cy.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
+        cy.fit(zoneNodes, 120);
+      }
     }
 
     // Basic initialization will be handled by separate useEffects
@@ -215,50 +244,9 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
         // onCompanyHover(company);
         
         if (!selectedCompanyRef.current) {
-          // Apply highlighting immediately - CSS transitions will handle the smooth visual changes
-          
-          // First clear any existing state
-          cy.nodes().removeClass('dimmed');
+          // Clear any existing edge highlights and apply new ones
           cy.edges().removeClass('highlighted');
-          
-          // Get all nodes to dim them first
-          const allCompanyNodes = cy.nodes('[type="company"]');
-          const allNameLabelNodes = cy.nodes('[type="company-name-label"]');
-          const allPercentLabelNodes = cy.nodes('[type="company-percent-label"]');
-          
-          // Dim all company and label nodes first
-          allCompanyNodes.addClass('dimmed');
-          allNameLabelNodes.addClass('dimmed');
-          allPercentLabelNodes.addClass('dimmed');
-            
-          // Highlight current node
-          event.target.removeClass('dimmed');
-          
-          // Highlight only nodes that the hovered company declares connections to
-          company.connections.forEach((connId: number) => {
-            const connectedNode = cy.getElementById(`company-${connId}`);
-            if (connectedNode.length > 0 && !connectedNode.hasClass('view-hidden')) {
-              connectedNode.removeClass('dimmed');
-            }
-          });
-            
-          // Also highlight the labels for current and connected companies
-          const currentNameLabel = cy.getElementById(`name-label-${company.id}`);
-          const currentPercentLabel = cy.getElementById(`percent-label-${company.id}`);
-          currentNameLabel.removeClass('dimmed');
-          currentPercentLabel.removeClass('dimmed');
-          
-          company.connections.forEach((connId: number) => {
-            const connNameLabel = cy.getElementById(`name-label-${connId}`);
-            const connPercentLabel = cy.getElementById(`percent-label-${connId}`);
-            if (connNameLabel.length > 0 && !connNameLabel.hasClass('view-hidden')) {
-              connNameLabel.removeClass('dimmed');
-            }
-            if (connPercentLabel.length > 0 && !connPercentLabel.hasClass('view-hidden')) {
-              connPercentLabel.removeClass('dimmed');
-            }
-          });
-            
+
           // Highlight only outgoing edges from hovered node to its declared connections
           company.connections.forEach((connId: number) => {
             const edge = cy.getElementById(`edge-${company.id}-${connId}`);
@@ -266,10 +254,10 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
               edge.addClass('highlighted');
             }
           });
-            
+
           // Optimized: highlight edges between connected companies (same optimization as selection)
           const directlyConnectedSet = new Set(company.connections.map((id: number) => `company-${id}`));
-          
+
           company.connections.forEach((connId: number) => {
             const connectedCompany = companies.find(c => c.id === connId);
             if (connectedCompany) {
@@ -298,9 +286,8 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
         
         // Remove hovered class to return to default style
         event.target.removeClass('hovered');
-        
+
         if (!selectedCompanyRef.current) {
-          cy.nodes().removeClass('dimmed');
           cy.edges().removeClass('highlighted');
         }
         hoverTimeout = null;
@@ -362,7 +349,7 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
         cyInstance.current.destroy();
       }
     };
-  }, [cmf, companies, watchlistCompanyIds]);
+  }, [cmf, companies, watchlistCompanyIds, viewMode]);
 
   // Handle watchlist changes without recreating the graph
   useEffect(() => {
@@ -441,13 +428,13 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
     
     // Immediately reapply selection highlighting if a company is selected
     // This prevents the flash of all nodes being visible
-    if (selectedCompany) {
+    if (selectedCompanyRef.current) {
       // Temporarily disable transitions on labels to prevent flashing during reapplication
       cy.nodes('[type="company-name-label"]').addClass('no-transitions');
       cy.nodes('[type="company-percent-label"]').addClass('no-transitions');
-      
-      applySelectionHighlighting(cy, selectedCompany, companies);
-      
+
+      applySelectionHighlighting(cy, selectedCompanyRef.current, companies);
+
       // Re-enable transitions after a brief delay
       setTimeout(() => {
         if (cyInstance.current) {
@@ -456,7 +443,7 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
         }
       }, 50);
     }
-  }, [viewMode, watchlistCompanyIds, companies, selectedCompany]);
+  }, [viewMode, watchlistCompanyIds, companies]);
 
   // Handle selection changes from external components (excluding view mode changes)
   useEffect(() => {
@@ -474,14 +461,76 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCompany]);
 
+  // Apply fading animation to companies being added to watchlist
+  useEffect(() => {
+    const cy = cyInstance.current;
+    if (!cy) return;
+
+    // Get all company nodes to reset opacity for companies no longer fading
+    const allCompanyNodes = cy.nodes('[type="company"]');
+    const allNameLabels = cy.nodes('[type="company-name-label"]');
+    const allPercentLabels = cy.nodes('[type="company-percent-label"]');
+
+    // Reset opacity for companies that are no longer in fading set
+    allCompanyNodes.forEach((node: any) => {
+      const companyId = node.data('company')?.id;
+      if (companyId && !fadingCompanyIds.has(companyId)) {
+        // Stop any ongoing animation and reset opacity
+        node.stop(true, false).style('opacity', 1);
+      }
+    });
+
+    allNameLabels.forEach((label: any) => {
+      const companyId = parseInt(label.id().replace('name-label-', ''));
+      if (companyId && !fadingCompanyIds.has(companyId)) {
+        label.stop(true, false).style('opacity', 1);
+      }
+    });
+
+    allPercentLabels.forEach((label: any) => {
+      const companyId = parseInt(label.id().replace('percent-label-', ''));
+      if (companyId && !fadingCompanyIds.has(companyId)) {
+        label.stop(true, false).style('opacity', 1);
+      }
+    });
+
+    // Animate companies in the fading set to opacity 0
+    fadingCompanyIds.forEach(companyId => {
+      const node = cy.getElementById(`company-${companyId}`);
+      const nameLabel = cy.getElementById(`name-label-${companyId}`);
+      const percentLabel = cy.getElementById(`percent-label-${companyId}`);
+
+      if (node.length > 0) {
+        node.animate({
+          style: { opacity: 0 },
+          duration: 4000,
+          easing: 'ease-out'
+        });
+      }
+      if (nameLabel.length > 0) {
+        nameLabel.animate({
+          style: { opacity: 0 },
+          duration: 4000,
+          easing: 'ease-out'
+        });
+      }
+      if (percentLabel.length > 0) {
+        percentLabel.animate({
+          style: { opacity: 0 },
+          duration: 4000,
+          easing: 'ease-out'
+        });
+      }
+    });
+  }, [fadingCompanyIds]);
+
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full relative" data-cy="cytoscape-container">
       {/* Cytoscape Graph Container */}
-      <div 
-        ref={cyRef} 
+      <div
+        ref={cyRef}
         className="w-full h-full"
         style={{ cursor: 'grab', backgroundColor: 'transparent' }}
-        data-cy="cytoscape-container"
       />
       
       {/* Custom Spark Center Node - positioned to match Cytoscape center */}
@@ -540,12 +589,19 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       
       {/* Graph Controls */}
       <div className="absolute top-4 right-4 flex flex-col space-y-2" style={{ zIndex: 10 }}>
-        <button 
+        <button
           className="bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow"
           onClick={() => {
             if (cyInstance.current) {
-              const zoneNodes = cyInstance.current.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
-              cyInstance.current.fit(zoneNodes, 120);
+              const companyNodes = cyInstance.current.nodes('[type="company"]');
+              if (companyNodes.length > 0) {
+                // Fit to all companies with padding
+                cyInstance.current.fit(companyNodes, 80);
+              } else {
+                // No companies - fit to zones
+                const zoneNodes = cyInstance.current.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
+                cyInstance.current.fit(zoneNodes, 120);
+              }
             }
           }}
           title="Fit to view"

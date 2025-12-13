@@ -26,9 +26,15 @@
     "test:performance": "vitest run --config=vitest.performance.config.ts",
     "test:critical": "playwright test tests/e2e/critical-interactions.spec.ts",
     "test:regression": "npm run test:performance && npm run test:critical",
+    "eval:company-extraction": "tsx evals/company-extraction/run-eval.ts",
     "setup:supabase": "node scripts/setup-supabase.js",
     "db:migrate": "node scripts/setup-supabase.js",
-    "db:reset": "echo 'This will reset your database. Are you sure?' && node scripts/setup-supabase.js --reset"
+    "db:reset": "echo 'This will reset your database. Are you sure?' && node scripts/setup-supabase.js --reset",
+    "migrate:external-links": "npx tsx scripts/migrate-external-links.ts",
+    "migrate:supabase-links": "npx tsx scripts/migrate-supabase-external-links.ts",
+    "export:companies-csv": "npx tsx scripts/export-companies-csv.ts",
+    "import:companies-csv": "npx tsx scripts/import-companies-csv.ts",
+    "cleanup:supabase-links": "npx tsx scripts/cleanup-supabase-links.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",
@@ -42,6 +48,7 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-hook-form": "^7.54.2",
+    "sonner": "^2.0.7",
     "uuid": "^12.0.0"
   },
   "devDependencies": {
@@ -68,11 +75,14 @@
     "express": "^5.1.0",
     "globals": "^15.13.0",
     "jsdom": "^26.1.0",
+    "langfuse": "^3.38.6",
+    "langfuse-node": "^3.38.6",
     "playwright": "^1.54.2",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.3.6",
+    "tsx": "^4.21.0",
     "typescript": "^5.2.2",
-    "vite": "^5.0.8",
+    "vite": "^7.2.6",
     "vitest": "^3.2.4"
   },
   "keywords": [

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { renderHook, act } from '@testing-library/react';
 import { useEffect, useState, useRef } from 'react';
 import { vi, describe, test, expect, beforeEach, afterEach } from 'vitest';
@@ -5,6 +6,7 @@ import { vi, describe, test, expect, beforeEach, afterEach } from 'vitest';
 /**
  * Test utilities to detect infinite useEffect loops
  * Based on 2024 best practices for React testing
+ * Note: ESLint warnings are intentionally disabled as this file tests problematic patterns
  */
 
 // Mock console.error to catch React warnings about infinite loops

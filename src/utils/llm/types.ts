@@ -53,6 +53,7 @@ export interface CompanyAnalysisResponse {
   connections: string[];
   connectionTypes: Record<string, string>;
   description?: string;
+  careerUrl?: string;
   externalLinks?: {
     website?: string;
     linkedin?: string;

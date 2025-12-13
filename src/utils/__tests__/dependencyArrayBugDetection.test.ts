@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { renderHook } from '@testing-library/react';
 import { useEffect } from 'react';
 import { describe, test, expect } from 'vitest';
@@ -5,6 +6,7 @@ import { describe, test, expect } from 'vitest';
 /**
  * Tests to detect common React dependency array bugs that cause excessive re-renders
  * These tests validate our ability to catch the specific issues we encountered in production
+ * Note: ESLint warnings are intentionally disabled as this file tests problematic patterns
  */
 describe('Dependency Array Bug Detection', () => {
   test('should detect when array dependencies cause unnecessary re-renders', () => {

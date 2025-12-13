@@ -29,6 +29,18 @@ const LLMSettingsModal: React.FC<LLMSettingsModalProps> = ({
     }
   }, [isOpen]);
 
+  // Handle Escape key to close modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   // Update model when provider changes
   useEffect(() => {
     if (settings.provider !== 'none') {

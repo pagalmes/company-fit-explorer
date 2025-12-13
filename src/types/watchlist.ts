@@ -63,6 +63,8 @@ export interface CompanyDetailPanelProps {
   onRequestDelete: (company: import('./index').Company) => void;
   viewMode: ViewMode;
   watchlistStats: WatchlistStats;
+  isMobile?: boolean;
+  onBack?: () => void;
 }
 
 export interface CompanyGraphProps {

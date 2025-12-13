@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { renderHook, act } from '@testing-library/react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { vi, describe, test, expect } from 'vitest';
@@ -5,6 +6,7 @@ import { vi, describe, test, expect } from 'vitest';
 /**
  * Performance regression tests to catch render performance issues
  * Based on 2024 React performance testing best practices
+ * Note: ESLint warnings are intentionally disabled as this file tests problematic patterns
  */
 
 describe('Performance Regression Tests', () => {

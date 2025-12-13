@@ -7,6 +7,7 @@ import { UserCMF, UserExplorationState } from '../types';
 import { activeUserProfile } from '../data/companies';
 import { createProfileForUser } from '../utils/userProfileCreation';
 import { migrateCompanyLogos } from '../utils/logoMigration';
+import { mergeUserPreferences } from '../utils/userPreferencesMerger';
 
 const AppContainer: React.FC = () => {
   const { isFirstTime, hasChecked, markAsVisited } = useFirstTimeExperience();
@@ -17,6 +18,8 @@ const AppContainer: React.FC = () => {
   const [authLoading, setAuthLoading] = useState(true);
   const [_isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [hasCompletedDataCheck, setHasCompletedDataCheck] = useState(false);
+  const [isViewingAsUser, setIsViewingAsUser] = useState(false);
+  const [viewedUserInfo, setViewedUserInfo] = useState<{ email: string; full_name: string } | null>(null);
 
   // Check authentication FIRST, before any other logic
   useEffect(() => {
@@ -26,9 +29,25 @@ const AppContainer: React.FC = () => {
       }
 
       try {
+        // Check for viewAsUserId in URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewAsUserId = urlParams.get('viewAsUserId');
+
+        // Build API URL with viewAsUserId param if present
+        let apiUrl = '/api/user/data';
+        if (viewAsUserId) {
+          apiUrl += `?viewAsUserId=${viewAsUserId}`;
+        }
+
         // Always check authentication first, regardless of first-time status
-        const response = await fetch('/api/user/data');
+        const response = await fetch(apiUrl);
         const userData = await response.json();
+
+        // Track if we're viewing as another user
+        if (userData.isViewingAsUser) {
+          setIsViewingAsUser(true);
+          setViewedUserInfo(userData.viewedUserInfo || null);
+        }
 
         // Check if user is authenticated using the authenticated field
         const userIsAuthenticated = userData.authenticated !== false;
@@ -65,6 +84,9 @@ const AppContainer: React.FC = () => {
             : (dbCompanies || []);
           const addedCompanies = dbUserProfile?.addedCompanies || [];
 
+          // Merge preferences from both sources using centralized utility
+          const mergedPreferences = mergeUserPreferences(dbUserProfile, userData.preferences);
+
           const customProfile: UserExplorationState = {
             ...activeUserProfile, // Use as base structure
             id: userData.companyData.user_id,
@@ -73,10 +95,10 @@ const AppContainer: React.FC = () => {
             // Handle UserExplorationState format from admin import - with logo migration
             baseCompanies: migrateCompanyLogos(baseCompanies),
             addedCompanies: migrateCompanyLogos(addedCompanies),
-            // Override with user_profile preferences first, then fallback to separate preferences
-            watchlistCompanyIds: dbUserProfile?.watchlistCompanyIds || userData.preferences?.watchlist_company_ids || [],
-            removedCompanyIds: dbUserProfile?.removedCompanyIds || userData.preferences?.removed_company_ids || [],
-            viewMode: dbUserProfile?.viewMode || userData.preferences?.view_mode || 'explore'
+            // Use merged preferences from centralized utility
+            watchlistCompanyIds: mergedPreferences.watchlistCompanyIds,
+            removedCompanyIds: mergedPreferences.removedCompanyIds,
+            viewMode: mergedPreferences.viewMode
           };
 
           setUserProfile(customProfile);
@@ -282,7 +304,7 @@ const AppContainer: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden transition-all duration-1000">
         <FloatingStars />
-        
+
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
             backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)',
@@ -290,7 +312,33 @@ const AppContainer: React.FC = () => {
           }} />
         </div>
 
-        <div className="relative">
+        {/* View As User Banner */}
+        {isViewingAsUser && viewedUserInfo && (
+          <div className="absolute top-0 left-0 right-0 bg-purple-600 text-white px-4 py-3 z-50 shadow-lg">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                  <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
+                </svg>
+                <span className="font-semibold">
+                  🔍 Viewing as: {viewedUserInfo.full_name || viewedUserInfo.email}
+                </span>
+                <span className="text-purple-200 text-sm">
+                  ({viewedUserInfo.email})
+                </span>
+              </div>
+              <button
+                onClick={() => window.close()}
+                className="bg-purple-700 hover:bg-purple-800 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors"
+              >
+                Close View
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="relative" style={{ marginTop: isViewingAsUser ? '52px' : '0' }}>
           <CMFGraphExplorerNew userProfile={userProfile} />
         </div>
       </div>

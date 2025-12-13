@@ -26,6 +26,9 @@ export interface Company {
   color: string;
   angle?: number;
   distance?: number;
+  // View-specific positions for exclusive Explore/Watchlist views
+  explorePosition?: { angle: number; distance: number };
+  watchlistPosition?: { angle: number; distance: number };
   externalLinks?: {
     website?: string;
     linkedin?: string;
@@ -84,6 +87,7 @@ export interface CompanyGraphProps {
   watchlistCompanyIds?: Set<number>;
   viewMode?: import('./watchlist').ViewMode;
   hideCenter?: boolean; // Hide center node when modals are open
+  fadingCompanyIds?: Set<number>; // Companies that are fading out (added to watchlist)
 }
 
 export interface CompanyDetailPanelProps {
