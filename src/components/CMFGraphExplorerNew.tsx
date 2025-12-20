@@ -769,13 +769,16 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
         )}
 
         {/* View Mode Toggle - Floating mini-tabs on mobile, full tabs on desktop */}
-        <div className={`absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-white rounded-lg shadow-lg overflow-hidden ${
-          isMobile ? 'w-[calc(100%-2rem)]' : ''
-        }`}>
-          <div className="flex">
+        <div
+          key={`tab-container-${isMobile ? 'mobile' : 'desktop'}`}
+          className={`absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-white rounded-lg shadow-lg overflow-hidden ${
+            isMobile ? 'w-[calc(100%-2rem)] max-w-full' : ''
+          }`}
+        >
+          <div className="flex w-full">
             <button
               onClick={() => handleViewModeChange('explore')}
-              className={`${isMobile ? 'flex-1 px-5 py-3 text-sm' : 'w-56 px-4 py-3 text-base'} font-medium transition-colors flex items-center justify-center space-x-1.5 whitespace-nowrap min-h-[48px] ${
+              className={`${isMobile ? 'flex-1 px-4 py-3 text-sm' : 'w-56 px-4 py-3 text-base'} font-medium transition-colors flex items-center justify-center space-x-1.5 whitespace-nowrap min-h-[48px] ${
                 viewMode === 'explore'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -786,7 +789,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
             </button>
             <button
               onClick={() => handleViewModeChange('watchlist')}
-              className={`${isMobile ? 'flex-1 px-5 py-3 text-sm' : 'w-56 px-4 py-3 text-base'} font-medium transition-colors flex items-center justify-center space-x-1.5 whitespace-nowrap min-h-[48px] ${
+              className={`${isMobile ? 'flex-1 px-4 py-3 text-sm' : 'w-56 px-4 py-3 text-base'} font-medium transition-colors flex items-center justify-center space-x-1.5 whitespace-nowrap min-h-[48px] ${
                 viewMode === 'watchlist'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
