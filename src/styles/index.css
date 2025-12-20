@@ -5,15 +5,15 @@
 @layer utilities {
   /* iOS Safari safe area utilities for bottom-positioned elements */
   .bottom-safe {
-    bottom: calc(1.5rem + env(safe-area-inset-bottom));
+    bottom: calc(2rem + env(safe-area-inset-bottom));
   }
 
   .bottom-safe-4 {
-    bottom: calc(1rem + env(safe-area-inset-bottom));
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
   }
 
   .bottom-safe-6 {
-    bottom: calc(1.5rem + env(safe-area-inset-bottom));
+    bottom: calc(2rem + env(safe-area-inset-bottom));
   }
 }
 
@@ -37,10 +37,12 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  /* Extend background below Safari bottom bar */
+  min-height: 100dvh;
   background-color: transparent;
   /* Support iPhone notch and safe areas */
   padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: 0; /* Remove bottom padding to let background extend */
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
