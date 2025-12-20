@@ -194,7 +194,7 @@ const AppContainer: React.FC = () => {
   // Loading state during universe generation
   if (isLoading) {
     return (
-      <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center relative overflow-hidden" style={{ minHeight: '108lvh' }}>
+      <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center relative overflow-hidden" style={{ minHeight: '100lvh' }}>
         {/* Floating cosmic particles */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {[...Array(20)].map((_, i) => (
@@ -250,7 +250,7 @@ const AppContainer: React.FC = () => {
   // Transition state - smooth fade from dark to light
   if (isTransitioning) {
     return (
-      <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center relative overflow-hidden" style={{ minHeight: '108lvh' }}>
+      <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center relative overflow-hidden" style={{ minHeight: '100lvh' }}>
         <div className="absolute inset-0 bg-gradient-to-br from-white to-gray-50 opacity-0 animate-pulse" 
              style={{ animationDuration: '2s', animationFillMode: 'forwards' }} />
         
@@ -290,7 +290,7 @@ const AppContainer: React.FC = () => {
   // Show loading screen while checking authentication
   if (authLoading) {
     return (
-      <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center" style={{ minHeight: '108lvh' }}>
+      <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center" style={{ minHeight: '100lvh' }}>
         <div className="text-center">
           <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full mx-auto animate-pulse shadow-2xl mb-4" />
           <p className="text-slate-600 text-lg">Verifying authentication...</p>
@@ -302,7 +302,7 @@ const AppContainer: React.FC = () => {
   // Show the main graph explorer for returning users or after completion
   if (userProfile && hasChecked && !authLoading) {
     return (
-      <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden transition-all duration-1000" style={{ minHeight: '108lvh' }}>
+      <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden transition-all duration-1000" style={{ minHeight: '100lvh' }}>
         <FloatingStars />
 
         <div className="absolute inset-0 opacity-10">
@@ -348,7 +348,7 @@ const AppContainer: React.FC = () => {
   // Show loading while fetching user data (only after auth is verified)
   if (dataLoading && hasChecked && !isFirstTime && !authLoading) {
     return (
-      <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center" style={{ minHeight: '108lvh' }}>
+      <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center" style={{ minHeight: '100lvh' }}>
         <div className="text-center">
           <div className="w-16 h-16 bg-gradient-to-br from-orange-300 to-purple-400 rounded-full mx-auto animate-pulse shadow-2xl mb-4" />
           <p className="text-white text-lg">Loading your personalized data...</p>
@@ -366,7 +366,7 @@ const AppContainer: React.FC = () => {
           ? 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'
           : 'bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900'
       }`}
-      style={{ minHeight: '108lvh' }}
+      style={{ minHeight: '100lvh' }}
     >
       <div className="text-center">
         <div className="w-16 h-16 bg-gradient-to-br from-orange-300 to-purple-400 rounded-full mx-auto animate-pulse shadow-2xl mb-4" />

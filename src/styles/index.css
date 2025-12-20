@@ -49,7 +49,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   /* Extend beyond viewport to cover Safari toolbar area */
-  min-height: 108lvh;
+  min-height: 100lvh;
   /* WebKit-specific fix for iOS Safari */
   min-height: -webkit-fill-available;
   background-color: transparent;
