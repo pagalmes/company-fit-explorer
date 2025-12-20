@@ -642,7 +642,7 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       )}
       
       {/* Graph Controls - Fit to View */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2" style={{ zIndex: 10 }}>
+      <div className="absolute bottom-safe-6 left-1/2 transform -translate-x-1/2" style={{ zIndex: 10 }}>
         <button
           className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 ease-in-out flex items-center justify-center hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50"
           onClick={() => {
