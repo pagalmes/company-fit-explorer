@@ -77,11 +77,9 @@ TODO: Admin: Add confirmation to the delete account button
 <!-- DONE: Mobile: Allow to add 1 company. (currently, can't click on it) -->
 <!-- DONE: Mobile: Update UI - Support switching phone between portrait and landscape view. tab buttons move around. -->
 <!-- DONE: Mobile: Update UI - Zoom more on companies when fit to view. -->
-
 <!-- DONE: Right pane: Colors for the match scores are inconsistent. They are set by the llm when logic should be centralized. -->
+<!-- DONE: Mobile: Update UI - When openin from Safari or a browser with control / search bar at the bottom, they appear over cosmos interface. -->
 
-
-FIXME: Mobile: Update UI - When openin from Safari or a browser with control / search bar at the bottom, they appear over cosmos interface.
 FIXME: Right pane: Company research buttons behave differently from action buttons
 FIXME: Right pane: disappears when changing browser zoom levels
 FIXME: The "Sun" node appears over the right panel

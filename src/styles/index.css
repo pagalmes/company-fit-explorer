@@ -3,7 +3,22 @@
 @tailwind utilities;
 
 @layer utilities {
-  /* iOS Safari safe area utilities for bottom-positioned elements */
+  /*
+   * iOS Safari Safe Area Utilities
+   * ===============================
+   *
+   * These utilities position elements above Safari's bottom toolbar using env(safe-area-inset-bottom).
+   *
+   * USAGE: Apply to fixed/absolute positioned elements at bottom of screen (FAB buttons, etc.)
+   *
+   * - .bottom-safe / .bottom-safe-6: 2.5rem (40px) base + safe-area-inset
+   * - .bottom-safe-4: 2rem (32px) base + safe-area-inset
+   *
+   * In PWA mode: safe-area-inset-bottom = 0, so only base spacing applies
+   * In Safari browser: safe-area-inset-bottom ≈ 21px, giving total ~61px clearance
+   *
+   * This ensures interactive elements are always above Safari's toolbar in both modes.
+   */
   .bottom-safe {
     bottom: calc(2.5rem + env(safe-area-inset-bottom));
   }
@@ -17,15 +32,46 @@
   }
 }
 
+/*
+ * iOS Safari Full-Screen Background Solution
+ * ===========================================
+ *
+ * PROBLEM: Safari's translucent "Liquid Glass" bottom toolbar shows white/light background
+ * behind it instead of the app's gradient, creating an unappealing white bar.
+ *
+ * ROOT CAUSE: Standard viewport units (100vh, 100dvh) don't extend the background behind
+ * Safari's UI chrome. The page content stops at the visible viewport edge.
+ *
+ * SOLUTION: Combination of techniques to extend background behind Safari's toolbar:
+ *
+ * 1. Use 100lvh (large viewport height) - extends to maximum viewport including toolbar area
+ * 2. Add bottom padding (60px) - pushes content down to fill the padded space with gradient
+ * 3. Apply -webkit-fill-available - WebKit-specific height that fills all available space
+ * 4. Set background-attachment: fixed - prevents gradient from scrolling/shifting
+ *
+ * KEY VIEWPORT UNITS:
+ * - 100vh: Original viewport (doesn't account for Safari toolbar)
+ * - 100svh: Small viewport (visible area when toolbar is shown) - stops at toolbar top
+ * - 100lvh: Large viewport (full area when toolbar is hidden) - extends behind toolbar ✓
+ * - 100dvh: Dynamic viewport (changes as toolbar shows/hides) - unreliable in iOS 26
+ *
+ * TESTED ON: iOS 26 Safari (both browser mode and PWA mode)
+ *
+ * NOTE: The "frosted glass" blur effect on the toolbar is Safari's native UI - we cannot
+ * modify it. We can only control what color/gradient shows through it.
+ */
+
 html {
   /* Apply gradient to html so it shows through Safari's translucent bottom bar */
   height: 100%;
   min-height: 100vh;
-  /* iOS 26: Use svh (small viewport height) which includes toolbar area */
+  /* iOS 26: Use lvh (large viewport height) to extend behind toolbar */
   min-height: 100lvh;
-  /* Fix for iOS Safari - ensure background extends to bottom */
+  /* WebKit-specific: ensures background extends to fill available space */
   height: -webkit-fill-available;
+  /* Main gradient background */
   background: linear-gradient(to bottom right, #0f172a, #1e3a8a, #312e81);
+  /* Fixed attachment prevents gradient from moving during scroll */
   background-attachment: fixed;
 }
 
@@ -48,14 +94,15 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  /* Extend beyond viewport to cover Safari toolbar area */
+  /* Use lvh to extend body height behind Safari toolbar */
   min-height: 100lvh;
-  /* WebKit-specific fix for iOS Safari */
+  /* WebKit-specific fallback for full height */
   min-height: -webkit-fill-available;
   background-color: transparent;
-  /* Support iPhone notch and safe areas */
+
+  /* Safe area insets for notch and toolbar areas */
   padding-top: env(safe-area-inset-top);
-  /* Add bottom padding to push background past Safari toolbar */
+  /* 60px padding pushes content down, extending gradient into toolbar area */
   padding-bottom: max(60px, env(safe-area-inset-bottom));
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
