@@ -67,7 +67,6 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   const [previousMobileView, setPreviousMobileView] = useState<'cosmos' | 'list'>('cosmos');
   const [isDetailClosing, setIsDetailClosing] = useState(false);
   const [isListClosing, setIsListClosing] = useState(false);
-  const [isTransitioningToDetail, setIsTransitioningToDetail] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
   // Modal states
@@ -218,12 +217,6 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
         // Track where we came from before going to detail view
         if (mobileView === 'cosmos' || mobileView === 'list') {
           setPreviousMobileView(mobileView);
-        }
-        // Trigger transition animation when coming from list view
-        if (mobileView === 'list') {
-          setIsTransitioningToDetail(true);
-          // Reset after a brief moment to allow animation to trigger
-          setTimeout(() => setIsTransitioningToDetail(false), 50);
         }
         setMobileView('detail');
       }
@@ -749,7 +742,18 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
         {/* Mobile: Company List Toggle Button - bottom left, matching FAB style */}
         {isMobile && (
           <button
-            onClick={() => setMobileView(mobileView === 'list' ? 'cosmos' : 'list')}
+            onClick={() => {
+              if (mobileView === 'list') {
+                // Trigger slide-out animation for list view
+                setIsListClosing(true);
+                setTimeout(() => {
+                  setMobileView('cosmos');
+                  setIsListClosing(false);
+                }, 300);
+              } else {
+                setMobileView('list');
+              }
+            }}
             className="absolute bottom-6 left-6 z-10 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white
               rounded-full shadow-lg hover:shadow-xl
               transition-all duration-200 ease-in-out
@@ -845,23 +849,12 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
         )}
         </div>
 
-      {/* Side Panel - Desktop: always visible, Mobile: only when in list or detail view */}
-      {(!isMobile || mobileView === 'list' || mobileView === 'detail' || isDetailClosing || isListClosing) && (
-        <div className={`
-          ${isMobile && (mobileView === 'list' || mobileView === 'detail' || isDetailClosing || isListClosing)
-            ? `fixed inset-0 z-50 ${
-                isDetailClosing || isListClosing
-                  ? 'animate-slide-out-right'
-                  : (isTransitioningToDetail || mobileView === 'detail')
-                    ? 'animate-slide-in-right'
-                    : ''
-              }`
-            : 'w-96'}
-          bg-white border-l border-gray-200 overflow-hidden
-        `}>
+      {/* Desktop Side Panel - always visible */}
+      {!isMobile && (
+        <div className="w-96 bg-white border-l border-gray-200 overflow-hidden">
           <CompanyDetailPanel
             ref={companyDetailPanelRef}
-            selectedCompany={mobileView === 'list' ? null : selectedCompany}
+            selectedCompany={selectedCompany}
             allCompanies={allCompanies}
             onCompanySelect={handleCompanySelectFromPanel}
             isInWatchlist={isInWatchlist}
@@ -870,25 +863,64 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
             viewMode={viewMode}
             watchlistStats={watchlistStats}
             userCMF={stateManager.getUserCMF()}
-            isMobile={isMobile}
+            isMobile={false}
+          />
+        </div>
+      )}
+
+      {/* Mobile List Panel - visible when in list view OR when detail is showing (to stay underneath) */}
+      {isMobile && ((mobileView === 'list' || (mobileView === 'detail' && previousMobileView === 'list')) || isListClosing) && (
+        <div className={`fixed inset-0 z-50 bg-white border-l border-gray-200 overflow-hidden ${
+          isListClosing ? 'animate-slide-out-right' : (mobileView === 'detail' ? '' : 'animate-slide-in-right')
+        }`}>
+          <CompanyDetailPanel
+            selectedCompany={null}
+            allCompanies={allCompanies}
+            onCompanySelect={handleCompanySelectFromPanel}
+            isInWatchlist={isInWatchlist}
+            onToggleWatchlist={handleToggleWatchlist}
+            onRequestDelete={handleRemoveRequest}
+            viewMode={viewMode}
+            watchlistStats={watchlistStats}
+            userCMF={stateManager.getUserCMF()}
+            isMobile={true}
             onBack={() => {
-              if (mobileView === 'detail') {
-                // Trigger slide-out animation for detail view
-                setIsDetailClosing(true);
-                // Wait for animation to complete before changing view
-                setTimeout(() => {
-                  setMobileView(previousMobileView);
-                  setSelectedCompany(null);
-                  setIsDetailClosing(false);
-                }, 300); // Match animation duration
-              } else if (mobileView === 'list') {
-                // Trigger slide-out animation for list view
-                setIsListClosing(true);
-                setTimeout(() => {
-                  setMobileView('cosmos');
-                  setIsListClosing(false);
-                }, 300); // Match animation duration
-              }
+              // Trigger slide-out animation for list view
+              setIsListClosing(true);
+              setTimeout(() => {
+                setMobileView('cosmos');
+                setIsListClosing(false);
+              }, 300);
+            }}
+          />
+        </div>
+      )}
+
+      {/* Mobile Detail Panel - only when in detail view */}
+      {isMobile && (mobileView === 'detail' || isDetailClosing) && (
+        <div className={`fixed inset-0 z-[60] bg-white border-l border-gray-200 overflow-hidden ${
+          isDetailClosing ? 'animate-slide-out-right' : 'animate-slide-in-right'
+        }`}>
+          <CompanyDetailPanel
+            ref={companyDetailPanelRef}
+            selectedCompany={selectedCompany}
+            allCompanies={allCompanies}
+            onCompanySelect={handleCompanySelectFromPanel}
+            isInWatchlist={isInWatchlist}
+            onToggleWatchlist={handleToggleWatchlist}
+            onRequestDelete={handleRemoveRequest}
+            viewMode={viewMode}
+            watchlistStats={watchlistStats}
+            userCMF={stateManager.getUserCMF()}
+            isMobile={true}
+            onBack={() => {
+              // Trigger slide-out animation for detail view
+              setIsDetailClosing(true);
+              setTimeout(() => {
+                setMobileView(previousMobileView);
+                setSelectedCompany(null);
+                setIsDetailClosing(false);
+              }, 300);
             }}
           />
         </div>
