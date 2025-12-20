@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import cytoscape from 'cytoscape';
 import { CompanyGraphProps, Company } from '../types';
 import { transformToGraphData, getCytoscapeStyles } from '../utils/graphDataTransform';
+import { useIsMobile } from '../hooks/useIsMobile';
+import UserProfileModal from './UserProfileModal';
 
 // Helper function to apply selection highlighting
 const applySelectionHighlighting = (cy: cytoscape.Core, selectedCompany: Company | null, companies: Company[]) => {
@@ -125,6 +127,10 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
   // State to track center node screen position and zoom level
   const [centerNodePosition, setCenterNodePosition] = useState({ x: 0, y: 0 });
   const [zoomLevel, setZoomLevel] = useState(1);
+
+  // State for user profile modal
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   // Keep refs updated
   onCompanySelectRef.current = onCompanySelect;
@@ -550,7 +556,13 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
               width: `${62.5 * zoomLevel}px`,
               height: `${62.5 * zoomLevel}px`
             }}
-            onClick={() => onCMFToggle && onCMFToggle()}
+            onClick={() => {
+              if (isMobile) {
+                setIsProfileModalOpen(true);
+              } else {
+                onCMFToggle && onCMFToggle();
+              }
+            }}
             title={cmf.name}
           >
             <div 
@@ -660,6 +672,14 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
           </svg>
         </button>
       </div>
+
+      {/* User Profile Modal */}
+      {isProfileModalOpen && (
+        <UserProfileModal
+          userCMF={cmf}
+          onClose={() => setIsProfileModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

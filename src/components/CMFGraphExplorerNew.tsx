@@ -11,8 +11,10 @@ import { RemoveCompanyModal } from './RemoveCompanyModal';
 import EmptyWatchlistModal from './EmptyWatchlistModal';
 import KeyboardShortcutsModal from './KeyboardShortcutsModal';
 import { SpeedDialFAB } from './SpeedDialFAB';
+import { SettingsFAB } from './SettingsFAB';
 import { BatchImportPlaceholderModal } from './BatchImportPlaceholderModal';
 import { PasteCompanyListModal } from './PasteCompanyListModal';
+import ExportModal from './ExportModal';
 import { llmService } from '../utils/llm/service';
 import { loadPanelState, savePanelState } from '../utils/panelStorage';
 import CollapsibleCMFPanel from './CollapsibleCMFPanel';
@@ -27,13 +29,6 @@ const SearchIcon = () => (
 const HeartIcon = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-  </svg>
-);
-
-const GearIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
-    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
   </svg>
 );
 
@@ -69,6 +64,10 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   const [hoveredCompany, setHoveredCompany] = useState<Company | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('explore');
   const [mobileView, setMobileView] = useState<'cosmos' | 'list' | 'detail'>('cosmos');
+  const [previousMobileView, setPreviousMobileView] = useState<'cosmos' | 'list'>('cosmos');
+  const [isDetailClosing, setIsDetailClosing] = useState(false);
+  const [isListClosing, setIsListClosing] = useState(false);
+  const [isTransitioningToDetail, setIsTransitioningToDetail] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
   // Modal states
@@ -77,6 +76,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   const [showScreenshotModal, setShowScreenshotModal] = useState(false);
   const [showLLMSettings, setShowLLMSettings] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [llmConfigured, setLLMConfigured] = useState(llmService.isConfigured());
   const [showRemoveConfirmation, setShowRemoveConfirmation] = useState(false);
   const [companyToRemove, setCompanyToRemove] = useState<Company | null>(null);
@@ -215,16 +215,26 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
       stateManager.setSelectedCompany(company.id);
       // On mobile, switch to detail view when selecting a company
       if (isMobile) {
+        // Track where we came from before going to detail view
+        if (mobileView === 'cosmos' || mobileView === 'list') {
+          setPreviousMobileView(mobileView);
+        }
+        // Trigger transition animation when coming from list view
+        if (mobileView === 'list') {
+          setIsTransitioningToDetail(true);
+          // Reset after a brief moment to allow animation to trigger
+          setTimeout(() => setIsTransitioningToDetail(false), 50);
+        }
         setMobileView('detail');
       }
     } else {
       stateManager.setSelectedCompany(null);
-      // On mobile, go back to cosmos view when deselecting
+      // On mobile, go back to previous view when deselecting
       if (isMobile && mobileView === 'detail') {
-        setMobileView('cosmos');
+        setMobileView(previousMobileView);
       }
     }
-  }, [stateManager, isMobile, mobileView]);
+  }, [stateManager, isMobile, mobileView, previousMobileView]);
 
   const handleCompanyHover = useCallback((company: Company | null) => {
     setHoveredCompany(company);
@@ -734,9 +744,8 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
 
   return (
     <div className="flex h-screen bg-transparent">
-      {/* Main Graph Area - on mobile: only show when in cosmos view */}
-      {(!isMobile || mobileView === 'cosmos') && (
-        <div className="flex-1 relative">
+      {/* Main Graph Area - Desktop: always show, Mobile: always show (sits behind panels) */}
+      <div className="flex-1 relative">
         {/* Mobile: Company List Toggle Button - bottom left, matching FAB style */}
         {isMobile && (
           <button
@@ -818,20 +827,13 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
           />
         </div>
 
-        {/* LLM Settings - hidden on mobile */}
+        {/* Settings FAB with Export - hidden on mobile */}
         {!isMobile && (
           <div className="absolute bottom-6 left-6 z-10 flex items-center space-x-2">
-            <button
-              onClick={() => setShowLLMSettings(true)}
-              className={`w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center hover:scale-105 active:scale-95 focus:outline-none ${
-                llmConfigured
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-orange-500 text-white hover:bg-orange-600'
-              }`}
-              title={llmConfigured ? 'LLM Settings' : 'Configure LLM'}
-            >
-              <GearIcon />
-            </button>
+            <SettingsFAB
+              onSettings={() => setShowLLMSettings(true)}
+              onExport={() => setShowExportModal(true)}
+            />
             {/* LLM Status indicator */}
             {llmConfigured && (
               <div className="px-3 py-1.5 bg-green-50 border border-green-200 text-green-700 text-xs rounded-full flex items-center shadow-sm">
@@ -842,13 +844,18 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
           </div>
         )}
         </div>
-      )}
 
       {/* Side Panel - Desktop: always visible, Mobile: only when in list or detail view */}
-      {(!isMobile || mobileView === 'list' || mobileView === 'detail') && (
+      {(!isMobile || mobileView === 'list' || mobileView === 'detail' || isDetailClosing || isListClosing) && (
         <div className={`
-          ${isMobile && (mobileView === 'list' || mobileView === 'detail')
-            ? 'fixed inset-0 z-50 animate-slide-in-right'
+          ${isMobile && (mobileView === 'list' || mobileView === 'detail' || isDetailClosing || isListClosing)
+            ? `fixed inset-0 z-50 ${
+                isDetailClosing || isListClosing
+                  ? 'animate-slide-out-right'
+                  : (isTransitioningToDetail || mobileView === 'detail')
+                    ? 'animate-slide-in-right'
+                    : ''
+              }`
             : 'w-96'}
           bg-white border-l border-gray-200 overflow-hidden
         `}>
@@ -866,12 +873,21 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
             isMobile={isMobile}
             onBack={() => {
               if (mobileView === 'detail') {
-                // Go back to list view from detail
-                setMobileView('list');
-                setSelectedCompany(null);
+                // Trigger slide-out animation for detail view
+                setIsDetailClosing(true);
+                // Wait for animation to complete before changing view
+                setTimeout(() => {
+                  setMobileView(previousMobileView);
+                  setSelectedCompany(null);
+                  setIsDetailClosing(false);
+                }, 300); // Match animation duration
               } else if (mobileView === 'list') {
-                // Go back to cosmos from list
-                setMobileView('cosmos');
+                // Trigger slide-out animation for list view
+                setIsListClosing(true);
+                setTimeout(() => {
+                  setMobileView('cosmos');
+                  setIsListClosing(false);
+                }, 300); // Match animation duration
               }
             }}
           />
@@ -938,6 +954,14 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
       <EmptyWatchlistModal
         isOpen={viewMode === 'watchlist' && stateManager.getCurrentState().watchlistCompanyIds.length === 0}
         onGoToExplore={() => handleViewModeChange('explore')}
+      />
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        companies={displayedCompanies}
+        viewMode={viewMode}
       />
     </div>
   );
