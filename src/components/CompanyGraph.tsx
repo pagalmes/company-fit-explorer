@@ -198,13 +198,18 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
     } else {
       // First time load - fit to show all companies if any exist, otherwise fit to zones
       const companyNodes = cy.nodes('[type="company"]');
+      // Use tighter padding on mobile for better zoom
+      const isMobile = window.innerWidth < 768;
+      const companyPadding = isMobile ? 30 : 80;
+      const zonePadding = isMobile ? 50 : 120;
+
       if (companyNodes.length > 0) {
-        // Fit to all company nodes with generous padding to ensure all are visible
-        cy.fit(companyNodes, 80);
+        // Fit to all company nodes with padding optimized for mobile/desktop
+        cy.fit(companyNodes, companyPadding);
       } else {
         // No companies - fit to background zones
         const zoneNodes = cy.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
-        cy.fit(zoneNodes, 120);
+        cy.fit(zoneNodes, zonePadding);
       }
     }
 
@@ -541,13 +546,18 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       // Call resize to update Cytoscape's internal dimensions
       cy.resize();
 
+      // Use tighter padding on mobile for better zoom
+      const isMobile = window.innerWidth < 768;
+      const companyPadding = isMobile ? 30 : 80;
+      const zonePadding = isMobile ? 50 : 120;
+
       // Refit the viewport to show all companies with padding
       const companyNodes = cy.nodes('[type="company"]');
       if (companyNodes.length > 0) {
-        cy.fit(companyNodes, 80);
+        cy.fit(companyNodes, companyPadding);
       } else {
         const zoneNodes = cy.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
-        cy.fit(zoneNodes, 120);
+        cy.fit(zoneNodes, zonePadding);
       }
     };
 

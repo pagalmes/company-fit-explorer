@@ -74,9 +74,10 @@ TODO: Admin: Add confirmation to the delete account button
 <!-- DONE: Mobile: Back button to lead you back where you were. (currently, if you click on the company from the cosmos view, it opens the company. the back button leads you to the company list view) -->
 <!-- DONE: Mobile: Allow to add 1 company. (currently, can't click on it) -->
 <!-- DONE: Mobile: Update UI - Support switching phone between portrait and landscape view. tab buttons move around. -->
+<!-- DONE: Mobile: Update UI - Zoom more on companies when fit to view. -->
+
 
 FIXME: Mobile: Update UI - When openin from Safari or a browser with control / search bar at the bottom, they appear over cosmos interface.
-FIXME: Mobile: Update UI - Zoom more on companies when fit to view.
 
 
 FIXME: Right pane: Colors for the match scores are inconsistent. They are set by the llm when logic should be centralized.
