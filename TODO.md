@@ -7,12 +7,10 @@
 <!-- DONE: "Why This Match" > Add a "more..." / "less..." button -->
 <!-- DONE: Add a "setup Alert" button. -->
 <!-- DONE: Enable batch-adding companies: From a text post -->
-
-<!-- DONE: Export list - Allow to export all companies. -->
-
-TODO: Mobile: Update UI - Company List - Feels like a Mobile App!
-TODO: Mobile: Update UI - Company Details - Feels like a Mobile App!
-TODO: Mobile: Update UI - Cosmos View - Feels like a Mobile App!
+<!-- DONE: Export list - Allow to export all companies as csv, md, (notion table) json. -->
+<!-- DONE: Mobile: Update UI - Company List - Feels like a Mobile App! -->
+<!-- DONE: Mobile: Update UI - Company Details - Feels like a Mobile App! -->
+<!-- DONE: Mobile: Update UI - Cosmos View - Feels like a Mobile App! -->
 
 
 TODO: Network! WOrk your network
@@ -48,11 +46,6 @@ TODO: Enable batch-adding companies: From a screenshot
 <!-- DONE: --> 
 
 
-
-TODO: Mobile: Allow to add 1 company. (currently, can't click on it)
-
-TODO: Mobile: Back button to lead you back where you were. (currently, if you click on the company from the cosmos view, it opens the company. the back button leads you to the company list view)
-
 TODO: Mobile: Make sure all actions feel easy. Remove extra clicks to accomplish tasks.
 
 TODO: Mobile friendly UI: Users can add & review companies from their mobile. (When I'm scrolling LinkedIn and see a cool company, I want to be able to see if it's a fit for me and/or save it for later review)
@@ -82,6 +75,10 @@ FIXME: Fix the Sonner toast positionning to be centered under the tabs.
 <!-- DONE: Watchlist: When adding a company from the Watchlist view, add it to the watchlist. (currently not the case) -->
 <!-- DONE: When adding a new company, check if the company is already present. 1: if company already in the list (and not removed) then just state already in the list. 2: if company was removed by the user, then re-add it. (with refresh the data) -->
 <!-- DONE: Explore companies: Right pane shows all companies including the ones in the watchlist -->
+<!-- DONE: Mobile: Back button to lead you back where you were. (currently, if you click on the company from the cosmos view, it opens the company. the back button leads you to the company list view) -->
+<!-- DONE: Mobile: Allow to add 1 company. (currently, can't click on it) -->
+
+
 
 FIXME: Mobile: Update UI - Support switching phone between portrait and landscape view. tab buttons move around.
 

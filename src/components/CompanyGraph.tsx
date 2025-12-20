@@ -599,10 +599,10 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
         </div>
       )}
       
-      {/* Graph Controls */}
-      <div className="absolute top-4 right-4 flex flex-col space-y-2" style={{ zIndex: 10 }}>
+      {/* Graph Controls - Fit to View */}
+      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2" style={{ zIndex: 10 }}>
         <button
-          className="bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow"
+          className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 ease-in-out flex items-center justify-center hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50"
           onClick={() => {
             if (cyInstance.current) {
               const companyNodes = cyInstance.current.nodes('[type="company"]');
@@ -617,58 +617,11 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
             }
           }}
           title="Fit to view"
+          aria-label="Fit to view"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-          </svg>
-        </button>
-        
-        <button 
-          className="bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow"
-          onClick={() => {
-            if (cyInstance.current) {
-              const zoneNodes = cyInstance.current.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
-              const centerPosition = zoneNodes.boundingBox();
-              const centerPoint = {
-                x: centerPosition.x1 + (centerPosition.w / 2),
-                y: centerPosition.y1 + (centerPosition.h / 2)
-              };
-              cyInstance.current.zoom({
-                level: cyInstance.current.zoom() * 1.2,
-                position: centerPoint
-              });
-            }
-          }}
-          title="Zoom in"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-        </button>
-        
-        <button 
-          className="bg-white rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow"
-          onClick={() => {
-            if (cyInstance.current) {
-              const zoneNodes = cyInstance.current.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
-              const centerPosition = zoneNodes.boundingBox();
-              const centerPoint = {
-                x: centerPosition.x1 + (centerPosition.w / 2),
-                y: centerPosition.y1 + (centerPosition.h / 2)
-              };
-              cyInstance.current.zoom({
-                level: cyInstance.current.zoom() * 0.8,
-                position: centerPoint
-              });
-            }
-          }}
-          title="Zoom out"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-              d="M18 12H6" />
           </svg>
         </button>
       </div>
