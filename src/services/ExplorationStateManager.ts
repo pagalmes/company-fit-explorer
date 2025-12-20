@@ -1,5 +1,6 @@
 import { Company, UserExplorationState, WatchlistStats } from '../types';
 import { writeStateToDisk, checkDevServerAvailable, logFileWriteInstructions } from '../utils/devFileWriter';
+import { getColorForScore } from '../utils/companyPositioning';
 
 /**
  * ExplorationStateManager
@@ -50,10 +51,14 @@ export class ExplorationStateManager {
       ...this.currentState.baseCompanies,
       ...this.currentState.addedCompanies
     ];
-    
-    return allCompanies.filter(company => 
-      !this.currentState.removedCompanyIds.includes(company.id)
-    );
+
+    // Ensure colors are always computed from match scores
+    return allCompanies
+      .filter(company => !this.currentState.removedCompanyIds.includes(company.id))
+      .map(company => ({
+        ...company,
+        color: getColorForScore(company.matchScore || 0)
+      }));
   }
 
   /**

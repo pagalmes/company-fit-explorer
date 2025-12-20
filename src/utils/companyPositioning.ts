@@ -421,9 +421,10 @@ export const shouldTriggerRelocation = (
  */
 export const getColorForScore = (score: number): string => {
   if (score >= 90) return "#10B981"; // Green - Excellent
-  if (score >= 80) return "#F59E0B"; // Yellow - Good  
+  if (score >= 80) return "#F59E0B"; // Yellow - Good
   if (score >= 70) return "#3B82F6"; // Blue - Fair
-  return "#6B7280"; // Gray - Poor
+  if (score >= 50) return "#6B7280"; // Gray - Poor
+  return "#EF4444"; // Red - Very Poor
 };
 
 /**

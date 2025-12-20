@@ -1,11 +1,12 @@
 /**
  * Company State Manager
- * 
+ *
  * Handles state management, persistence, and synchronization for custom companies.
  * Provides localStorage integration with error handling and cross-tab synchronization.
  */
 
 import { Company } from '../types';
+import { getColorForScore } from './companyPositioning';
 
 interface CompanyStateData {
   companies: Company[];
@@ -235,7 +236,7 @@ const validateCompaniesData = (companies: any[]): Company[] => {
     company.connections = Array.isArray(company.connections) ? company.connections : [];
     company.connectionTypes = typeof company.connectionTypes === 'object' && company.connectionTypes ? company.connectionTypes : {};
     company.matchReasons = Array.isArray(company.matchReasons) ? company.matchReasons : [];
-    company.color = company.color || '#6B7280';
+    company.color = getColorForScore(company.matchScore || 0);
     company.angle = typeof company.angle === 'number' ? company.angle : Math.random() * 360;
     company.distance = typeof company.distance === 'number' ? company.distance : 150;
     company.careerUrl = company.careerUrl || `https://${company.name.toLowerCase().replace(/\s+/g, '')}.com/careers`;
