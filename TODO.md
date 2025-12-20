@@ -49,7 +49,6 @@ TODO: Enable batch-adding companies: From a screenshot
 
 TODO: Mobile: swipe gesture to close the panels
 
-
 TODO: Edit companies: Allow to edit companies details: website, career page...
 
 TODO: (Maybe) Allow to manually move companies to reduce overlap
@@ -79,6 +78,7 @@ TODO: Admin: Add confirmation to the delete account button
 <!-- DONE: Right pane: Colors for the match scores are inconsistent. They are set by the llm when logic should be centralized. -->
 <!-- DONE: Mobile: Update UI - When openin from Safari or a browser with control / search bar at the bottom, they appear over cosmos interface. -->
 
+FIXME: Chrome on iOS: Buttons not showing up at the bottom. (related to 100lvh...)
 FIXME: Right pane: Company research buttons behave differently from action buttons
 FIXME: Right pane: disappears when changing browser zoom levels
 FIXME: The "Sun" node appears over the right panel
