@@ -643,7 +643,10 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
       )}
       
       {/* Graph Controls - Zoom and Fit to View */}
-      <div className="absolute bottom-safe-6 left-1/2 transform -translate-x-1/2 md:top-4 md:right-4 md:left-auto md:transform-none" style={{ zIndex: 10 }}>
+      <div
+        className={`absolute ${isMobile ? 'bottom-safe-6 left-1/2 transform -translate-x-1/2' : 'top-4 right-4'}`}
+        style={{ zIndex: 10 }}
+      >
         <ZoomControlsFAB
           isMobile={isMobile}
           onZoomIn={() => {

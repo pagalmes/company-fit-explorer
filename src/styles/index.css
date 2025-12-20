@@ -30,8 +30,8 @@
     bottom: 1.5rem;
   }
 
-  /* Mobile/touch devices: extra spacing + safe-area-inset */
-  @media (hover: none) and (pointer: coarse) {
+  /* Safari on iOS only: extra spacing + safe-area-inset */
+  @supports (-webkit-touch-callout: none) {
     .bottom-safe {
       bottom: calc(2.5rem + env(safe-area-inset-bottom));
     }
@@ -84,8 +84,8 @@ html {
   min-height: 100vh;
 }
 
-/* Touch devices only: extend background behind Safari's toolbar */
-@media (hover: none) and (pointer: coarse) {
+/* Safari on iOS only: extend background behind Safari's toolbar */
+@supports (-webkit-touch-callout: none) {
   html {
     /* iOS 26: Use lvh (large viewport height) to extend behind toolbar */
     min-height: 100lvh;
@@ -122,8 +122,8 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
-/* Touch devices only: extend body behind Safari's toolbar */
-@media (hover: none) and (pointer: coarse) {
+/* Safari on iOS only: extend body behind Safari's toolbar */
+@supports (-webkit-touch-callout: none) {
   body {
     /* Use lvh to extend body height behind Safari toolbar */
     min-height: 100lvh;
