@@ -30,8 +30,8 @@
     bottom: 1.5rem;
   }
 
-  /* Safari on iOS only: extra spacing + safe-area-inset */
-  @supports (-webkit-touch-callout: none) {
+  /* Safari on iOS/iPadOS only: extra spacing + safe-area-inset */
+  @supports (-webkit-touch-callout: none) and (not (background: -moz-linear-gradient(top, #000, #fff))) {
     .bottom-safe {
       bottom: calc(2.5rem + env(safe-area-inset-bottom));
     }
@@ -84,10 +84,10 @@ html {
   min-height: 100vh;
 }
 
-/* Safari on iOS only: extend background behind Safari's toolbar */
-@supports (-webkit-touch-callout: none) {
+/* Safari on iOS/iPadOS only: extend background behind Safari's toolbar */
+@supports (-webkit-touch-callout: none) and (not (background: -moz-linear-gradient(top, #000, #fff))) {
   html {
-    /* iOS 26: Use lvh (large viewport height) to extend behind toolbar */
+    /* iOS: Use lvh (large viewport height) to extend behind toolbar */
     min-height: 100lvh;
     /* WebKit-specific: ensures background extends to fill available space */
     height: -webkit-fill-available;
@@ -122,8 +122,8 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
-/* Safari on iOS only: extend body behind Safari's toolbar */
-@supports (-webkit-touch-callout: none) {
+/* Safari on iOS/iPadOS only: extend body behind Safari's toolbar */
+@supports (-webkit-touch-callout: none) and (not (background: -moz-linear-gradient(top, #000, #fff))) {
   body {
     /* Use lvh to extend body height behind Safari toolbar */
     min-height: 100lvh;
