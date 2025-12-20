@@ -19,7 +19,9 @@
 
 html {
   /* Apply gradient to html so it shows through Safari's translucent bottom bar */
-  min-height: 100%;
+  height: 100%;
+  /* Fix for iOS Safari - ensure background extends to bottom */
+  height: -webkit-fill-available;
   background: linear-gradient(to bottom right, #0f172a, #1e3a8a, #312e81);
 }
 
@@ -44,6 +46,8 @@ body {
   min-height: 100vh;
   /* Extend background below Safari bottom bar */
   min-height: 100dvh;
+  /* WebKit-specific fix for iOS Safari */
+  min-height: -webkit-fill-available;
   background-color: transparent;
   /* Support iPhone notch and safe areas */
   padding-top: env(safe-area-inset-top);
