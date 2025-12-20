@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#0f172a', // Slate-900 to match cosmos gradient start
+  themeColor: '#1e3a8a', // Blue-900 to match cosmos gradient middle
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
