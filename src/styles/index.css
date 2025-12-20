@@ -5,15 +5,15 @@
 @layer utilities {
   /* iOS Safari safe area utilities for bottom-positioned elements */
   .bottom-safe {
-    bottom: calc(2rem + env(safe-area-inset-bottom));
+    bottom: calc(2.5rem + env(safe-area-inset-bottom));
   }
 
   .bottom-safe-4 {
-    bottom: calc(1.5rem + env(safe-area-inset-bottom));
+    bottom: calc(2rem + env(safe-area-inset-bottom));
   }
 
   .bottom-safe-6 {
-    bottom: calc(2rem + env(safe-area-inset-bottom));
+    bottom: calc(2.5rem + env(safe-area-inset-bottom));
   }
 }
 
