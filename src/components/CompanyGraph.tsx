@@ -647,14 +647,19 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
           className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 ease-in-out flex items-center justify-center hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50"
           onClick={() => {
             if (cyInstance.current) {
+              // Use tighter padding on mobile for better zoom
+              const isMobile = window.innerWidth < 768;
+              const companyPadding = isMobile ? 30 : 80;
+              const zonePadding = isMobile ? 50 : 120;
+
               const companyNodes = cyInstance.current.nodes('[type="company"]');
               if (companyNodes.length > 0) {
-                // Fit to all companies with padding
-                cyInstance.current.fit(companyNodes, 80);
+                // Fit to all companies with padding optimized for mobile/desktop
+                cyInstance.current.fit(companyNodes, companyPadding);
               } else {
                 // No companies - fit to zones
                 const zoneNodes = cyInstance.current.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
-                cyInstance.current.fit(zoneNodes, 120);
+                cyInstance.current.fit(zoneNodes, zonePadding);
               }
             }
           }}
