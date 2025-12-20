@@ -765,7 +765,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   const userCMF = stateManager.getUserCMF();
 
   return (
-    <div className="flex h-screen bg-transparent">
+    <div className="flex min-h-screen bg-transparent" style={{ minHeight: '100dvh' }}>
       {/* Main Graph Area - Desktop: always show, Mobile: always show (sits behind panels) */}
       <div className="flex-1 relative">
         {/* Mobile: Company List Toggle Button - bottom left, matching FAB style */}
