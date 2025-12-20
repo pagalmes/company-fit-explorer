@@ -17,6 +17,12 @@
   }
 }
 
+html {
+  /* Apply gradient to html so it shows through Safari's translucent bottom bar */
+  min-height: 100%;
+  background: linear-gradient(to bottom right, #0f172a, #1e3a8a, #312e81);
+}
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -24,7 +30,6 @@
 
   color-scheme: light;
   color: #1f2937;
-  background-color: #ffffff;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
