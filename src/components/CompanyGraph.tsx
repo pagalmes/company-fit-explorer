@@ -530,6 +530,38 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
     });
   }, [fadingCompanyIds]);
 
+  // Handle window resize and orientation changes
+  useEffect(() => {
+    if (!cyInstance.current) return;
+
+    const handleResize = () => {
+      const cy = cyInstance.current;
+      if (!cy) return;
+
+      // Call resize to update Cytoscape's internal dimensions
+      cy.resize();
+
+      // Refit the viewport to show all companies with padding
+      const companyNodes = cy.nodes('[type="company"]');
+      if (companyNodes.length > 0) {
+        cy.fit(companyNodes, 80);
+      } else {
+        const zoneNodes = cy.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
+        cy.fit(zoneNodes, 120);
+      }
+    };
+
+    // Add listeners for both resize and orientation change
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
+
   return (
     <div className="w-full h-full relative" data-cy="cytoscape-container">
       {/* Cytoscape Graph Container */}
