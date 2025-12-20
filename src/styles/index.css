@@ -30,22 +30,7 @@
     bottom: 1.5rem;
   }
 
-  /* Mobile: add safe-area-inset for all touch devices */
-  @media (hover: none) and (pointer: coarse) {
-    .bottom-safe {
-      bottom: calc(1.5rem + env(safe-area-inset-bottom));
-    }
-
-    .bottom-safe-4 {
-      bottom: calc(1rem + env(safe-area-inset-bottom));
-    }
-
-    .bottom-safe-6 {
-      bottom: calc(1.5rem + env(safe-area-inset-bottom));
-    }
-  }
-
-  /* Safari on iOS/iPadOS only: extra spacing for toolbar clearance */
+  /* Safari on iOS/iPadOS: use safe-area-inset + extra spacing for toolbar clearance */
   @supports (-webkit-touch-callout: none) and (not (background: -moz-linear-gradient(top, #000, #fff))) {
     .bottom-safe {
       bottom: calc(2.5rem + env(safe-area-inset-bottom));
@@ -57,6 +42,23 @@
 
     .bottom-safe-6 {
       bottom: calc(2.5rem + env(safe-area-inset-bottom));
+    }
+  }
+
+  /* Chrome Android only: extra spacing to clear browser toolbar (applied after Safari override to not affect it) */
+  @media (hover: none) and (pointer: coarse) {
+    @supports not ((-webkit-touch-callout: none) and (not (background: -moz-linear-gradient(top, #000, #fff)))) {
+      .bottom-safe {
+        bottom: 4rem;
+      }
+
+      .bottom-safe-4 {
+        bottom: 3.5rem;
+      }
+
+      .bottom-safe-6 {
+        bottom: 4rem;
+      }
     }
   }
 }
