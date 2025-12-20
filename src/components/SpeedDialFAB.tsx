@@ -105,15 +105,20 @@ export const SpeedDialFAB: React.FC<SpeedDialFABProps> = ({
   };
 
   const actions: SpeedDialAction[] = [
-    {
-      icon: <Camera className="w-5 h-5" />,
-      label: 'Import from Screenshot',
-      onClick: onScreenshotImport,
-    },
+    ...(isMobile ? [{
+      icon: <Plus className="w-5 h-5" />,
+      label: 'Add Single Company',
+      onClick: onAddCompany,
+    }] : []),
     {
       icon: <Clipboard className="w-5 h-5" />,
       label: 'Paste Company List',
       onClick: onPasteList,
+    },
+    {
+      icon: <Camera className="w-5 h-5" />,
+      label: 'Import from Screenshot',
+      onClick: onScreenshotImport,
     },
   ];
 
