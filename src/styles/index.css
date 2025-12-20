@@ -11,24 +11,38 @@
    *
    * USAGE: Apply to fixed/absolute positioned elements at bottom of screen (FAB buttons, etc.)
    *
-   * - .bottom-safe / .bottom-safe-6: 2.5rem (40px) base + safe-area-inset
-   * - .bottom-safe-4: 2rem (32px) base + safe-area-inset
+   * DESKTOP: Uses standard Tailwind spacing (1.5rem for bottom-6, 1rem for bottom-4)
+   * MOBILE/TOUCH: Adds extra spacing + safe-area-inset for Safari toolbar clearance
    *
-   * In PWA mode: safe-area-inset-bottom = 0, so only base spacing applies
-   * In Safari browser: safe-area-inset-bottom ≈ 21px, giving total ~61px clearance
-   *
-   * This ensures interactive elements are always above Safari's toolbar in both modes.
+   * This ensures interactive elements are properly positioned on both desktop and mobile.
    */
+
+  /* Desktop: standard spacing */
   .bottom-safe {
-    bottom: calc(2.5rem + env(safe-area-inset-bottom));
+    bottom: 1.5rem;
   }
 
   .bottom-safe-4 {
-    bottom: calc(2rem + env(safe-area-inset-bottom));
+    bottom: 1rem;
   }
 
   .bottom-safe-6 {
-    bottom: calc(2.5rem + env(safe-area-inset-bottom));
+    bottom: 1.5rem;
+  }
+
+  /* Mobile/touch devices: extra spacing + safe-area-inset */
+  @media (hover: none) and (pointer: coarse) {
+    .bottom-safe {
+      bottom: calc(2.5rem + env(safe-area-inset-bottom));
+    }
+
+    .bottom-safe-4 {
+      bottom: calc(2rem + env(safe-area-inset-bottom));
+    }
+
+    .bottom-safe-6 {
+      bottom: calc(2.5rem + env(safe-area-inset-bottom));
+    }
   }
 }
 
@@ -62,17 +76,22 @@
  */
 
 html {
-  /* Apply gradient to html so it shows through Safari's translucent bottom bar */
-  height: 100%;
-  min-height: 100vh;
-  /* iOS 26: Use lvh (large viewport height) to extend behind toolbar */
-  min-height: 100lvh;
-  /* WebKit-specific: ensures background extends to fill available space */
-  height: -webkit-fill-available;
   /* Main gradient background */
   background: linear-gradient(to bottom right, #0f172a, #1e3a8a, #312e81);
   /* Fixed attachment prevents gradient from moving during scroll */
   background-attachment: fixed;
+  height: 100%;
+  min-height: 100vh;
+}
+
+/* Touch devices only: extend background behind Safari's toolbar */
+@media (hover: none) and (pointer: coarse) {
+  html {
+    /* iOS 26: Use lvh (large viewport height) to extend behind toolbar */
+    min-height: 100lvh;
+    /* WebKit-specific: ensures background extends to fill available space */
+    height: -webkit-fill-available;
+  }
 }
 
 :root {
@@ -94,18 +113,25 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  /* Use lvh to extend body height behind Safari toolbar */
-  min-height: 100lvh;
-  /* WebKit-specific fallback for full height */
-  min-height: -webkit-fill-available;
   background-color: transparent;
 
-  /* Safe area insets for notch and toolbar areas */
+  /* Safe area insets for notch areas */
   padding-top: env(safe-area-inset-top);
-  /* 60px padding pushes content down, extending gradient into toolbar area */
-  padding-bottom: max(60px, env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
+}
+
+/* Touch devices only: extend body behind Safari's toolbar */
+@media (hover: none) and (pointer: coarse) {
+  body {
+    /* Use lvh to extend body height behind Safari toolbar */
+    min-height: 100lvh;
+    /* WebKit-specific fallback for full height */
+    min-height: -webkit-fill-available;
+    /* 60px padding pushes content down, extending gradient into toolbar area */
+    padding-bottom: max(60px, env(safe-area-inset-bottom));
+  }
 }
 
 

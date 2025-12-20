@@ -42,14 +42,13 @@ TODO: Enable batch-adding companies: From a screenshot
 <!-- DONE: Hover node: do not grey out on hover. Just on selection --> 
 <!-- DONE: Mobile: Click on sun to view profile. -->
 <!-- DONE: Mobile: panels slide in / out animation -->
-<!--  -->
+<!-- DONE: Mobile: Actions feel easy. Remove extra clicks to accomplish tasks. -->
 
 <!-- DONE: --> 
 <!-- DONE: --> 
 
 TODO: Mobile: swipe gesture to close the panels
 
-TODO: Mobile: Make sure all actions feel easy. Remove extra clicks to accomplish tasks.
 
 TODO: Edit companies: Allow to edit companies details: website, career page...
 

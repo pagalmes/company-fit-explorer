@@ -4,6 +4,7 @@ import { CompanyGraphProps, Company } from '../types';
 import { transformToGraphData, getCytoscapeStyles } from '../utils/graphDataTransform';
 import { useIsMobile } from '../hooks/useIsMobile';
 import UserProfileModal from './UserProfileModal';
+import { ZoomControlsFAB } from './ZoomControlsFAB';
 
 // Helper function to apply selection highlighting
 const applySelectionHighlighting = (cy: cytoscape.Core, selectedCompany: Company | null, companies: Company[]) => {
@@ -641,11 +642,41 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
         </div>
       )}
       
-      {/* Graph Controls - Fit to View */}
-      <div className="absolute bottom-safe-6 left-1/2 transform -translate-x-1/2" style={{ zIndex: 10 }}>
-        <button
-          className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 ease-in-out flex items-center justify-center hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50"
-          onClick={() => {
+      {/* Graph Controls - Zoom and Fit to View */}
+      <div className="absolute bottom-safe-6 left-1/2 transform -translate-x-1/2 md:top-4 md:right-4 md:left-auto md:transform-none" style={{ zIndex: 10 }}>
+        <ZoomControlsFAB
+          isMobile={isMobile}
+          onZoomIn={() => {
+            if (cyInstance.current) {
+              // Calculate center point of zones to maintain stable zoom
+              const zoneNodes = cyInstance.current.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
+              const centerPosition = zoneNodes.boundingBox();
+              const centerPoint = {
+                x: centerPosition.x1 + (centerPosition.w / 2),
+                y: centerPosition.y1 + (centerPosition.h / 2)
+              };
+              cyInstance.current.zoom({
+                level: cyInstance.current.zoom() * 1.2,
+                position: centerPoint
+              });
+            }
+          }}
+          onZoomOut={() => {
+            if (cyInstance.current) {
+              // Calculate center point of zones to maintain stable zoom
+              const zoneNodes = cyInstance.current.nodes('[type="zone-excellent"], [type="zone-good"], [type="zone-fair"]');
+              const centerPosition = zoneNodes.boundingBox();
+              const centerPoint = {
+                x: centerPosition.x1 + (centerPosition.w / 2),
+                y: centerPosition.y1 + (centerPosition.h / 2)
+              };
+              cyInstance.current.zoom({
+                level: cyInstance.current.zoom() / 1.2,
+                position: centerPoint
+              });
+            }
+          }}
+          onFitToView={() => {
             if (cyInstance.current) {
               // Use tighter padding on mobile for better zoom
               const isMobile = window.innerWidth < 768;
@@ -663,14 +694,7 @@ const CompanyGraph: React.FC<CompanyGraphProps> = ({
               }
             }
           }}
-          title="Fit to view"
-          aria-label="Fit to view"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-          </svg>
-        </button>
+        />
       </div>
 
       {/* User Profile Modal */}
