@@ -42,7 +42,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" style={{ height: '-webkit-fill-available', background: 'linear-gradient(to bottom right, #0f172a, #1e3a8a, #312e81)' } as React.CSSProperties}>
       <head>
         <meta name="viewport" content="viewport-fit=cover" />
       </head>
