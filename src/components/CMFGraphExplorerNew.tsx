@@ -869,9 +869,15 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
       )}
 
       {/* Mobile List Panel - visible when in list view OR when detail is showing (to stay underneath) */}
-      {isMobile && ((mobileView === 'list' || (mobileView === 'detail' && previousMobileView === 'list')) || isListClosing) && (
-        <div className={`fixed inset-0 z-50 bg-white border-l border-gray-200 overflow-hidden ${
-          isListClosing ? 'animate-slide-out-right' : (mobileView === 'detail' ? '' : 'animate-slide-in-right')
+      {isMobile && (mobileView === 'list' || previousMobileView === 'list' || isListClosing) && (
+        <div
+          key="mobile-list-panel"
+          className={`fixed inset-0 z-50 bg-white border-l border-gray-200 overflow-hidden ${
+          isListClosing
+            ? 'animate-slide-out-right'
+            : (mobileView === 'list' && previousMobileView === 'list')
+              ? ''
+              : 'animate-slide-in-right'
         }`}>
           <CompanyDetailPanel
             selectedCompany={null}
@@ -889,6 +895,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
               setIsListClosing(true);
               setTimeout(() => {
                 setMobileView('cosmos');
+                setPreviousMobileView('cosmos');
                 setIsListClosing(false);
               }, 300);
             }}
@@ -914,7 +921,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
             userCMF={stateManager.getUserCMF()}
             isMobile={true}
             onBack={() => {
-              // Trigger slide-out animation for detail view
+              // Trigger slide-out animation, then change view after animation completes
               setIsDetailClosing(true);
               setTimeout(() => {
                 setMobileView(previousMobileView);
