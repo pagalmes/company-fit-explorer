@@ -4,62 +4,23 @@
 
 @layer utilities {
   /*
-   * iOS Safari Safe Area Utilities
-   * ===============================
+   * Safe Area Utilities for Bottom-Positioned Elements
+   * ===================================================
    *
-   * These utilities position elements above Safari's bottom toolbar using env(safe-area-inset-bottom).
-   *
-   * USAGE: Apply to fixed/absolute positioned elements at bottom of screen (FAB buttons, etc.)
-   *
-   * DESKTOP: Uses standard Tailwind spacing (1.5rem for bottom-6, 1rem for bottom-4)
-   * MOBILE/TOUCH: Adds extra spacing + safe-area-inset for Safari toolbar clearance
-   *
-   * This ensures interactive elements are properly positioned on both desktop and mobile.
+   * Simple approach: Use base spacing + env(safe-area-inset-bottom) for all browsers.
+   * This ensures buttons stay visible and within viewport on all devices.
    */
 
-  /* Desktop: standard Tailwind spacing */
   .bottom-safe {
-    bottom: 1.5rem;
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
   }
 
   .bottom-safe-4 {
-    bottom: 1rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom));
   }
 
   .bottom-safe-6 {
-    bottom: 1.5rem;
-  }
-
-  /* Safari on iOS/iPadOS: use safe-area-inset + extra spacing for toolbar clearance */
-  @supports (-webkit-touch-callout: none) and (not (background: -moz-linear-gradient(top, #000, #fff))) {
-    .bottom-safe {
-      bottom: calc(2.5rem + env(safe-area-inset-bottom));
-    }
-
-    .bottom-safe-4 {
-      bottom: calc(2rem + env(safe-area-inset-bottom));
-    }
-
-    .bottom-safe-6 {
-      bottom: calc(2.5rem + env(safe-area-inset-bottom));
-    }
-  }
-
-  /* Chrome Android only: extra spacing to clear browser toolbar (applied after Safari override to not affect it) */
-  @media (hover: none) and (pointer: coarse) {
-    @supports not ((-webkit-touch-callout: none) and (not (background: -moz-linear-gradient(top, #000, #fff)))) {
-      .bottom-safe {
-        bottom: 4rem;
-      }
-
-      .bottom-safe-4 {
-        bottom: 3.5rem;
-      }
-
-      .bottom-safe-6 {
-        bottom: 4rem;
-      }
-    }
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
   }
 }
 
@@ -101,16 +62,6 @@ html {
   min-height: 100vh;
 }
 
-/* Safari on iOS/iPadOS only: extend background behind Safari's toolbar */
-@supports (-webkit-touch-callout: none) and (not (background: -moz-linear-gradient(top, #000, #fff))) {
-  html {
-    /* iOS: Use lvh (large viewport height) to extend behind toolbar */
-    min-height: 100lvh;
-    /* WebKit-specific: ensures background extends to fill available space */
-    height: -webkit-fill-available;
-  }
-}
-
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -137,18 +88,6 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
-}
-
-/* Safari on iOS/iPadOS only: extend body behind Safari's toolbar */
-@supports (-webkit-touch-callout: none) and (not (background: -moz-linear-gradient(top, #000, #fff))) {
-  body {
-    /* Use lvh to extend body height behind Safari toolbar */
-    min-height: 100lvh;
-    /* WebKit-specific fallback for full height */
-    min-height: -webkit-fill-available;
-    /* 60px padding pushes content down, extending gradient into toolbar area */
-    padding-bottom: max(60px, env(safe-area-inset-bottom));
-  }
 }
 
 
