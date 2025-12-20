@@ -6,6 +6,7 @@
 <!-- DONE: Admin: Masquerade user. (eye logo) -->
 <!-- DONE: "Why This Match" > Add a "more..." / "less..." button -->
 <!-- DONE: Add a "setup Alert" button. -->
+<!-- DONE: Mobile friendly UI: Users can add & review companies from their mobile. (When I'm scrolling LinkedIn and see a cool company, I want to be able to see if it's a fit for me and/or save it for later review) -->
 <!-- DONE: Enable batch-adding companies: From a text post -->
 <!-- DONE: Export list - Allow to export all companies as csv, md, (notion table) json. -->
 <!-- DONE: Mobile: Update UI - Company List - Feels like a Mobile App! -->
@@ -48,11 +49,6 @@ TODO: Enable batch-adding companies: From a screenshot
 
 TODO: Mobile: Make sure all actions feel easy. Remove extra clicks to accomplish tasks.
 
-TODO: Mobile friendly UI: Users can add & review companies from their mobile. (When I'm scrolling LinkedIn and see a cool company, I want to be able to see if it's a fit for me and/or save it for later review)
-
-TODO: Admin: Add confirmation to the delete account button
-
-
 TODO: Edit companies: Allow to edit companies details: website, career page...
 
 TODO: (Maybe) Allow to manually move companies to reduce overlap
@@ -65,7 +61,7 @@ TODO: Related Companies: Currently, the relationships between related companies 
 
 ### Minor
 
-FIXME: Fix the Sonner toast positionning to be centered under the tabs.
+TODO: Admin: Add confirmation to the delete account button
 
 
 ## Bug Fixes
@@ -77,15 +73,17 @@ FIXME: Fix the Sonner toast positionning to be centered under the tabs.
 <!-- DONE: Explore companies: Right pane shows all companies including the ones in the watchlist -->
 <!-- DONE: Mobile: Back button to lead you back where you were. (currently, if you click on the company from the cosmos view, it opens the company. the back button leads you to the company list view) -->
 <!-- DONE: Mobile: Allow to add 1 company. (currently, can't click on it) -->
+<!-- DONE: Mobile: Update UI - Support switching phone between portrait and landscape view. tab buttons move around. -->
 
+FIXME: Mobile: Update UI - When openin from Safari or a browser with control / search bar at the bottom, they appear over cosmos interface.
+FIXME: Mobile: Update UI - Zoom more on companies when fit to view.
 
-
-FIXME: Mobile: Update UI - Support switching phone between portrait and landscape view. tab buttons move around.
 
 FIXME: Right pane: Colors for the match scores are inconsistent. They are set by the llm when logic should be centralized.
 FIXME: Right pane: Company reserach buttons behave differently from action buttons
 FIXME: Right pane: disappears when changing browser zoom levels
 FIXME: The "Sun" node appears over the right panel
+FIXME: Fix the Sonner toast positionning to be centered under the tabs.
 
 
 ## Technical Debt

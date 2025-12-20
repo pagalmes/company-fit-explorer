@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   applicationName: 'Company Fit Explorer',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
+    statusBarStyle: 'black-translucent',
     title: 'Cosmos',
   },
   formatDetection: {
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#3B82F6',
+  themeColor: '#0f172a', // Slate-900 to match cosmos gradient start
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -43,7 +43,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <head>
+        <meta name="viewport" content="viewport-fit=cover" />
+      </head>
+      <body className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900">
         {children}
         <Toaster
           position="top-center"
