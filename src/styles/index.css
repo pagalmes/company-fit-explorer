@@ -17,32 +17,17 @@
    * This ensures interactive elements are properly positioned on both desktop and mobile.
    */
 
-  /* Desktop: standard spacing */
+  /* Base spacing + safe-area-inset for all browsers */
   .bottom-safe {
-    bottom: 1.5rem;
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
   }
 
   .bottom-safe-4 {
-    bottom: 1rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom));
   }
 
   .bottom-safe-6 {
-    bottom: 1.5rem;
-  }
-
-  /* Mobile/touch devices: add safe-area-inset for all mobile browsers */
-  @media (hover: none) and (pointer: coarse) {
-    .bottom-safe {
-      bottom: calc(1.5rem + env(safe-area-inset-bottom));
-    }
-
-    .bottom-safe-4 {
-      bottom: calc(1rem + env(safe-area-inset-bottom));
-    }
-
-    .bottom-safe-6 {
-      bottom: calc(1.5rem + env(safe-area-inset-bottom));
-    }
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
   }
 
   /* Safari on iOS/iPadOS only: extra spacing for toolbar clearance */
