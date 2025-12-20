@@ -19,6 +19,7 @@ import { llmService } from '../utils/llm/service';
 import { loadPanelState, savePanelState } from '../utils/panelStorage';
 import CollapsibleCMFPanel from './CollapsibleCMFPanel';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { useSwipeGesture } from '../hooks/useSwipeGesture';
 // Using inline SVG icons instead of lucide-react
 const SearchIcon = () => (
   <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,6 +107,34 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
 
   // Refs for keyboard shortcuts
   const companyDetailPanelRef = useRef<CompanyDetailPanelHandle>(null);
+
+  // Swipe gesture handlers for mobile panels
+  const handleListPanelBack = useCallback(() => {
+    setIsListClosing(true);
+    setTimeout(() => {
+      setMobileView('cosmos');
+      setPreviousMobileView('cosmos');
+      setIsListClosing(false);
+    }, 300);
+  }, []);
+
+  const handleDetailPanelBack = useCallback(() => {
+    setIsDetailClosing(true);
+    setTimeout(() => {
+      setMobileView(previousMobileView);
+      setSelectedCompany(null);
+      setIsDetailClosing(false);
+    }, 300);
+  }, [previousMobileView]);
+
+  // Swipe gesture refs
+  const listPanelRef = useSwipeGesture<HTMLDivElement>({
+    onSwipeRight: handleListPanelBack,
+  });
+
+  const detailPanelRef = useSwipeGesture<HTMLDivElement>({
+    onSwipeRight: handleDetailPanelBack,
+  });
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -744,12 +773,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
           <button
             onClick={() => {
               if (mobileView === 'list') {
-                // Trigger slide-out animation for list view
-                setIsListClosing(true);
-                setTimeout(() => {
-                  setMobileView('cosmos');
-                  setIsListClosing(false);
-                }, 300);
+                handleListPanelBack();
               } else {
                 setMobileView('list');
               }
@@ -874,6 +898,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
       {/* Mobile List Panel - visible when in list view OR when detail is showing (to stay underneath) */}
       {isMobile && (mobileView === 'list' || previousMobileView === 'list' || isListClosing) && (
         <div
+          ref={listPanelRef}
           key="mobile-list-panel"
           className={`fixed inset-0 z-50 bg-white border-l border-gray-200 overflow-hidden ${
           isListClosing
@@ -893,22 +918,16 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
             watchlistStats={watchlistStats}
             userCMF={stateManager.getUserCMF()}
             isMobile={true}
-            onBack={() => {
-              // Trigger slide-out animation for list view
-              setIsListClosing(true);
-              setTimeout(() => {
-                setMobileView('cosmos');
-                setPreviousMobileView('cosmos');
-                setIsListClosing(false);
-              }, 300);
-            }}
+            onBack={handleListPanelBack}
           />
         </div>
       )}
 
       {/* Mobile Detail Panel - only when in detail view */}
       {isMobile && (mobileView === 'detail' || isDetailClosing) && (
-        <div className={`fixed inset-0 z-[60] bg-white border-l border-gray-200 overflow-hidden ${
+        <div
+          ref={detailPanelRef}
+          className={`fixed inset-0 z-[60] bg-white border-l border-gray-200 overflow-hidden ${
           isDetailClosing ? 'animate-slide-out-right' : 'animate-slide-in-right'
         }`}>
           <CompanyDetailPanel
@@ -923,15 +942,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
             watchlistStats={watchlistStats}
             userCMF={stateManager.getUserCMF()}
             isMobile={true}
-            onBack={() => {
-              // Trigger slide-out animation, then change view after animation completes
-              setIsDetailClosing(true);
-              setTimeout(() => {
-                setMobileView(previousMobileView);
-                setSelectedCompany(null);
-                setIsDetailClosing(false);
-              }, 300);
-            }}
+            onBack={handleDetailPanelBack}
           />
         </div>
       )}
