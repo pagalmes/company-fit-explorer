@@ -42,10 +42,12 @@ TODO: Enable batch-adding companies: From a screenshot
 <!-- DONE: Hover node: do not grey out on hover. Just on selection --> 
 <!-- DONE: Mobile: Click on sun to view profile. -->
 <!-- DONE: Mobile: panels slide in / out animation -->
+<!--  -->
 
 <!-- DONE: --> 
 <!-- DONE: --> 
 
+TODO: Mobile: swipe gesture to close the panels
 
 TODO: Mobile: Make sure all actions feel easy. Remove extra clicks to accomplish tasks.
 
@@ -76,12 +78,11 @@ TODO: Admin: Add confirmation to the delete account button
 <!-- DONE: Mobile: Update UI - Support switching phone between portrait and landscape view. tab buttons move around. -->
 <!-- DONE: Mobile: Update UI - Zoom more on companies when fit to view. -->
 
+<!-- DONE: Right pane: Colors for the match scores are inconsistent. They are set by the llm when logic should be centralized. -->
+
 
 FIXME: Mobile: Update UI - When openin from Safari or a browser with control / search bar at the bottom, they appear over cosmos interface.
-
-
-FIXME: Right pane: Colors for the match scores are inconsistent. They are set by the llm when logic should be centralized.
-FIXME: Right pane: Company reserach buttons behave differently from action buttons
+FIXME: Right pane: Company research buttons behave differently from action buttons
 FIXME: Right pane: disappears when changing browser zoom levels
 FIXME: The "Sun" node appears over the right panel
 FIXME: Fix the Sonner toast positionning to be centered under the tabs.

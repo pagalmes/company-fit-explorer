@@ -488,20 +488,28 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userCMF, companies:
         </div>
 
         {/* Legend - hidden on mobile */}
-        <div className="hidden md:block absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-4">
+        <div className="hidden md:block absolute bottom-safe-4 left-4 bg-white rounded-lg shadow-lg p-4">
           <h3 className="text-sm font-bold text-gray-900 mb-2">Match Quality</h3>
           <div className="space-y-1 text-xs">
             <div className="flex items-center">
               <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-              <span>90%+ Excellent Match</span>
+              <span>90%+ Excellent</span>
             </div>
             <div className="flex items-center">
               <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-              <span>80-89% Good Match</span>
+              <span>80-89% Good</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+              <span>70-79% Fair</span>
             </div>
             <div className="flex items-center">
               <div className="w-3 h-3 bg-gray-500 rounded-full mr-2"></div>
-              <span>70-79% Moderate Match</span>
+              <span>50-69% Poor</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+              <span>&lt;50% Very Poor</span>
             </div>
             <div className="flex items-center pt-2 border-t border-gray-200">
               <span className="text-red-500 font-bold mr-2">♥</span>
@@ -556,7 +564,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userCMF, companies:
         )}
 
         {/* Speed Dial FAB - shown on cosmos view */}
-        <div className="absolute bottom-6 right-6">
+        <div className="absolute bottom-safe-6 right-6">
           <SpeedDialFAB
             onAddCompany={() => setShowAddCompanyModal(true)}
             onPasteList={() => setShowPasteModal(true)}

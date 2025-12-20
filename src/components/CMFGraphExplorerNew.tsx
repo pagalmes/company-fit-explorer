@@ -778,7 +778,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
                 setMobileView('list');
               }
             }}
-            className="absolute bottom-6 left-6 z-10 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white
+            className="absolute bottom-safe-6 left-6 z-10 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white
               rounded-full shadow-lg hover:shadow-xl
               transition-all duration-200 ease-in-out
               flex items-center justify-center
@@ -850,7 +850,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
         />
 
         {/* Speed Dial FAB */}
-        <div className="absolute bottom-6 right-6">
+        <div className="absolute bottom-safe-6 right-6">
           <SpeedDialFAB
             onAddCompany={() => setShowAddCompanyModal(true)}
             onPasteList={() => setShowPasteModal(true)}
@@ -860,7 +860,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
 
         {/* Settings FAB with Export - hidden on mobile */}
         {!isMobile && (
-          <div className="absolute bottom-6 left-6 z-10 flex items-center space-x-2">
+          <div className="absolute bottom-safe-6 left-6 z-10 flex items-center space-x-2">
             <SettingsFAB
               onSettings={() => setShowLLMSettings(true)}
               onExport={() => setShowExportModal(true)}

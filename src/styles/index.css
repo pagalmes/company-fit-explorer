@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  /* iOS Safari safe area utilities for bottom-positioned elements */
+  .bottom-safe {
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  }
+
+  .bottom-safe-4 {
+    bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+
+  .bottom-safe-6 {
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  }
+}
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
