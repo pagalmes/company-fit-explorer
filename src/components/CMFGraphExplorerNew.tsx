@@ -12,8 +12,8 @@ import EmptyWatchlistModal from './EmptyWatchlistModal';
 import KeyboardShortcutsModal from './KeyboardShortcutsModal';
 import { SpeedDialFAB } from './SpeedDialFAB';
 import { SettingsFAB } from './SettingsFAB';
-import { BatchImportPlaceholderModal } from './BatchImportPlaceholderModal';
 import { PasteCompanyListModal } from './PasteCompanyListModal';
+import { ScreenshotCompanyImportModal } from './ScreenshotCompanyImportModal';
 import ExportModal from './ExportModal';
 import { llmService } from '../utils/llm/service';
 import { loadPanelState, savePanelState } from '../utils/panelStorage';
@@ -997,11 +997,14 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
         onShowLLMSettings={() => setShowLLMSettings(true)}
       />
 
-      {/* Screenshot Import Placeholder Modal */}
-      <BatchImportPlaceholderModal
+      {/* Screenshot Import Modal */}
+      <ScreenshotCompanyImportModal
         isOpen={showScreenshotModal}
         onClose={() => setShowScreenshotModal(false)}
-        type="screenshot"
+        onImportCompanies={handleBatchAddCompanies}
+        existingCompanies={stateManager.getAllCompanies()}
+        viewMode={viewMode}
+        onShowLLMSettings={() => setShowLLMSettings(true)}
       />
 
       <EmptyWatchlistModal

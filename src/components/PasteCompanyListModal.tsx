@@ -1,10 +1,9 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import Image from 'next/image';
-import { Clipboard, X, Check } from 'lucide-react';
+import { Clipboard, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { llmService } from '../utils/llm/service';
-import { getCompanyPreview, CompanyPreview } from '../utils/companyValidation';
 import { Company } from '../types';
+import { useCompanyDetection } from '../hooks/useCompanyDetection';
+import { CompanySelectionList } from './CompanySelectionList';
 
 interface PasteCompanyListModalProps {
   isOpen: boolean;
@@ -13,13 +12,6 @@ interface PasteCompanyListModalProps {
   existingCompanies: Company[];
   viewMode: 'explore' | 'watchlist';
   onShowLLMSettings?: () => void;
-}
-
-interface DetectedCompany {
-  name: string;
-  preview: CompanyPreview;
-  selected: boolean;
-  isDuplicate: boolean;
 }
 
 type ModalStep = 'input' | 'results';
@@ -41,10 +33,24 @@ export const PasteCompanyListModal: React.FC<PasteCompanyListModalProps> = ({
   const [step, setStep] = useState<ModalStep>('input');
   const [pastedText, setPastedText] = useState('');
   const [pastedHtml, setPastedHtml] = useState('');
-  const [isDetecting, setIsDetecting] = useState(false);
-  const [detectedCompanies, setDetectedCompanies] = useState<DetectedCompany[]>([]);
   const [isImporting, setIsImporting] = useState(false);
   const editableRef = useRef<HTMLDivElement>(null);
+
+  // Use shared company detection hook
+  const {
+    detectedCompanies,
+    isDetecting,
+    llmConfigured,
+    detectCompanies,
+    toggleCompanySelection,
+    toggleSelectAll,
+    prepareCompaniesForImport,
+    reset: resetDetection,
+  } = useCompanyDetection({
+    existingCompanies,
+    onShowLLMSettings,
+    onClose,
+  });
 
   // Reset modal when closed
   useEffect(() => {
@@ -52,14 +58,13 @@ export const PasteCompanyListModal: React.FC<PasteCompanyListModalProps> = ({
       setStep('input');
       setPastedText('');
       setPastedHtml('');
-      setDetectedCompanies([]);
-      setIsDetecting(false);
+      resetDetection();
       setIsImporting(false);
     } else {
       // Focus editable div when opened
       setTimeout(() => editableRef.current?.focus(), 100);
     }
-  }, [isOpen]);
+  }, [isOpen, resetDetection]);
 
   // Handle paste event to capture both text and HTML
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
@@ -87,9 +92,6 @@ export const PasteCompanyListModal: React.FC<PasteCompanyListModalProps> = ({
     }
   }, []);
 
-  // Check if LLM is configured
-  const llmConfigured = llmService.isConfigured();
-
   // Detect companies from pasted text using LLM
   const handleDetectCompanies = useCallback(async () => {
     if (!pastedText.trim()) {
@@ -97,132 +99,32 @@ export const PasteCompanyListModal: React.FC<PasteCompanyListModalProps> = ({
       return;
     }
 
-    if (!llmConfigured) {
-      toast.error('Please configure your API key first', {
-        action: onShowLLMSettings ? {
-          label: 'Configure',
-          onClick: () => {
-            onClose();
-            onShowLLMSettings();
-          }
-        } : undefined
-      });
-      return;
-    }
-
-    setIsDetecting(true);
-
-    try {
-      // Use LLM to extract company names and URLs
-      // Pass HTML if available (contains hyperlinks), otherwise just text
-      const { companies: extractedCompanies, warning } = await llmService.extractCompanies(pastedText, pastedHtml);
-
-      // Show warning if companies were limited to 25
-      if (warning) {
-        toast.warning(warning, {
-          duration: 8000,
-        });
-      }
-
-      if (extractedCompanies.length === 0) {
-        toast.error('No companies found in the text', {
-          description: 'Try pasting a clearer list or use different formatting'
-        });
-        setIsDetecting(false);
-        return;
-      }
-
-      // Get previews for each company and check for duplicates
-      const detectedWithPreviews: DetectedCompany[] = await Promise.all(
-        extractedCompanies.map(async (extracted) => {
-          // Use the URL from LLM if provided, otherwise use the company name
-          const nameOrUrl = extracted.url || extracted.name;
-          const preview = await getCompanyPreview(nameOrUrl);
-
-          // Store the original company name from LLM (not the preview name which might be the URL)
-          const companyName = extracted.name;
-
-          // Store careerUrl and LLM-inferred URL on the preview for later use
-          if (extracted.careerUrl) {
-            (preview as any).careerUrl = extracted.careerUrl;
-          }
-          // Store the LLM-inferred company URL (not the logo provider's domain)
-          if (extracted.url) {
-            (preview as any).inferredUrl = extracted.url;
-          }
-
-          const isDuplicate = existingCompanies.some(
-            c => c.name.toLowerCase() === companyName.toLowerCase()
-          );
-
-          return {
-            name: companyName, // Use the LLM-extracted name, not preview.name
-            preview,
-            selected: !isDuplicate, // Don't select duplicates by default
-            isDuplicate,
-          };
-        })
-      );
-
-      setDetectedCompanies(detectedWithPreviews);
+    const success = await detectCompanies(pastedText, pastedHtml);
+    if (success) {
       setStep('results');
-
-    } catch (error) {
-      console.error('Error detecting companies:', error);
-      toast.error('Failed to detect companies', {
-        description: error instanceof Error ? error.message : 'Please try again'
-      });
-    } finally {
-      setIsDetecting(false);
     }
-  }, [pastedText, pastedHtml, llmConfigured, existingCompanies, onClose, onShowLLMSettings]);
-
-  // Toggle individual company selection
-  const toggleCompanySelection = useCallback((index: number) => {
-    setDetectedCompanies(prev =>
-      prev.map((company, i) =>
-        i === index ? { ...company, selected: !company.selected } : company
-      )
-    );
-  }, []);
-
-  // Select/Deselect all companies
-  const toggleSelectAll = useCallback(() => {
-    const allSelected = detectedCompanies.every(c => c.selected || c.isDuplicate);
-    setDetectedCompanies(prev =>
-      prev.map(company => ({
-        ...company,
-        selected: company.isDuplicate ? false : !allSelected
-      }))
-    );
-  }, [detectedCompanies]);
+  }, [pastedText, pastedHtml, detectCompanies]);
 
   // Import selected companies
   const handleImport = useCallback(async () => {
-    const selectedCompanies = detectedCompanies.filter(c => c.selected && !c.isDuplicate);
+    const companiesToImport = prepareCompaniesForImport();
 
-    if (selectedCompanies.length === 0) {
+    if (!companiesToImport) {
       toast.error('No companies selected');
       return;
     }
-
-    // Prepare company data for batch import (basic info only, LLM analysis happens in parent)
-    const companiesToImport = selectedCompanies.map((detected) => ({
-      name: detected.name, // Use the LLM-extracted name
-      logo: detected.preview.logo,
-      careerUrl: (detected.preview as any).careerUrl || '',
-      // Use LLM-inferred URL if available, otherwise fall back to preview.domain
-      domain: (detected.preview as any).inferredUrl || detected.preview.domain,
-    }));
 
     // Close modal immediately
     onClose();
 
     // Show toast and let parent handle the actual import with LLM analysis
-    toast.loading(`Importing ${companiesToImport.length} ${companiesToImport.length === 1 ? 'company' : 'companies'}...`, {
-      id: 'batch-import',
-      duration: Infinity, // Will be dismissed by parent when done
-    });
+    toast.loading(
+      `Importing ${companiesToImport.length} ${companiesToImport.length === 1 ? 'company' : 'companies'}...`,
+      {
+        id: 'batch-import',
+        duration: Infinity, // Will be dismissed by parent when done
+      }
+    );
 
     try {
       // Pass the data to parent for processing
@@ -231,15 +133,14 @@ export const PasteCompanyListModal: React.FC<PasteCompanyListModalProps> = ({
       console.error('Error importing companies:', error);
       toast.error('Failed to import companies', {
         id: 'batch-import',
-        description: error instanceof Error ? error.message : 'Please try again'
+        description: error instanceof Error ? error.message : 'Please try again',
       });
     }
-  }, [detectedCompanies, onImportCompanies, onClose]);
+  }, [prepareCompaniesForImport, onImportCompanies, onClose]);
 
   if (!isOpen) return null;
 
-  const selectedCount = detectedCompanies.filter(c => c.selected).length;
-  const totalCount = detectedCompanies.length;
+  const selectedCount = detectedCompanies.filter((c) => c.selected).length;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -345,87 +246,11 @@ Examples:
           )}
 
           {step === 'results' && (
-            <div className="space-y-4">
-              {/* Stats */}
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-600">
-                  {selectedCount} of {totalCount} companies selected
-                </p>
-                <button
-                  onClick={toggleSelectAll}
-                  className="text-sm font-medium text-blue-600 hover:text-blue-700"
-                >
-                  {detectedCompanies.every(c => c.selected || c.isDuplicate) ? 'Deselect All' : 'Select All'}
-                </button>
-              </div>
-
-              {/* Company List */}
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {detectedCompanies.map((company, index) => (
-                  <div
-                    key={index}
-                    className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
-                      company.isDuplicate
-                        ? 'bg-gray-50 border-gray-200'
-                        : company.selected
-                        ? 'bg-blue-50 border-blue-200'
-                        : 'bg-white border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    {/* Checkbox */}
-                    <button
-                      onClick={() => !company.isDuplicate && toggleCompanySelection(index)}
-                      disabled={company.isDuplicate}
-                      className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                        company.isDuplicate
-                          ? 'border-gray-300 bg-gray-100 cursor-not-allowed'
-                          : company.selected
-                          ? 'border-blue-500 bg-blue-500'
-                          : 'border-gray-300 hover:border-blue-400'
-                      }`}
-                      aria-label={company.isDuplicate ? 'Already in graph' : company.selected ? 'Deselect' : 'Select'}
-                    >
-                      {company.selected && <Check className="w-3 h-3 text-white" />}
-                    </button>
-
-                    {/* Logo */}
-                    <div className="relative w-10 h-10 flex-shrink-0">
-                      <Image
-                        src={company.preview.logo}
-                        alt={`${company.name} logo`}
-                        fill
-                        className="rounded-lg object-contain"
-                        unoptimized
-                      />
-                    </div>
-
-                    {/* Company Info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 truncate">
-                        {company.name}
-                      </p>
-                      <p className="text-xs text-gray-500 truncate">
-                        {company.preview.domain}
-                      </p>
-                    </div>
-
-                    {/* Duplicate Badge */}
-                    {company.isDuplicate && (
-                      <span className="text-xs font-medium text-gray-500 bg-gray-200 px-2 py-1 rounded">
-                        Already in graph
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* No Results */}
-              {detectedCompanies.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-gray-500">No companies detected</p>
-                </div>
-              )}
-            </div>
+            <CompanySelectionList
+              companies={detectedCompanies}
+              onToggleSelection={toggleCompanySelection}
+              onToggleSelectAll={toggleSelectAll}
+            />
           )}
         </div>
 
