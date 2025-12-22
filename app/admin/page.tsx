@@ -159,7 +159,7 @@ export default function AdminPage() {
 
   return (
     <AuthWrapper requireAdmin={true}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 overflow-y-auto" style={{ height: '100dvh', maxHeight: '100dvh' }}>
         {/* Header */}
         <header className="bg-white/60 backdrop-blur-sm shadow-sm border-b border-blue-200/40">
           <div className="max-w-7xl mx-auto px-4 py-6">

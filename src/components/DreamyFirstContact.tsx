@@ -65,7 +65,7 @@ const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) =
 
   if (step === 'welcome') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-y-auto" style={{ height: '100dvh', maxHeight: '100dvh' }}>
         <FloatingStars />
         
         <div className="absolute inset-0 opacity-10">
@@ -211,7 +211,7 @@ const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) =
 
   if (step === 'transition') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-y-auto" style={{ height: '100dvh', maxHeight: '100dvh' }}>
         <FloatingStars />
         
         {/* Copy the exact same background elements as welcome screen */}
@@ -394,7 +394,7 @@ const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) =
     };
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-y-auto" style={{ height: '100dvh', maxHeight: '100dvh' }}>
         <FloatingStars />
         
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full opacity-5 blur-3xl animate-pulse" 
