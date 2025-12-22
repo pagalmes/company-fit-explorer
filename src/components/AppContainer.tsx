@@ -302,7 +302,7 @@ const AppContainer: React.FC = () => {
   // Show the main graph explorer for returning users or after completion
   if (userProfile && hasChecked && !authLoading) {
     return (
-      <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden transition-all duration-1000" style={{ minHeight: '100vh' }}>
+      <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden transition-all duration-1000" style={{ height: '100dvh', maxHeight: '100dvh' }}>
         <FloatingStars />
 
         <div className="absolute inset-0 opacity-10">
