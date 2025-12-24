@@ -3,14 +3,12 @@
 ## Supporting Projects 
 
 
-
 TODO: Setup a simple site with ability to sign-up for a wait-list. Reuse as much as possible the onboarding themes and visuals (background, fx...) 
 TODO: Modify company fit explorer to Cosmos in all places
 TODO: Get a domain: Cosmos.ai
 TODO: Logo: Change it to reflect the "sun" visuals
 TODO: iOS App Icon: Make it square. Use the same color as cosmos background. Maybe reflect the "sun" node in it.
 TODO: Analytics: Implement some basic analytics to track usage of the app. 
-
 
 ## Features
 
@@ -106,6 +104,7 @@ FIXME: Fix the Sonner toast positionning to be centered under the tabs.
 <!-- DONE: Setup Evals for the LLM extraction calls. (e.g. company + domain+career-page-url extraction [give a set and expected results from linkedin posts, websites...]) -->
 
 TODO: Setup a commit hook to run tests at commit time. (husky)
+TODO: Update schema.sql to include the latest migration scripts
 
 
 ## Documentation
