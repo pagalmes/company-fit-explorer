@@ -1,5 +1,12 @@
 # Project TODOs
 
+## Supporting Projects 
+
+TODO: Setup a simple site with ability to sign-up for a wait-list
+TODO: Update the login page to be Cosmos Themed
+TODO: Modify company fit explorer to Cosmos in all places
+TODO: Get a domain: Cosmos.ai
+
 ## Features
 
 <!-- DONE: Admin: import/export user data. -->
@@ -78,6 +85,7 @@ TODO: Admin: Add confirmation to the delete account button
 <!-- DONE: Right pane: Colors for the match scores are inconsistent. They are set by the llm when logic should be centralized. -->
 <!-- DONE: Mobile: Update UI - When openin from Safari or a browser with control / search bar at the bottom, they appear over cosmos interface. -->
 
+FIXME:
 FIXME: Chrome on iOS: Buttons not showing up at the bottom. (related to 100lvh...)
 FIXME: Right pane: Company research buttons behave differently from action buttons
 FIXME: Right pane: disappears when changing browser zoom levels
