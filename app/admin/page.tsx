@@ -6,6 +6,7 @@ import AuthWrapper from '../../src/components/AuthWrapper'
 import { Users, Plus, LogOut, Settings, Trash2, FileUp, Download, Eye } from 'lucide-react'
 import LLMSettingsModal from '../../src/components/LLMSettingsModal'
 import ImportDataModal from '../../src/components/ImportDataModal'
+import { DeleteUserConfirmationModal } from '../../src/components/DeleteUserConfirmationModal'
 import { llmService } from '../../src/utils/llm/service'
 
 // Force dynamic rendering for admin pages
@@ -23,6 +24,9 @@ export default function AdminPage() {
   const [llmConfigured, setLLMConfigured] = useState(false)
   const [showImportModal, setShowImportModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState<{ id: string; email: string } | null>(null)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<{ id: string; email: string } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const router = useRouter()
 
@@ -130,13 +134,18 @@ export default function AdminPage() {
     window.open(viewUrl, '_blank')
   }
 
-  const handleDeleteUser = async (userId: string, userEmail: string) => {
-    if (!confirm(`Are you sure you want to delete user ${userEmail}? This action cannot be undone.`)) {
-      return
-    }
+  const handleDeleteUser = (userId: string, userEmail: string) => {
+    setUserToDelete({ id: userId, email: userEmail })
+    setShowDeleteModal(true)
+  }
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return
+
+    setIsDeleting(true)
 
     try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
+      const response = await fetch(`/api/admin/users/${userToDelete.id}`, {
         method: 'DELETE'
       })
 
@@ -145,6 +154,8 @@ export default function AdminPage() {
       if (response.ok) {
         setMessage('User deleted successfully!')
         setMessageType('success')
+        setShowDeleteModal(false)
+        setUserToDelete(null)
         fetchUsers()
       } else {
         setMessage(data.error || 'Failed to delete user')
@@ -153,6 +164,8 @@ export default function AdminPage() {
     } catch (error) {
       setMessage('Failed to delete user')
       setMessageType('error')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -395,6 +408,20 @@ export default function AdminPage() {
               setMessageType('success')
               fetchUsers()
             }}
+          />
+        )}
+
+        {/* Delete User Confirmation Modal */}
+        {userToDelete && (
+          <DeleteUserConfirmationModal
+            isOpen={showDeleteModal}
+            onClose={() => {
+              setShowDeleteModal(false)
+              setUserToDelete(null)
+            }}
+            onConfirm={confirmDeleteUser}
+            userEmail={userToDelete.email}
+            isDeleting={isDeleting}
           />
         )}
       </div>
