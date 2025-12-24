@@ -154,47 +154,11 @@ describe('DevFileWriter', () => {
   })
 
   describe('checkDevServerAvailable', () => {
-    it('should return true when server is available in development', async () => {
-      vi.stubEnv('NODE_ENV', 'development')
-
-      mockFetch.mockResolvedValue({ ok: true })
-
-      const result = await checkDevServerAvailable()
-
-      expect(result).toBe(true)
-      expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:3001/api/dev/health',
-        { method: 'GET' }
-      )
-    })
-
-    it('should return false in production', async () => {
-      vi.stubEnv('NODE_ENV', 'production')
-
+    it('should return false (dev server is opt-in, not checked by default)', async () => {
       const result = await checkDevServerAvailable()
 
       expect(result).toBe(false)
       expect(mockFetch).not.toHaveBeenCalled()
-    })
-
-    it('should return false when server is not available', async () => {
-      vi.stubEnv('NODE_ENV', 'development')
-
-      mockFetch.mockResolvedValue({ ok: false })
-
-      const result = await checkDevServerAvailable()
-
-      expect(result).toBe(false)
-    })
-
-    it('should return false on network error', async () => {
-      vi.stubEnv('NODE_ENV', 'development')
-
-      mockFetch.mockRejectedValue(new Error('Network error'))
-
-      const result = await checkDevServerAvailable()
-
-      expect(result).toBe(false)
     })
   })
 

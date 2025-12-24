@@ -3,6 +3,38 @@ import { render, fireEvent } from '@testing-library/react'
 import { UserCMF, Company } from '../../types'
 import CompanyGraph from '../CompanyGraph'
 
+// Mock Cytoscape
+vi.mock('cytoscape', () => {
+  const createMockCollection = () => ({
+    removeClass: vi.fn().mockReturnThis(),
+    addClass: vi.fn().mockReturnThis(),
+    length: 1,
+    hasClass: vi.fn(() => false),
+    forEach: vi.fn(),
+    data: vi.fn(() => ({ company: { id: 1 } })),
+    connectedEdges: vi.fn(() => []),
+    renderedPosition: vi.fn(() => ({ x: 0, y: 0 }))
+  });
+
+  const mockCy = {
+    on: vi.fn(),
+    nodes: vi.fn(() => createMockCollection()),
+    edges: vi.fn(() => createMockCollection()),
+    getElementById: vi.fn(() => createMockCollection()),
+    zoom: vi.fn(() => 1),
+    pan: vi.fn(() => ({ x: 0, y: 0 })),
+    fit: vi.fn(),
+    center: vi.fn(),
+    destroy: vi.fn(),
+    ready: vi.fn((callback: any) => callback()),
+    elements: vi.fn(),
+    style: vi.fn(),
+    layout: vi.fn(() => ({ run: vi.fn() }))
+  };
+
+  return { default: vi.fn(() => mockCy) };
+});
+
 /**
  * @testSuite CompanyGraph - Integration Tests for Edge Highlighting
  * @description Focused tests for critical edge highlighting functionality
