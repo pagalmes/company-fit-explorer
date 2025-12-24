@@ -69,7 +69,7 @@ export default function LoginPage() {
 
   return (
     <CosmosBackground className="flex items-center justify-center p-4">
-      <div className="relative z-10 rounded-2xl shadow-2xl p-8 w-full max-w-md border border-white/20" style={{ backgroundColor: '#1e3a8a' }}>
+      <div className="relative z-10 rounded-2xl shadow-2xl p-8 w-full max-w-md border border-white/20" style={{ backgroundColor: '#0f172a' }}>
         <div className="text-center mb-8">
           <div className="relative w-16 h-16 bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse" style={{ animationDuration: '6s' }}>
             <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600 opacity-50 blur animate-pulse" style={{ animationDuration: '6s' }} />
