@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { vi, describe, test, expect } from 'vitest';
 

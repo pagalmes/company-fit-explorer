@@ -2,10 +2,15 @@
 
 ## Supporting Projects 
 
-TODO: Setup a simple site with ability to sign-up for a wait-list
-TODO: Update the login page to be Cosmos Themed
+
+
+TODO: Setup a simple site with ability to sign-up for a wait-list. Reuse as much as possible the onboarding themes and visuals (background, fx...) 
 TODO: Modify company fit explorer to Cosmos in all places
 TODO: Get a domain: Cosmos.ai
+TODO: Logo: Change it to reflect the "sun" visuals
+TODO: iOS App Icon: Make it square. Use the same color as cosmos background. Maybe reflect the "sun" node in it.
+TODO: Analytics: Implement some basic analytics to track usage of the app. 
+
 
 ## Features
 
@@ -50,6 +55,8 @@ TODO: Enable batch-adding companies: From a screenshot
 <!-- DONE: Mobile: Click on sun to view profile. -->
 <!-- DONE: Mobile: panels slide in / out animation -->
 <!-- DONE: Mobile: Actions feel easy. Remove extra clicks to accomplish tasks. -->
+<!-- DONE: Cosmo Login page: Update the login page to be Cosmos Themed -->
+
 
 <!-- DONE: --> 
 <!-- DONE: --> 

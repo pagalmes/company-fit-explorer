@@ -23,9 +23,14 @@
     "test:validate": "node scripts/validate-test-setup.js",
     "test:e2e": "playwright test --config=config/playwright.config.ts",
     "test:e2e:ui": "playwright test --config=config/playwright.config.ts --ui",
+    "test:e2e:scroll": "playwright test tests/e2e/scroll-behavior.spec.ts --config=config/playwright.config.ts",
     "test:performance": "vitest run --config=vitest.performance.config.ts",
     "test:critical": "playwright test tests/e2e/critical-interactions.spec.ts",
     "test:regression": "npm run test:performance && npm run test:critical",
+    "test:scroll": "npm run test:run -- tests/unit/scroll-behavior.test.ts && npm run test:e2e:scroll",
+    "test:pre-commit": "./scripts/pre-commit-tests.sh",
+    "test:pre-commit:fast": "SKIP_E2E=true ./scripts/pre-commit-tests.sh",
+    "test:all": "./scripts/pre-commit-tests.sh",
     "eval:company-extraction": "tsx evals/company-extraction/run-eval.ts",
     "setup:supabase": "node scripts/setup-supabase.js",
     "db:migrate": "node scripts/setup-supabase.js",
@@ -34,7 +39,8 @@
     "migrate:supabase-links": "npx tsx scripts/migrate-supabase-external-links.ts",
     "export:companies-csv": "npx tsx scripts/export-companies-csv.ts",
     "import:companies-csv": "npx tsx scripts/import-companies-csv.ts",
-    "cleanup:supabase-links": "npx tsx scripts/cleanup-supabase-links.ts"
+    "cleanup:supabase-links": "npx tsx scripts/cleanup-supabase-links.ts",
+    "prepare": "husky"
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",
@@ -75,6 +81,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "express": "^5.1.0",
     "globals": "^15.13.0",
+    "husky": "^9.1.7",
     "jsdom": "^26.1.0",
     "langfuse": "^3.38.6",
     "langfuse-node": "^3.38.6",

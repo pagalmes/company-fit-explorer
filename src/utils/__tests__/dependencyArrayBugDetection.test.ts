@@ -43,9 +43,9 @@ describe('Dependency Array Bug Detection', () => {
 
   test('should demonstrate correct dependency array usage prevents excessive re-renders', () => {
     let effectRunCount = 0;
-    
+
     // Simulate the FIXED version - only primitive values in dependencies
-    const useTestHook = (selectedCompanyId: number | null, companies: any[]) => {
+    const useTestHook = (selectedCompanyId: number | null, _companies: any[]) => {
       useEffect(() => {
         effectRunCount++;
         if (selectedCompanyId) {

@@ -58,9 +58,6 @@ html {
   background: linear-gradient(to bottom right, #0f172a, #1e3a8a, #312e81);
   /* Fixed attachment prevents gradient from moving during scroll */
   background-attachment: fixed;
-  height: 100dvh;
-  max-height: 100dvh;
-  overflow: hidden;
 }
 
 :root {
@@ -81,16 +78,26 @@ html {
 body {
   margin: 0;
   min-width: 320px;
-  height: 100dvh;
-  max-height: 100dvh;
   background-color: transparent;
-  overflow: hidden;
 
   /* Safe area insets for notch areas */
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
+}
+
+/* Only apply viewport constraints to the graph explorer (non-scrollable) */
+body:has([data-graph-explorer]) {
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+body:has([data-graph-explorer]) html {
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
 }
 
 

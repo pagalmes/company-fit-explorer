@@ -10,7 +10,7 @@ import { Company } from '../../types';
 
 describe('External Links Utility', () => {
   const mockCompany: Company = {
-    id: 'test-company',
+    id: 1,
     name: 'Test Company',
     industry: 'Technology',
     stage: 'Series B',
@@ -142,7 +142,7 @@ describe('External Links Utility', () => {
   describe('Real-world scenarios', () => {
     it('should work for company with standard domain', () => {
       const stripe: Company = {
-        id: 'stripe',
+        id: 2,
         name: 'Stripe',
         industry: 'Fintech',
         stage: 'Public',
@@ -167,7 +167,7 @@ describe('External Links Utility', () => {
 
     it('should strip subdomain careers page to get root domain', () => {
       const figma: Company = {
-        id: 'figma',
+        id: 3,
         name: 'Figma',
         industry: 'Design',
         stage: 'Acquired',
@@ -192,7 +192,7 @@ describe('External Links Utility', () => {
 
     it('should handle company names with spaces', () => {
       const credo: Company = {
-        id: 'credo-ai',
+        id: 4,
         name: 'Credo AI',
         industry: 'AI/ML',
         stage: 'Series A',
