@@ -1,0 +1,11 @@
+# Additional dependencies for the scheduler service
+# Supabase client for syncing data
+supabase>=2.5.0
+
+# HTTP client for API calls (version managed by supabase)
+# httpx is installed by supabase with compatible version
+
+# Scheduling
+apscheduler==3.10.4
+
+

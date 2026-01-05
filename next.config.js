@@ -17,6 +17,9 @@ const nextConfig = {
     // Enable app directory (already default in Next.js 15)
   },
   
+  // Include pdf-parse in the standalone build (it uses require() internally)
+  serverExternalPackages: ['pdf-parse'],
+  
   // Handle CSS and static files
   webpack: (config) => {
     // Handle any webpack customization if needed for existing dependencies

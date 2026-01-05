@@ -1,4 +1,61 @@
 services:
+  # Ollama LLM Service (Llama 4)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_NUM_PARALLEL=1
+      - OLLAMA_MAX_LOADED_MODELS=1
+    deploy:
+      resources:
+        limits:
+          memory: 6G
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - app-network
+    restart: unless-stopped
+    # Uncomment for GPU support (NVIDIA)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # Ollama Model Loader (pulls model on first run)
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: ollama-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=ollama:11434
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Waiting for Ollama to be ready..."
+        sleep 5
+        echo "Pulling Llama 3.2 3B model..."
+        ollama pull llama3.2:3b
+        echo "Model initialization complete!"
+    networks:
+      - app-network
+    restart: "no"
+
   # Next.js Application
   app:
     build:
@@ -9,14 +66,23 @@ services:
         - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
         - NEXT_PUBLIC_LLM_SERVER_URL=http://llm-server:3002
         - NEXT_PUBLIC_LOGO_DEV_KEY=${NEXT_PUBLIC_LOGO_DEV_KEY}
+        - NEXT_PUBLIC_CRAWLER_API_URL=http://crawler-api:8000
     ports:
       - "3000:3000"
     env_file:
       - .env.local
     environment:
       - NODE_ENV=production
+      - CRAWLER_API_URL=http://crawler-api:8000
+      - OLLAMA_URL=http://ollama:11434
+      - OLLAMA_MODEL=llama3.2:3b
     depends_on:
-      - llm-server
+      ollama:
+        condition: service_healthy
+      llm-server:
+        condition: service_started
+      crawler-api:
+        condition: service_started
     networks:
       - app-network
     restart: unless-stopped
@@ -37,7 +103,128 @@ services:
       - app-network
     restart: unless-stopped
 
+  # Career Crawler PostgreSQL Database
+  crawler-db:
+    image: postgres:15-alpine
+    container_name: career_crawler_db
+    environment:
+      POSTGRES_DB: career_crawler
+      POSTGRES_USER: crawler
+      POSTGRES_PASSWORD: ${CRAWLER_DB_PASSWORD:-crawler_password_change_me}
+    ports:
+      - "5433:5432"
+    volumes:
+      - crawler_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crawler"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Career Crawler API
+  crawler-api:
+    build:
+      context: ./crawler
+      dockerfile: Dockerfile
+    container_name: career_crawler_api
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: crawler-db
+      DB_PORT: 5432
+      DB_NAME: career_crawler
+      DB_USER: crawler
+      DB_PASSWORD: ${CRAWLER_DB_PASSWORD:-crawler_password_change_me}
+      LOG_LEVEL: INFO
+    depends_on:
+      crawler-db:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+    volumes:
+      - ./crawler/logs:/app/logs
+
+  # Redis for task queue
+  redis:
+    image: redis:7-alpine
+    container_name: career_crawler_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Scheduled Crawler Service (24-hour updates with task queue)
+  crawler-scheduler:
+    build:
+      context: ./crawler
+      dockerfile: Dockerfile.scheduler
+    container_name: career_crawler_scheduler
+    environment:
+      CRAWLER_API_URL: http://crawler-api:8000
+      CRAWL_INTERVAL_HOURS: 24
+      BATCH_SIZE: 10
+      BATCH_DELAY_SECONDS: 60
+      DB_HOST: crawler-db
+      DB_PORT: 5432
+      DB_NAME: career_crawler
+      DB_USER: crawler
+      DB_PASSWORD: ${CRAWLER_DB_PASSWORD:-crawler_password_change_me}
+      REDIS_URL: redis://redis:6379
+      # Supabase sync configuration
+      SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+    depends_on:
+      redis:
+        condition: service_healthy
+      crawler-api:
+        condition: service_started
+      crawler-db:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Crawler Workers (process tasks from queue)
+  crawler-worker:
+    build:
+      context: ./crawler
+      dockerfile: Dockerfile.worker
+    environment:
+      REDIS_URL: redis://redis:6379
+      DB_HOST: crawler-db
+      DB_PORT: 5432
+      DB_NAME: career_crawler
+      DB_USER: crawler
+      DB_PASSWORD: ${CRAWLER_DB_PASSWORD:-crawler_password_change_me}
+      LOG_LEVEL: INFO
+    depends_on:
+      redis:
+        condition: service_healthy
+      crawler-db:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      replicas: 3
+
 networks:
   app-network:
     driver: bridge
 
+volumes:
+  crawler_data:
+  redis_data:
+  ollama_data:

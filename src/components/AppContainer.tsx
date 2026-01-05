@@ -8,6 +8,7 @@ import { activeUserProfile } from '../data/companies';
 import { createProfileForUser } from '../utils/userProfileCreation';
 import { migrateCompanyLogos } from '../utils/logoMigration';
 import { mergeUserPreferences } from '../utils/userPreferencesMerger';
+import { loadInterviewCMFFromStorage, INTERVIEW_CMF_STORAGE_KEY } from '../utils/interviewToCMF';
 
 const AppContainer: React.FC = () => {
   const { isFirstTime, hasChecked, markAsVisited } = useFirstTimeExperience();
@@ -103,28 +104,50 @@ const AppContainer: React.FC = () => {
 
           setUserProfile(customProfile);
         } else {
-          // Authenticated but no data - new user (will show first-time experience)
-          console.log('❌ User has no data, will show first-time experience');
+          // Authenticated but no data - check for interview CMF first
+          const urlParams = new URLSearchParams(window.location.search);
+          const fromInterview = urlParams.get('from') === 'interview';
+          const interviewCMF = loadInterviewCMFFromStorage();
           
-          // Use the real user ID from the API response
-          const realUserId = userData.userId;
-          
-          // Clear localStorage only if NOT using local fallback
-          if (process.env.NEXT_PUBLIC_USE_LOCAL_FALLBACK !== 'true') {
-            localStorage.removeItem('cmf-exploration-state');
-            localStorage.removeItem('cmf-explorer-watchlist');
-            localStorage.removeItem('cmf-explorer-custom-companies');
-            localStorage.removeItem('cmf-explorer-removed-companies');
-            localStorage.removeItem('cmf-watchlist-state');
-            localStorage.removeItem('cmf-removed-companies');
+          if (fromInterview && interviewCMF) {
+            // Coming from interview with CMF data - use it!
+            console.log('✅ Loading profile from interview CMF data');
+            markAsVisited();
+            
+            // Update the ID to use the real user ID
+            const profileWithRealId: UserExplorationState = {
+              ...interviewCMF,
+              id: userData.userId,
+            };
+            
+            setUserProfile(profileWithRealId);
+            
+            // Clear the interview CMF from storage after using it
+            localStorage.removeItem(INTERVIEW_CMF_STORAGE_KEY);
+          } else {
+            // No interview data - show first-time experience
+            console.log('❌ User has no data, will show first-time experience');
+            
+            // Use the real user ID from the API response
+            const realUserId = userData.userId;
+            
+            // Clear localStorage only if NOT using local fallback
+            if (process.env.NEXT_PUBLIC_USE_LOCAL_FALLBACK !== 'true') {
+              localStorage.removeItem('cmf-exploration-state');
+              localStorage.removeItem('cmf-explorer-watchlist');
+              localStorage.removeItem('cmf-explorer-custom-companies');
+              localStorage.removeItem('cmf-explorer-removed-companies');
+              localStorage.removeItem('cmf-watchlist-state');
+              localStorage.removeItem('cmf-removed-companies');
+            }
+            
+            const newProfile = await createProfileForUser({
+              userId: realUserId, // Use real Supabase user ID
+              userName: 'New User'
+            }, true);
+            
+            setUserProfile(newProfile);
           }
-          
-          const newProfile = await createProfileForUser({
-            userId: realUserId, // Use real Supabase user ID
-            userName: 'New User'
-          }, true);
-          
-          setUserProfile(newProfile);
         }
 
         // Mark that we've completed the data check

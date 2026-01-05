@@ -67,6 +67,10 @@ body {
   animation: fadeIn 1s ease-in forwards;
 }
 
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
 .animate-slide-up {
   animation: slideUp 0.8s ease-out forwards;
 }

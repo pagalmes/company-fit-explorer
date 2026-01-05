@@ -1,0 +1,101 @@
+# Docker Compose for Interview Feature Only
+# Use this for a lightweight setup focusing on the chat interview
+#
+# Usage:
+#   docker-compose -f docker-compose.interview.yml up -d
+#
+# First run will take ~10-20 minutes to download the Llama 4 model (~25GB)
+
+services:
+  # Ollama LLM Service
+  ollama:
+    image: ollama/ollama:latest
+    container_name: interview-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_interview_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - interview-network
+    restart: unless-stopped
+    # Uncomment for NVIDIA GPU support
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # Model initialization (runs once to pull the model)
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: interview-ollama-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    volumes:
+      - ollama_interview_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=ollama:11434
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "============================================"
+        echo "Initializing Ollama models..."
+        echo "============================================"
+        sleep 5
+        
+        echo "Pulling Llama 3.2 3B model (~2GB download)..."
+        ollama pull llama3.2:3b
+        
+        echo "============================================"
+        echo "Model initialization complete!"
+        echo "Available models:"
+        ollama list
+        echo "============================================"
+    networks:
+      - interview-network
+    restart: "no"
+
+  # Next.js Application (Interview-focused)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-}
+        - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - OLLAMA_URL=http://ollama:11434
+      - OLLAMA_MODEL=llama3.2:3b
+      # Optional: Resemble AI for voice
+      - RESEMBLE_API_KEY=${RESEMBLE_API_KEY:-}
+      - RESEMBLE_PROJECT_UUID=${RESEMBLE_PROJECT_UUID:-}
+      - RESEMBLE_VOICE_UUID=${RESEMBLE_VOICE_UUID:-}
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks:
+      - interview-network
+    restart: unless-stopped
+
+networks:
+  interview-network:
+    driver: bridge
+
+volumes:
+  ollama_interview_data:
+    name: interview_ollama_models
+

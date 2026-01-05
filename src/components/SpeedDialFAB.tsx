@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, Clipboard, Camera } from 'lucide-react';
+import { Plus, Clipboard, Camera, MessageSquare } from 'lucide-react';
 
 interface SpeedDialAction {
   icon: React.ReactNode;
@@ -104,7 +104,16 @@ export const SpeedDialFAB: React.FC<SpeedDialFABProps> = ({
     setIsOpen(false);
   };
 
+  const handleInterviewClick = () => {
+    window.location.href = '/interview';
+  };
+
   const actions: SpeedDialAction[] = [
+    {
+      icon: <MessageSquare className="w-5 h-5" />,
+      label: 'Career Interview',
+      onClick: handleInterviewClick,
+    },
     {
       icon: <Camera className="w-5 h-5" />,
       label: 'Import from Screenshot',
