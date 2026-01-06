@@ -1,6 +1,7 @@
 import { Company, UserExplorationState, WatchlistStats } from '../types';
 import { writeStateToDisk, checkDevServerAvailable, logFileWriteInstructions } from '../utils/devFileWriter';
 import { getColorForScore } from '../utils/companyPositioning';
+import { track } from '../lib/analytics';
 
 /**
  * ExplorationStateManager
@@ -148,9 +149,12 @@ export class ExplorationStateManager {
     }
     
     this.persistState();
-    
+
     const company = this.findCompanyById(companyId);
     console.log(`Removed company: ${company?.name || 'Unknown'} (ID: ${companyId})`);
+
+    // Analytics: Track company removal
+    track('company_removed', { company_id: companyId, company_name: company?.name });
   }
 
   /**

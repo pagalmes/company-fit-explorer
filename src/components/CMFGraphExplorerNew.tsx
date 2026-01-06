@@ -20,6 +20,7 @@ import { loadPanelState, savePanelState } from '../utils/panelStorage';
 import CollapsibleCMFPanel from './CollapsibleCMFPanel';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useSwipeGesture } from '../hooks/useSwipeGesture';
+import { track } from '../lib/analytics';
 // Using inline SVG icons instead of lucide-react
 const SearchIcon = () => (
   <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -241,6 +242,8 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
     // Only update state manager for selection without triggering re-render
     if (company) {
       stateManager.setSelectedCompany(company.id);
+      // Analytics: Track company viewed
+      track('company_viewed', { company_id: company.id, company_name: company.name });
       // On mobile, switch to detail view when selecting a company
       if (isMobile) {
         // Track where we came from before going to detail view

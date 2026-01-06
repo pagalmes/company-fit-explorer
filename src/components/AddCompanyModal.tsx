@@ -7,6 +7,7 @@ import { getCompanyPreview, CompanyPreview, validateCompanyData } from '../utils
 import { getColorForScore, resolveCareerUrl, mapConnectionsToExistingCompanies } from '../utils/companyPositioning';
 import { findSmartPositioningSolution, isPositioningSolutionBeneficial } from '../utils/smartPositioning';
 import { llmService } from '../utils/llm/service';
+import { track } from '../lib/analytics';
 
 interface AddCompanyModalProps {
   isOpen: boolean;
@@ -400,6 +401,13 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
         console.log('📍 Using simple addition for new company only');
         await onAddCompany(newCompanyWithViewPosition);
       }
+
+      // Analytics: Track company added manually
+      track('company_added_manually', {
+        company_id: newCompanyWithViewPosition.id,
+        company_name: newCompanyWithViewPosition.name,
+        method: 'search'
+      });
 
       onClose();
       resetModal();

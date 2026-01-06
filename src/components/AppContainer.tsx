@@ -8,6 +8,7 @@ import { activeUserProfile } from '../data/companies';
 import { createProfileForUser } from '../utils/userProfileCreation';
 import { migrateCompanyLogos } from '../utils/logoMigration';
 import { mergeUserPreferences } from '../utils/userPreferencesMerger';
+import { track } from '../lib/analytics';
 
 const AppContainer: React.FC = () => {
   const { isFirstTime, hasChecked, markAsVisited } = useFirstTimeExperience();
@@ -167,7 +168,11 @@ const AppContainer: React.FC = () => {
         setUserProfile(newUserProfile);
         setIsLoading(false);
         setIsTransitioning(true);
-        
+
+        // Analytics: Track onboarding completed
+        const companyCount = (newUserProfile.baseCompanies?.length || 0) + (newUserProfile.addedCompanies?.length || 0);
+        track('onboarding_completed', { company_count: companyCount });
+
         // After a brief transition, remove transition state
         setTimeout(() => {
           setIsTransitioning(false);

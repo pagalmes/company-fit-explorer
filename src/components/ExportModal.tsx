@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, FileText, FileJson, Download } from 'lucide-react';
 import { Company } from '../types';
 import { getExternalLinks } from '../utils/externalLinks';
+import { track } from '../lib/analytics';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -66,6 +67,12 @@ const ExportModal: React.FC<ExportModalProps> = ({
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+
+      // Analytics: Track export
+      track('companies_exported', {
+        company_count: companies.length,
+        format: selectedFormat
+      });
 
       // Close modal after successful export
       setTimeout(() => {

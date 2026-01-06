@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { trackServerEvent } from '../../../../../src/lib/analytics'
 
 // Accept invitation (mark as used)
 export async function POST(_request: Request, { params }: { params: Promise<{ token: string }> }) {
@@ -26,6 +27,10 @@ export async function POST(_request: Request, { params }: { params: Promise<{ to
     if (!data || data.length === 0) {
       return NextResponse.json({ error: 'Invitation not found or already used' }, { status: 404 })
     }
+
+    // Analytics: Track invitation accepted
+    const invitedEmail = data[0]?.email || 'unknown'
+    trackServerEvent('invitation_accepted', invitedEmail, { invitation_token: token })
 
     return NextResponse.json({ message: 'Invitation accepted successfully' })
   } catch (error) {
