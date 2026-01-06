@@ -19,16 +19,25 @@ setup('authenticate', async ({ page }) => {
 
   // Navigate to login page
   await page.goto('/login');
+  await page.waitForLoadState('networkidle');
 
-  // Fill in credentials
-  await page.fill('input[type="email"]', email);
-  await page.fill('input[type="password"]', password);
+  // Wait for form to be ready
+  const emailInput = page.locator('input[type="email"]');
+  const passwordInput = page.locator('input[type="password"]');
+  await emailInput.waitFor({ state: 'visible' });
+  await passwordInput.waitFor({ state: 'visible' });
 
-  // Click Sign In button
-  await page.click('button:has-text("Sign In")');
+  // Clear and fill credentials using click + type for reliability
+  await emailInput.click();
+  await emailInput.fill(email);
+  await passwordInput.click();
+  await passwordInput.fill(password);
 
-  // Wait for redirect to explorer page
-  await page.waitForURL('/explorer', { timeout: 15000 });
+  // Click Sign In button and wait for navigation
+  await Promise.all([
+    page.waitForURL('/explorer', { timeout: 30000 }),
+    page.click('button:has-text("Sign In")'),
+  ]);
 
   // Wait for the app to initialize
   await page.waitForTimeout(3000);
