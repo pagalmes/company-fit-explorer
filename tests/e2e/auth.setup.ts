@@ -27,8 +27,8 @@ setup('authenticate', async ({ page }) => {
   // Click Sign In button
   await page.click('button:has-text("Sign In")');
 
-  // Wait for redirect to home page
-  await page.waitForURL('/', { timeout: 15000 });
+  // Wait for redirect to explorer page
+  await page.waitForURL('/explorer', { timeout: 15000 });
 
   // Wait for the app to initialize
   await page.waitForTimeout(3000);

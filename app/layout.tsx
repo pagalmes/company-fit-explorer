@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next'
+import { Suspense } from 'react'
 import { Toaster } from 'sonner'
+import { PosthogProvider } from '../src/components/PosthogProvider'
 import '../src/styles/index.css'
 
 export const metadata: Metadata = {
@@ -47,7 +49,11 @@ export default function RootLayout({
         <meta name="viewport" content="viewport-fit=cover" />
       </head>
       <body className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900">
-        {children}
+        <Suspense fallback={null}>
+          <PosthogProvider>
+            {children}
+          </PosthogProvider>
+        </Suspense>
         <Toaster
           position="top-center"
           offset="5rem"

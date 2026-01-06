@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Critical User Interactions', () => {
   // Helper function for common page setup
   async function setupPage(page: any) {
-    await page.goto('/?skip-intro=true');
+    await page.goto('/explorer?skip-intro=true');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
   }
@@ -134,7 +134,7 @@ test.describe('Critical User Interactions', () => {
     });
 
     // Navigate with mocked error response
-    await page.goto('/?skip-intro=true');
+    await page.goto('/explorer?skip-intro=true');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
 
