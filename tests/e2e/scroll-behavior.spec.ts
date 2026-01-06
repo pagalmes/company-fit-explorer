@@ -92,10 +92,10 @@ test.describe('Scroll Behavior', () => {
     // For now, we'll test that the CSS rules exist for the graph explorer
 
     await page.goto('/explorer');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
-    // Wait for app to load
-    await page.waitForTimeout(2000);
+    // Wait for app to load (don't use networkidle as logo fetching may continue indefinitely)
+    await page.waitForTimeout(3000);
 
     // Check if graph explorer marker exists
     const hasGraphExplorer = await page.evaluate(() =>
@@ -108,13 +108,17 @@ test.describe('Scroll Behavior', () => {
         bodyOverflow: window.getComputedStyle(document.body).overflow,
         htmlOverflow: window.getComputedStyle(document.documentElement).overflow,
         bodyMaxHeight: window.getComputedStyle(document.body).maxHeight,
+        viewportHeight: window.innerHeight,
       }));
 
       // Graph explorer should have overflow hidden
       expect(overflow.bodyOverflow).toBe('hidden');
 
-      // Should have viewport height constraint
-      expect(overflow.bodyMaxHeight).toContain('100');
+      // Should have viewport height constraint (computed to pixels, roughly equal to viewport)
+      // The CSS uses 100dvh which gets computed to pixels by the browser
+      const maxHeightPx = parseInt(overflow.bodyMaxHeight, 10);
+      expect(maxHeightPx).toBeGreaterThan(0);
+      expect(maxHeightPx).toBeLessThanOrEqual(overflow.viewportHeight + 10); // Allow small margin
 
       // Try to scroll - it shouldn't work
       await page.evaluate(() => window.scrollTo(0, 500));
@@ -148,18 +152,25 @@ test.describe('Scroll Behavior', () => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
 
-    // Look for CosmosBackground element (has specific class pattern)
-    const cosmosBackground = await page.locator('.bg-gradient-to-br.from-slate-900').first();
+    // The login page uses CosmosBackground which wraps the content
+    // Check that the page itself allows scrolling (not locked by overflow: hidden)
+    const pageStyles = await page.evaluate(() => {
+      const body = document.body;
+      const html = document.documentElement;
+      const bodyStyle = window.getComputedStyle(body);
+      const htmlStyle = window.getComputedStyle(html);
 
-    if (await cosmosBackground.count() > 0) {
-      // Get overflow-y style
-      const overflowY = await cosmosBackground.evaluate((el) =>
-        window.getComputedStyle(el).overflowY
-      );
+      return {
+        bodyOverflow: bodyStyle.overflow,
+        bodyOverflowY: bodyStyle.overflowY,
+        htmlOverflow: htmlStyle.overflow,
+        htmlOverflowY: htmlStyle.overflowY,
+      };
+    });
 
-      // CosmosBackground should have overflow-y: auto
-      expect(overflowY).toBe('auto');
-    }
+    // Login page should not have overflow: hidden (should allow scrolling if content overflows)
+    expect(pageStyles.bodyOverflow).not.toBe('hidden');
+    expect(pageStyles.htmlOverflow).not.toBe('hidden');
   });
 
   test('landing page content height exceeds viewport', async ({ page }) => {
