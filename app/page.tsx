@@ -227,7 +227,7 @@ export default function LandingPage() {
 
         {/* Footer */}
         <div className="text-center text-slate-400 text-sm">
-          <p>© 2024 Cosmos. Navigate your career through the stars.</p>
+          <p>© 2026 Cosmos. Navigate your career through the stars.</p>
         </div>
       </div>
 
