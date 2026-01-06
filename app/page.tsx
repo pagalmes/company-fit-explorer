@@ -3,7 +3,8 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { CosmosBackground } from '../src/components/CosmosBackground'
 import appPreviewImage from '../assets/images/company-fit-explorer-ui.jpg'
-import { Sparkles, Mail, Rocket } from 'lucide-react'
+import { Sparkles, Mail, Rocket, LogIn } from 'lucide-react'
+import Link from 'next/link'
 
 export default function LandingPage() {
   const [email, setEmail] = useState('')
@@ -39,6 +40,17 @@ export default function LandingPage() {
 
   return (
     <CosmosBackground className="px-4 py-12 md:py-16 lg:py-20">
+      {/* Sign In Link - Top Right */}
+      <div className="absolute top-4 right-4 md:top-6 md:right-6 z-20">
+        <Link
+          href="/login"
+          className="flex items-center gap-2 px-4 py-2 text-blue-200 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+        >
+          <LogIn className="w-4 h-4" />
+          <span className="text-sm font-medium">Sign In</span>
+        </Link>
+      </div>
+
       <div className="max-w-5xl w-full mx-auto">
         {/* Hero Section - Increased spacing and typography hierarchy */}
         <div className="text-center mb-16 md:mb-20 lg:mb-24">

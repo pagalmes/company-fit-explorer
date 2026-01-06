@@ -2,7 +2,7 @@
   "name": "Company Fit Explorer",
   "short_name": "Cosmos",
   "description": "Interactive company graph explorer to find companies that fit your career preferences",
-  "start_url": "/",
+  "start_url": "/explorer",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#3B82F6",
