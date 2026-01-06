@@ -514,3 +514,8 @@ span.text-lg.font-bold.px-3.py-1.rounded-full.text-white {
     height: 0.375rem !important; /* thinner progress bar */
   }
 }
+
+/* Landing page waitlist button - override media query font size reduction */
+button[type="submit"] span {
+  font-size: 1rem !important; /* text-lg size - matches input textbox */
+}

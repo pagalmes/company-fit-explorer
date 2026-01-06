@@ -170,8 +170,9 @@ describe('Integration Tests - CompanyDetailPanel with Real Data', () => {
 
       // Action buttons
       expect(screen.getByText(`View Jobs at ${testCompany.name}`)).toBeInTheDocument()
-      expect(screen.getByText('Save to Watchlist')).toBeInTheDocument()
-      expect(screen.getByText('Learn More')).toBeInTheDocument()
+      expect(screen.getByText('Setup Job Alerts')).toBeInTheDocument()
+      expect(screen.getByText('My Connections')).toBeInTheDocument()
+      expect(screen.getByText('Remove Company')).toBeInTheDocument()
     })
 
     it('should handle View Jobs button functionality', async () => {

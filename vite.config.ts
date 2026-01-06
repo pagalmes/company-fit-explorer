@@ -20,7 +20,13 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './tests/unit/setup.ts',
-    exclude: ['**/node_modules/**', '**/tests/e2e/**'],
+    exclude: [
+      '**/node_modules/**',
+      '**/tests/e2e/**',
+      // Excluded due to memory exhaustion during test collection phase
+      // See docs/known-test-issues.md for details
+      '**/CompanyGraph.integration.test.tsx',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

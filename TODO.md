@@ -1,14 +1,26 @@
 # Project TODOs
 
+## MVP
+
+!!! TODO: Ensure Vercel, Supabase setup to limit cost blowing-up! (in particular for the waitlist)
+!!! TODO: Record a video to intro the site
+
+!!! TODO: Setup a simple site with ability to sign-up for a wait-list. Reuse as much as possible the onboarding themes and visuals (background, fx...) 
+!!! TODO: Analytics: Implement some basic analytics to track usage of the app. 
+!!! TODO: Implement initial onboarding: Company Set Generation [Scott]
+!!! TODO: Implement Mini-Funnel tracking
+
+
+
+
+
 ## Supporting Projects 
 
-
-TODO: Setup a simple site with ability to sign-up for a wait-list. Reuse as much as possible the onboarding themes and visuals (background, fx...) 
 TODO: Modify company fit explorer to Cosmos in all places
 TODO: Get a domain: Cosmos.ai
 TODO: Logo: Change it to reflect the "sun" visuals
 TODO: iOS App Icon: Make it square. Use the same color as cosmos background. Maybe reflect the "sun" node in it.
-TODO: Analytics: Implement some basic analytics to track usage of the app. 
+
 
 ## Features
 
@@ -30,6 +42,7 @@ TODO: Multiple research: My dream job is private equity and have my current rese
 TODO: "Dailies & Jobs" for new companies to consider from alerts
 TODO: Extract and generate a few profiles.
 TODO: Enable batch-adding companies: From a screenshot
+TODO: Feature: Save you time! Decide if should apply - see Natalya prompt
 
 
 
@@ -58,6 +71,8 @@ TODO: Enable batch-adding companies: From a screenshot
 
 <!-- DONE: --> 
 <!-- DONE: --> 
+
+TODO: Add a one line description on each company.
 
 TODO: Mobile: swipe gesture to close the panels
 
@@ -91,6 +106,7 @@ TODO: Admin: Add confirmation to the delete account button
 <!-- DONE: Mobile: Update UI - When openin from Safari or a browser with control / search bar at the bottom, they appear over cosmos interface. -->
 
 FIXME:
+FIXME: Mobile: Remove modal (and other modals?) appear behind the "right pane"
 FIXME: Chrome on iOS: Buttons not showing up at the bottom. (related to 100lvh...)
 FIXME: Right pane: Company research buttons behave differently from action buttons
 FIXME: Right pane: disappears when changing browser zoom levels
@@ -102,10 +118,11 @@ FIXME: Fix the Sonner toast positionning to be centered under the tabs.
 
 <!-- DONE: e2e tests failing inconsistently. Ensure all tests pass. -->
 <!-- DONE: Setup Evals for the LLM extraction calls. (e.g. company + domain+career-page-url extraction [give a set and expected results from linkedin posts, websites...]) -->
+<!-- DONE: Setup a commit hook to run tests at commit time. (husky) -->
 
-TODO: Setup a commit hook to run tests at commit time. (husky)
+
 TODO: Update schema.sql to include the latest migration scripts
-
+TODO: 1 important test is failing, running out of memory, probably due to an infinite loop. ("CompanyGraph.integration.test.tsx - Excluded due to memory exhaustion during test collection" - Full documentation: docs/known-test-issues.md)
 
 ## Documentation
 
