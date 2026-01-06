@@ -1,9 +1,9 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { CosmosBackground } from '../src/components/CosmosBackground'
 import appPreviewImage from '../assets/images/company-fit-explorer-ui.jpg'
-import { Sparkles, Mail, Rocket, LogIn } from 'lucide-react'
+import { Sparkles, Mail, Rocket, LogIn, X, ZoomIn } from 'lucide-react'
 import Link from 'next/link'
 
 export default function LandingPage() {
@@ -11,6 +11,19 @@ export default function LandingPage() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [imageExpanded, setImageExpanded] = useState(false)
+
+  // Lock body scroll when lightbox is open
+  useEffect(() => {
+    if (imageExpanded) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [imageExpanded])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -107,14 +120,23 @@ export default function LandingPage() {
 
         {/* Video/Image Section - Centerpiece with proper spacing above and below */}
         <div className="mb-16 md:mb-20 lg:mb-24">
-          {/* App Preview Image - Natural aspect ratio */}
-          <div className="relative z-10 rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl max-w-6xl mx-auto">
+          {/* App Preview Image - Natural aspect ratio, clickable to expand */}
+          <div
+            className="relative z-10 rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl max-w-6xl mx-auto cursor-pointer group"
+            onClick={() => setImageExpanded(true)}
+          >
             <Image
               src={appPreviewImage}
               alt="Cosmos App Preview"
-              className="w-full h-auto"
+              className="w-full h-auto transition-transform duration-300 group-hover:scale-[1.02]"
               placeholder="blur"
             />
+            {/* Zoom hint overlay */}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center">
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/50 rounded-full p-3">
+                <ZoomIn className="w-6 h-6 text-white" />
+              </div>
+            </div>
           </div>
           {/* Video - Hidden until ready, uncomment and remove Image above to restore
           <div className="relative z-10 rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl border-2 border-white/30 max-w-6xl mx-auto">
@@ -208,6 +230,48 @@ export default function LandingPage() {
           <p>© 2024 Cosmos. Navigate your career through the stars.</p>
         </div>
       </div>
+
+      {/* Image Lightbox Modal */}
+      {imageExpanded && (
+        <div className="fixed inset-0 z-50">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black bg-opacity-80 transition-opacity"
+            onClick={() => setImageExpanded(false)}
+          />
+
+          {/* Modal content */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            {/* Close button */}
+            <button
+              className="fixed top-4 right-4 z-10 p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+              onClick={() => setImageExpanded(false)}
+            >
+              <X className="w-8 h-8" />
+            </button>
+
+            {/* Expanded image - constrained to 90vh with border */}
+            <div
+              className="relative rounded-2xl overflow-hidden border-2 border-white/30 shadow-2xl cursor-pointer"
+              style={{ maxHeight: '90vh', maxWidth: '95vw' }}
+              onClick={() => setImageExpanded(false)}
+            >
+              <Image
+                src={appPreviewImage}
+                alt="Cosmos App Preview - Expanded"
+                className="object-contain"
+                style={{ maxHeight: '90vh', width: 'auto', height: 'auto' }}
+                placeholder="blur"
+              />
+            </div>
+
+            {/* Click anywhere hint */}
+            <p className="fixed bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-sm pointer-events-none">
+              Click anywhere to close
+            </p>
+          </div>
+        </div>
+      )}
     </CosmosBackground>
   )
 }
