@@ -2,16 +2,23 @@
 
 ## MVP
 
-!!! TODO: Ensure Vercel, Supabase setup to limit cost blowing-up! (in particular for the waitlist)
-!!! TODO: Record a video to intro the site
-
-!!! TODO: Setup a simple site with ability to sign-up for a wait-list. Reuse as much as possible the onboarding themes and visuals (background, fx...) 
-!!! TODO: Analytics: Implement some basic analytics to track usage of the app. 
+!!! TODO: Refine the prompt for the initial company set generation. [Pierre]
 !!! TODO: Implement initial onboarding: Company Set Generation [Scott]
-!!! TODO: Implement Mini-Funnel tracking
+!!! TODO: WIP - Analytics: Implement some basic analytics to track usage of the app. (posthog) [Pierre]
 
 
+<!-- 
 
+!!! DONE: Setup a simple landing page to sign-up for the wait-list. 
+
+!!! DONE: Ensure Vercel, Supabase setup to limit cost blowing-up! (in particular for the waitlist) - Answer: As long as in free tier, no card is attached, so no costs are incurred. The site will just stop working if we hit the limits.
+
+!!! DONE: Add a login button on the landing cosmos page. (especially for mobile)
+
+-->
+
+!!! TODO: Record a video to intro the site [Optional?]
+!!! TODO: Implement Mini-Funnel tracking [Optional?]
 
 
 ## Supporting Projects 
