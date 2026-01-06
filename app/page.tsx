@@ -1,6 +1,8 @@
 'use client'
 import { useState } from 'react'
+import Image from 'next/image'
 import { CosmosBackground } from '../src/components/CosmosBackground'
+import appPreviewImage from '../assets/images/company-fit-explorer-ui.jpg'
 import { Sparkles, Mail, Rocket } from 'lucide-react'
 
 export default function LandingPage() {
@@ -91,8 +93,18 @@ export default function LandingPage() {
           </p>
         </div>
 
-        {/* Video Section - Centerpiece with proper spacing above and below */}
+        {/* Video/Image Section - Centerpiece with proper spacing above and below */}
         <div className="mb-16 md:mb-20 lg:mb-24">
+          {/* App Preview Image - Natural aspect ratio */}
+          <div className="relative z-10 rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl max-w-6xl mx-auto">
+            <Image
+              src={appPreviewImage}
+              alt="Cosmos App Preview"
+              className="w-full h-auto"
+              placeholder="blur"
+            />
+          </div>
+          {/* Video - Hidden until ready, uncomment and remove Image above to restore
           <div className="relative z-10 rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl border-2 border-white/30 max-w-6xl mx-auto">
             <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
               <iframe
@@ -104,6 +116,7 @@ export default function LandingPage() {
               />
             </div>
           </div>
+          */}
         </div>
 
         {/* Waitlist Section - Full width to match video, better padding */}
@@ -130,8 +143,8 @@ export default function LandingPage() {
             </div>
           ) : (
             <div className="text-center">
-              {/* Title - Larger, better hierarchy */}
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 md:mb-8 leading-tight">
+              {/* Title */}
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 md:mb-8 leading-tight">
                 Get Early Access
               </h2>
 
@@ -151,6 +164,8 @@ export default function LandingPage() {
                     className="flex-1 outline-none bg-transparent text-slate-900 placeholder-slate-400 text-lg"
                     placeholder="you@example.com"
                     required
+                    data-lpignore="true"
+                    data-1p-ignore
                   />
                 </div>
 
