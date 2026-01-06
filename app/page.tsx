@@ -156,16 +156,16 @@ export default function LandingPage() {
         {/* Waitlist Section - Full width to match video, better padding */}
         <div className="relative z-10 rounded-2xl shadow-2xl p-8 md:p-12 lg:p-16 border border-white/20 mb-16 max-w-6xl mx-auto" style={{ backgroundColor: '#0f172a' }}>
           {submitted ? (
-            <div className="text-center space-y-8">
-              <div className="flex justify-center">
+            <div className="text-center">
+              <div className="flex justify-center mb-6 md:mb-8">
                 <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center">
                   <Rocket className="w-10 h-10 md:w-12 md:h-12 text-white" />
                 </div>
               </div>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white">
-                Welcome to the Cosmos! 🚀
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 md:mb-8 leading-tight">
+                Welcome to Cosmos! 🚀
               </h2>
-              <p className="text-blue-200 text-lg md:text-xl lg:text-2xl max-w-2xl mx-auto leading-relaxed">
+              <p className="text-blue-200 text-lg md:text-xl lg:text-2xl max-w-2xl mx-auto leading-relaxed mb-6">
                 Thank you for joining our waitlist. We'll keep you updated on our progress and let you know when Cosmos is ready for launch.
               </p>
               <button
