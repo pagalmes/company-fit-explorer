@@ -2,7 +2,7 @@
 
 A visual career exploration tool that helps you discover companies aligned with your skills, goals, and preferences. See your perfect matches at a glance with an interactive graph showing how companies relate to your Candidate Market Fit (CMF) profile.
 
-**Live Demo:** [Coming Soon]
+> **Want to try it?** [Join the waitlist](https://company-fit-explorer.vercel.app/) for early access.
 
 ![Company Fit Explorer](./assets/images/company-fit-explorer-ui.jpg)
 
