@@ -114,7 +114,7 @@ export default function LandingPage() {
 
           {/* Subtitle - Proper contrast with title (1.5-2x difference) */}
           <p className="text-xl md:text-2xl lg:text-3xl text-blue-200 max-w-3xl mx-auto px-4 leading-relaxed">
-            Discover the perfect companies that align with your values, culture, and career goals.
+            Find where you belong! Job search, redesigned for you.
           </p>
         </div>
 
