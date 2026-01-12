@@ -113,7 +113,7 @@ export default function LandingPage() {
           </div>
 
           {/* Subtitle - Proper contrast with title (1.5-2x difference) */}
-          <p className="text-xl md:text-2xl lg:text-3xl text-blue-200 max-w-3xl mx-auto px-4 leading-relaxed">
+          <p className="text-2xl md:text-3xl lg:text-4xl text-blue-100 max-w-3xl mx-auto px-4 leading-relaxed font-light">
             Find where you belong! Job search, redesigned for you.
           </p>
         </div>
