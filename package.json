@@ -43,7 +43,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.7.0",
+    "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.57.2",
     "@types/uuid": "^10.0.0",
     "cytoscape": "^3.33.1",
