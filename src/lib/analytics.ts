@@ -29,8 +29,12 @@ export interface AnalyticsProperties {
 export function initAnalytics() {
   if (typeof window === 'undefined') return
 
+  // Skip analytics in E2E tests (Playwright sets this)
+  if (typeof navigator !== 'undefined' && navigator.userAgent.includes('Playwright')) {
+    return
+  }
+
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
-  const host = process.env.NEXT_PUBLIC_POSTHOG_HOST
 
   if (!key) {
     console.warn('Posthog key not configured')
@@ -38,7 +42,8 @@ export function initAnalytics() {
   }
 
   posthog.init(key, {
-    api_host: host || 'https://us.i.posthog.com',
+    api_host: '/ingest',
+    ui_host: 'https://us.posthog.com',
     person_profiles: 'identified_only',
     capture_pageview: true,
     capture_pageleave: true,
