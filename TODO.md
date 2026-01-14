@@ -79,6 +79,10 @@ TODO: Feature: Save you time! Decide if should apply - see Natalya prompt
 <!-- DONE: --> 
 <!-- DONE: --> 
 
+TODO: Revamp "related" companies. Focus on peers, competitors... No need to have them in cosmos
+
+TODO: Revamp "related" companies. have ability to add them right away. 
+
 TODO: Add a one line description on each company.
 
 TODO: Mobile: swipe gesture to close the panels
