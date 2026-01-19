@@ -438,6 +438,18 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
 
   // Keyboard accessibility for suggestions navigation
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Handle Enter key regardless of suggestions state
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (showSuggestions && selectedSuggestionIndex >= 0 && selectedSuggestionIndex < suggestions.length) {
+        handleSuggestionClick(suggestions[selectedSuggestionIndex], true);
+      } else if (companyName.trim()) {
+        handleSearch();
+      }
+      return;
+    }
+
+    // Other keys only apply when suggestions are visible
     if (!showSuggestions || suggestions.length === 0) return;
 
     switch (e.key) {
@@ -450,14 +462,6 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
       case 'ArrowUp':
         e.preventDefault();
         setSelectedSuggestionIndex(prev => prev > 0 ? prev - 1 : -1);
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < suggestions.length) {
-          handleSuggestionClick(suggestions[selectedSuggestionIndex], true);
-        } else if (companyName.trim()) {
-          handleSearch();
-        }
         break;
       case 'Escape':
         setShowSuggestions(false);
