@@ -17,7 +17,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ userCMF, onClose })
   };
 
   return (
-    <div className={`fixed inset-0 z-50 ${isClosing ? 'animate-slide-out-right' : 'animate-slide-in-right'} bg-white`}>
+    <div className={`fixed inset-0 z-[70] ${isClosing ? 'animate-slide-out-right' : 'animate-slide-in-right'} bg-white`}>
       {/* Mobile Header Bar - Stacked centered profile design */}
       <div className="relative px-4 pt-3 pb-4 border-b border-purple-200/40 bg-white/80 backdrop-blur-sm">
         {/* Back Button - Top Left */}

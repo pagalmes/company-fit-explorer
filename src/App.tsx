@@ -11,7 +11,7 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="App">
+    <div className="App" data-graph-explorer>
       <AppContainer />
     </div>
   );

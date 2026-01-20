@@ -1,9 +1,10 @@
 'use client'
 import { createClientComponentClient } from '../lib/supabase'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Loader2 } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
+import { identifyUser, track, resetUser } from '../lib/analytics'
 
 interface AuthWrapperProps {
   children: React.ReactNode
@@ -19,6 +20,7 @@ export default function AuthWrapper({
   const [_userRole, setUserRole] = useState<string | null>(null)
   const [shouldRedirect, setShouldRedirect] = useState(false)
   const router = useRouter()
+  const sessionTracked = useRef(false)
 
   useEffect(() => {
     const supabase = createClientComponentClient()
@@ -54,11 +56,11 @@ export default function AuthWrapper({
 
         if (profileError) {
           console.error('Profile error:', profileError)
-          // If we can't get profile but user is authenticated, 
+          // If we can't get profile but user is authenticated,
           // assume default role and continue (don't redirect to login)
           if (requireAdmin) {
-            console.log('Profile error but requireAdmin=true, redirecting to home')
-            router.push('/')
+            console.log('Profile error but requireAdmin=true, redirecting to explorer')
+            router.push('/explorer')
             return
           }
           // For non-admin pages, continue with default user role
@@ -69,13 +71,30 @@ export default function AuthWrapper({
 
         if (requireAdmin && userRole !== 'admin') {
           console.log('Redirecting non-admin user from admin page')
-          router.push('/')
+          router.push('/explorer')
           return
         }
 
         setUser(user)
         setUserRole(profile?.role || 'user')
         setLoading(false)
+
+        // Analytics: Identify user and track session
+        identifyUser(user.id, { email: user.email })
+
+        // Track session_started only once per mount
+        if (!sessionTracked.current) {
+          sessionTracked.current = true
+          track('session_started')
+
+          // Check if this is user's first login (created recently)
+          const createdAt = new Date(user.created_at)
+          const now = new Date()
+          const minutesSinceCreation = (now.getTime() - createdAt.getTime()) / (1000 * 60)
+          if (minutesSinceCreation < 5) {
+            track('user_first_login')
+          }
+        }
       } catch (error) {
         console.error('AuthWrapper error:', error)
         setShouldRedirect(true)
@@ -88,6 +107,7 @@ export default function AuthWrapper({
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, _session) => {
         if (event === 'SIGNED_OUT') {
+          resetUser() // Clear analytics identity on logout
           router.push('/login')
         }
       }

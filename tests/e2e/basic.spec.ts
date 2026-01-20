@@ -11,7 +11,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Application Smoke Tests', () => {
   test('should load application successfully', async ({ page }) => {
     // Navigate to the application
-    await page.goto('/?skip-intro=true');
+    await page.goto('/explorer?skip-intro=true');
 
     // Wait for React app to load
     await page.waitForLoadState('networkidle');
@@ -20,7 +20,7 @@ test.describe('Application Smoke Tests', () => {
     await page.waitForTimeout(2000);
     
     // Verify the page title is correct
-    await expect(page).toHaveTitle(/CMF Explorer/);
+    await expect(page).toHaveTitle(/Company Fit Explorer/);
     
     // Wait for some content to appear (body should have loaded)
     await page.waitForSelector('body', { timeout: 10000 });
@@ -33,7 +33,7 @@ test.describe('Application Smoke Tests', () => {
   });
 
   test('should allow company interaction', async ({ page }) => {
-    await page.goto('/?skip-intro=true');
+    await page.goto('/explorer?skip-intro=true');
     await page.waitForLoadState('networkidle');
     
     // Wait for the application to fully load

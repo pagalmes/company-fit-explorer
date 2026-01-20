@@ -17,6 +17,7 @@ import {
   clearWatchlistFromStorage,
   dispatchStorageChange,
 } from '../utils/watchlistStorage';
+import { track } from '../lib/analytics';
 
 interface UseWatchlistOptions {
   userId?: string;
@@ -147,11 +148,14 @@ export const useWatchlist = (options: UseWatchlistOptions): UseWatchlistReturn =
 
     const newIds = new Set(companyIds);
     newIds.add(companyId);
-    
+
     setCompanyIds(newIds);
     setLastUpdated(new Date());
-    
+
     await saveToStorage(newIds);
+
+    // Analytics: Track watchlist add
+    track('company_added_to_watchlist', { company_id: companyId });
   }, [companyIds, saveToStorage]);
 
   const removeFromWatchlist = useCallback(async (companyId: number) => {
@@ -159,11 +163,14 @@ export const useWatchlist = (options: UseWatchlistOptions): UseWatchlistReturn =
 
     const newIds = new Set(companyIds);
     newIds.delete(companyId);
-    
+
     setCompanyIds(newIds);
     setLastUpdated(new Date());
-    
+
     await saveToStorage(newIds);
+
+    // Analytics: Track watchlist remove
+    track('company_removed_from_watchlist', { company_id: companyId });
   }, [companyIds, saveToStorage]);
 
   const toggleWatchlist = useCallback(async (companyId: number) => {

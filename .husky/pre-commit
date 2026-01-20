@@ -1,0 +1,3 @@
+# Run pre-commit test suite
+# To skip E2E tests (faster): SKIP_E2E=true git commit -m "message"
+./scripts/pre-commit-tests.sh

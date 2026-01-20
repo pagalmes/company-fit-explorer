@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, waitFor, act } from '@testing-library/react';
+import { render, act } from '@testing-library/react';
 import { vi } from 'vitest';
 import AppContainer from '../AppContainer';
 

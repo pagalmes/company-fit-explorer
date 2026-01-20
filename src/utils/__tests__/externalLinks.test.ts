@@ -10,7 +10,7 @@ import { Company } from '../../types';
 
 describe('External Links Utility', () => {
   const mockCompany: Company = {
-    id: 'test-company',
+    id: 1,
     name: 'Test Company',
     industry: 'Technology',
     stage: 'Series B',
@@ -58,13 +58,13 @@ describe('External Links Utility', () => {
       const links = generateExternalLinks(mockCompany);
 
       expect(links.linkedin).toContain('google.com/search');
-      expect(links.linkedin).toContain('Test+Company+on+LinkedIn');
+      expect(links.linkedin).toContain('Test%20Company%20on%20LinkedIn');
 
       expect(links.glassdoor).toContain('google.com/search');
-      expect(links.glassdoor).toContain('Test+Company+on+Glassdoor');
+      expect(links.glassdoor).toContain('Test%20Company%20on%20Glassdoor');
 
       expect(links.crunchbase).toContain('google.com/search');
-      expect(links.crunchbase).toContain('Test+Company+on+Crunchbase');
+      expect(links.crunchbase).toContain('Test%20Company%20on%20Crunchbase');
     });
 
     it('should handle companies without careerUrl', () => {
@@ -89,12 +89,12 @@ describe('External Links Utility', () => {
       const specialCompany = { ...mockCompany, name: 'Test & Co.' };
       const links = generateExternalLinks(specialCompany);
 
-      expect(links.linkedin).toContain('Test+%26+Co.');
+      expect(links.linkedin).toContain('Test%20%26%20Co.');
     });
   });
 
   describe('getExternalLinks', () => {
-    it('should return existing external links if present', () => {
+    it('should preserve existing website but generate social links', () => {
       const existingLinks = {
         website: 'https://custom.com',
         linkedin: 'https://linkedin.com/company/custom',
@@ -105,7 +105,12 @@ describe('External Links Utility', () => {
       const companyWithLinks = { ...mockCompany, externalLinks: existingLinks };
       const links = getExternalLinks(companyWithLinks);
 
-      expect(links).toEqual(existingLinks);
+      // Website should be preserved
+      expect(links.website).toBe('https://custom.com');
+      // Social links are always generated
+      expect(links.linkedin).toContain('google.com/search');
+      expect(links.glassdoor).toContain('google.com/search');
+      expect(links.crunchbase).toContain('google.com/search');
     });
 
     it('should generate links if externalLinks is missing', () => {
@@ -126,7 +131,7 @@ describe('External Links Utility', () => {
       expect(links.linkedin).toContain('google.com/search');
     });
 
-    it('should preserve partial external links and use existing values', () => {
+    it('should preserve custom website and generate social links', () => {
       const partialLinks = {
         website: 'https://custom.com'
       };
@@ -134,15 +139,19 @@ describe('External Links Utility', () => {
       const companyWithPartialLinks = { ...mockCompany, externalLinks: partialLinks };
       const links = getExternalLinks(companyWithPartialLinks);
 
-      // Should return existing links as-is
-      expect(links).toEqual(partialLinks);
+      // Should preserve custom website
+      expect(links.website).toBe('https://custom.com');
+      // Should generate social links
+      expect(links.linkedin).toContain('google.com/search');
+      expect(links.glassdoor).toContain('google.com/search');
+      expect(links.crunchbase).toContain('google.com/search');
     });
   });
 
   describe('Real-world scenarios', () => {
     it('should work for company with standard domain', () => {
       const stripe: Company = {
-        id: 'stripe',
+        id: 2,
         name: 'Stripe',
         industry: 'Fintech',
         stage: 'Public',
@@ -162,12 +171,12 @@ describe('External Links Utility', () => {
       const links = generateExternalLinks(stripe);
 
       expect(links.website).toBe('https://stripe.com');
-      expect(links.linkedin).toContain('Stripe+on+LinkedIn');
+      expect(links.linkedin).toContain('Stripe%20on%20LinkedIn');
     });
 
     it('should strip subdomain careers page to get root domain', () => {
       const figma: Company = {
-        id: 'figma',
+        id: 3,
         name: 'Figma',
         industry: 'Design',
         stage: 'Acquired',
@@ -192,7 +201,7 @@ describe('External Links Utility', () => {
 
     it('should handle company names with spaces', () => {
       const credo: Company = {
-        id: 'credo-ai',
+        id: 4,
         name: 'Credo AI',
         industry: 'AI/ML',
         stage: 'Series A',
@@ -212,7 +221,7 @@ describe('External Links Utility', () => {
       const links = generateExternalLinks(credo);
 
       expect(links.website).toBe('https://credo.ai');
-      expect(links.linkedin).toContain('Credo+AI+on+LinkedIn');
+      expect(links.linkedin).toContain('Credo%20AI%20on%20LinkedIn');
     });
   });
 });

@@ -1,11 +1,33 @@
 # Project TODOs
 
+## MVP
+
+!!! TODO: Refine the prompt for the initial company set generation. [Pierre]
+!!! TODO: Implement initial onboarding: Company Set Generation [Scott]
+!!! TODO: WIP - Analytics: Implement some basic analytics to track usage of the app. (posthog) [Pierre]
+
+
+<!-- 
+
+!!! DONE: Setup a simple landing page to sign-up for the wait-list. 
+
+!!! DONE: Ensure Vercel, Supabase setup to limit cost blowing-up! (in particular for the waitlist) - Answer: As long as in free tier, no card is attached, so no costs are incurred. The site will just stop working if we hit the limits.
+
+!!! DONE: Add a login button on the landing cosmos page. (especially for mobile)
+
+-->
+
+!!! TODO: Record a video to intro the site [Optional?]
+!!! TODO: Implement Mini-Funnel tracking [Optional?]
+
+
 ## Supporting Projects 
 
-TODO: Setup a simple site with ability to sign-up for a wait-list
-TODO: Update the login page to be Cosmos Themed
 TODO: Modify company fit explorer to Cosmos in all places
 TODO: Get a domain: Cosmos.ai
+TODO: Logo: Change it to reflect the "sun" visuals
+TODO: iOS App Icon: Make it square. Use the same color as cosmos background. Maybe reflect the "sun" node in it.
+
 
 ## Features
 
@@ -27,6 +49,7 @@ TODO: Multiple research: My dream job is private equity and have my current rese
 TODO: "Dailies & Jobs" for new companies to consider from alerts
 TODO: Extract and generate a few profiles.
 TODO: Enable batch-adding companies: From a screenshot
+TODO: Feature: Save you time! Decide if should apply - see Natalya prompt
 
 
 
@@ -50,9 +73,17 @@ TODO: Enable batch-adding companies: From a screenshot
 <!-- DONE: Mobile: Click on sun to view profile. -->
 <!-- DONE: Mobile: panels slide in / out animation -->
 <!-- DONE: Mobile: Actions feel easy. Remove extra clicks to accomplish tasks. -->
+<!-- DONE: Cosmo Login page: Update the login page to be Cosmos Themed -->
+
 
 <!-- DONE: --> 
 <!-- DONE: --> 
+
+TODO: Revamp "related" companies. Focus on peers, competitors... No need to have them in cosmos
+
+TODO: Revamp "related" companies. have ability to add them right away. 
+
+TODO: Add a one line description on each company.
 
 TODO: Mobile: swipe gesture to close the panels
 
@@ -86,6 +117,7 @@ TODO: Admin: Add confirmation to the delete account button
 <!-- DONE: Mobile: Update UI - When openin from Safari or a browser with control / search bar at the bottom, they appear over cosmos interface. -->
 
 FIXME:
+FIXME: Mobile: Remove modal (and other modals?) appear behind the "right pane"
 FIXME: Chrome on iOS: Buttons not showing up at the bottom. (related to 100lvh...)
 FIXME: Right pane: Company research buttons behave differently from action buttons
 FIXME: Right pane: disappears when changing browser zoom levels
@@ -97,9 +129,11 @@ FIXME: Fix the Sonner toast positionning to be centered under the tabs.
 
 <!-- DONE: e2e tests failing inconsistently. Ensure all tests pass. -->
 <!-- DONE: Setup Evals for the LLM extraction calls. (e.g. company + domain+career-page-url extraction [give a set and expected results from linkedin posts, websites...]) -->
+<!-- DONE: Setup a commit hook to run tests at commit time. (husky) -->
 
-TODO: Setup a commit hook to run tests at commit time. (husky)
 
+TODO: Update schema.sql to include the latest migration scripts
+TODO: 1 important test is failing, running out of memory, probably due to an infinite loop. ("CompanyGraph.integration.test.tsx - Excluded due to memory exhaustion during test collection" - Full documentation: docs/known-test-issues.md)
 
 ## Documentation
 

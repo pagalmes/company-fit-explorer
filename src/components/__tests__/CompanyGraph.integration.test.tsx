@@ -3,6 +3,53 @@ import { render, fireEvent } from '@testing-library/react'
 import { UserCMF, Company } from '../../types'
 import CompanyGraph from '../CompanyGraph'
 
+// Mock Cytoscape
+vi.mock('cytoscape', () => {
+  const createMockCollection = () => ({
+    removeClass: vi.fn().mockReturnThis(),
+    addClass: vi.fn().mockReturnThis(),
+    length: 1,
+    hasClass: vi.fn(() => false),
+    forEach: vi.fn(),
+    data: vi.fn(() => ({ company: { id: 1 } })),
+    connectedEdges: vi.fn(() => []),
+    renderedPosition: vi.fn(() => ({ x: 0, y: 0 }))
+  });
+
+  const mockCy = {
+    nodes: vi.fn(() => createMockCollection()),
+    edges: vi.fn(() => createMockCollection()),
+    zoom: vi.fn(() => 1),
+    pan: vi.fn(() => ({ x: 0, y: 0 })),
+    fit: vi.fn(),
+    center: vi.fn(),
+    resize: vi.fn(),
+    destroy: vi.fn(),
+    on: vi.fn(),
+    off: vi.fn(),
+    getElementById: vi.fn(() => createMockCollection()),
+    add: vi.fn(() => createMockCollection()),
+    remove: vi.fn(() => createMockCollection()),
+    style: vi.fn().mockReturnThis(),
+    layout: vi.fn(() => ({
+      run: vi.fn(),
+      stop: vi.fn()
+    })),
+    ready: vi.fn((callback: any) => {
+      if (callback) callback();
+      return mockCy;
+    }),
+    elements: vi.fn(() => createMockCollection()),
+    batch: vi.fn((callback: any) => {
+      if (callback) callback();
+    }),
+    startBatch: vi.fn(),
+    endBatch: vi.fn()
+  };
+
+  return { default: vi.fn(() => mockCy) };
+});
+
 /**
  * @testSuite CompanyGraph - Integration Tests for Edge Highlighting
  * @description Focused tests for critical edge highlighting functionality
@@ -74,22 +121,34 @@ describe('CompanyGraph - Integration & Edge Highlighting Logic', () => {
     }
   ]
 
-  let mockOnCompanySelect: any
-  let mockOnCompanyHover: any
+  // Create stable references outside to prevent infinite re-renders
+  const watchlistCompanyIds = new Set<number>()
+  const mockOnCompanySelect = vi.fn()
+  const mockOnCompanyHover = vi.fn()
+  const mockOnCMFToggle = vi.fn()
+
+  const defaultProps = {
+    cmf: mockUserCMF,
+    companies: mockCompanies,
+    selectedCompany: null,
+    hoveredCompany: null,
+    onCompanySelect: mockOnCompanySelect,
+    onCompanyHover: mockOnCompanyHover,
+    viewMode: 'explore' as const,
+    watchlistCompanyIds,
+    hideCenter: false,
+    onCMFToggle: mockOnCMFToggle
+  }
 
   beforeEach(() => {
-    mockOnCompanySelect = vi.fn()
-    mockOnCompanyHover = vi.fn()
+    vi.clearAllMocks()
   })
 
   describe('component initialization and props handling', () => {
     it('should render graph container with proper structure', () => {
       const { container } = render(
         <CompanyGraph
-          cmf={mockUserCMF}
-          companies={mockCompanies}
-          selectedCompany={null}
-          hoveredCompany={null}
+          {...defaultProps}
           onCompanySelect={mockOnCompanySelect}
           onCompanyHover={mockOnCompanyHover}
         />
@@ -109,10 +168,7 @@ describe('CompanyGraph - Integration & Edge Highlighting Logic', () => {
     it('should render graph controls for user interaction', () => {
       const { container } = render(
         <CompanyGraph
-          cmf={mockUserCMF}
-          companies={mockCompanies}
-          selectedCompany={null}
-          hoveredCompany={null}
+          {...defaultProps}
           onCompanySelect={mockOnCompanySelect}
           onCompanyHover={mockOnCompanyHover}
         />
@@ -137,10 +193,7 @@ describe('CompanyGraph - Integration & Edge Highlighting Logic', () => {
       // Test that component handles connection data without errors
       const { container } = render(
         <CompanyGraph
-          cmf={mockUserCMF}
-          companies={mockCompanies}
-          selectedCompany={null}
-          hoveredCompany={null}
+          {...defaultProps}
           onCompanySelect={mockOnCompanySelect}
           onCompanyHover={mockOnCompanyHover}
         />

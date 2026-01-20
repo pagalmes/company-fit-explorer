@@ -254,27 +254,25 @@ describe('ExplorationStateManager', () => {
   describe('Manual File Writing', () => {
     it('should handle manual file write in development', async () => {
       // Mock development environment
-      const originalEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'development'
-      
+      vi.stubEnv('NODE_ENV', 'development')
+
       const { writeStateToDisk } = await import('../../utils/devFileWriter')
       vi.mocked(writeStateToDisk).mockResolvedValue({ success: true, message: 'Written successfully' })
-      
+
       const result = await stateManager.writeToFile()
       expect(result).toBe(true)
       expect(writeStateToDisk).toHaveBeenCalledWith('testProfile', expect.any(Object))
-      
-      process.env.NODE_ENV = originalEnv
+
+      vi.unstubAllEnvs()
     })
 
     it('should reject manual file write in production', async () => {
-      const originalEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'production'
-      
+      vi.stubEnv('NODE_ENV', 'production')
+
       const result = await stateManager.writeToFile()
       expect(result).toBe(false)
-      
-      process.env.NODE_ENV = originalEnv
+
+      vi.unstubAllEnvs()
     })
   })
 })

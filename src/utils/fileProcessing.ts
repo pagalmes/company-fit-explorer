@@ -1,4 +1,4 @@
-import { UserCMF, UserExplorationState } from '../types';
+import { UserCMF } from '../types';
 
 /**
  * Read file content as text
@@ -287,7 +287,7 @@ export const processCMFFile = async (file: File): Promise<Partial<UserCMF>> => {
 export const createUserProfileFromFiles = async (
   resumeFile: File,
   cmfFile: File,
-  baseId: string = 'user'
+  _baseId: string = 'user'
 ): Promise<any> => {
   console.log(`📁 Files received for processing: ${resumeFile.name}, ${cmfFile.name}`);
 

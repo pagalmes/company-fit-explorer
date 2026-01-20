@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { useEffect, useState, useRef } from 'react';
 import { vi, describe, test, expect, beforeEach, afterEach } from 'vitest';
 
@@ -10,7 +10,6 @@ import { vi, describe, test, expect, beforeEach, afterEach } from 'vitest';
  */
 
 // Mock console.error to catch React warnings about infinite loops
-const originalConsoleError = console.error;
 let consoleErrorSpy: any;
 
 beforeEach(() => {

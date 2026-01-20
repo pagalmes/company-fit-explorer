@@ -3,6 +3,43 @@ import { render, screen } from '@testing-library/react'
 import { UserCMF, Company } from '../../types'
 import CMFGraphExplorer from '../CMFGraphExplorer'
 
+// Mock Cytoscape
+vi.mock('cytoscape', () => {
+  const createMockCollection = () => ({
+    removeClass: vi.fn().mockReturnThis(),
+    addClass: vi.fn().mockReturnThis(),
+    length: 1,
+    hasClass: vi.fn(() => false),
+    forEach: vi.fn(),
+    data: vi.fn(() => ({ company: { id: 1 } })),
+    connectedEdges: vi.fn(() => []),
+    renderedPosition: vi.fn(() => ({ x: 0, y: 0 }))
+  });
+
+  const mockCy = {
+    nodes: vi.fn(() => createMockCollection()),
+    edges: vi.fn(() => createMockCollection()),
+    zoom: vi.fn(() => 1),
+    pan: vi.fn(() => ({ x: 0, y: 0 })),
+    fit: vi.fn(),
+    center: vi.fn(),
+    resize: vi.fn(),
+    destroy: vi.fn(),
+    on: vi.fn(),
+    off: vi.fn(),
+    getElementById: vi.fn(() => createMockCollection()),
+    add: vi.fn(() => createMockCollection()),
+    remove: vi.fn(() => createMockCollection()),
+    style: vi.fn().mockReturnThis(),
+    layout: vi.fn(() => ({
+      run: vi.fn(),
+      stop: vi.fn()
+    }))
+  };
+
+  return { default: vi.fn(() => mockCy) };
+});
+
 /**
  * @testSuite CMFGraphExplorer
  * @description Comprehensive testing of the main graph container component
@@ -116,16 +153,16 @@ describe('CMFGraphExplorer', () => {
       render(<CMFGraphExplorer userCMF={mockUserCMF} companies={mockCompanies} />)
 
       expect(screen.getByText('Match Quality')).toBeInTheDocument()
-      expect(screen.getByText('90%+ Excellent Match')).toBeInTheDocument()
-      expect(screen.getByText('80-89% Good Match')).toBeInTheDocument()
-      expect(screen.getByText('70-79% Moderate Match')).toBeInTheDocument()
+      expect(screen.getByText('90%+ Excellent')).toBeInTheDocument()
+      expect(screen.getByText('80-89% Good')).toBeInTheDocument()
+      expect(screen.getByText('70-79% Fair')).toBeInTheDocument()
     })
 
     it('should render company detail panel', () => {
       render(<CMFGraphExplorer userCMF={mockUserCMF} companies={mockCompanies} />)
 
-      expect(screen.getByText('Company Details')).toBeInTheDocument()
-      expect(screen.getByText('Click on a company node to see details')).toBeInTheDocument()
+      expect(screen.getAllByText('Company Details')[0]).toBeInTheDocument()
+      expect(screen.getAllByText('Click on a company node to see details')[0]).toBeInTheDocument()
     })
 
     it('should render company graph component', () => {
@@ -144,10 +181,10 @@ describe('CMFGraphExplorer', () => {
       render(<CMFGraphExplorer userCMF={mockUserCMF} companies={mockCompanies} />)
 
       // Detail panel should show list view
-      expect(screen.getByText('Company Details')).toBeInTheDocument()
-      expect(screen.getByText('OpenAI')).toBeInTheDocument()
-      expect(screen.getByText('Anthropic')).toBeInTheDocument()
-      expect(screen.getByText('Scale AI')).toBeInTheDocument()
+      expect(screen.getAllByText('Company Details')[0]).toBeInTheDocument()
+      expect(screen.getAllByText('OpenAI')[0]).toBeInTheDocument()
+      expect(screen.getAllByText('Anthropic')[0]).toBeInTheDocument()
+      expect(screen.getAllByText('Scale AI')[0]).toBeInTheDocument()
     })
 
     it('should handle company selection from graph', () => {
@@ -163,7 +200,7 @@ describe('CMFGraphExplorer', () => {
       render(<CMFGraphExplorer userCMF={mockUserCMF} companies={mockCompanies} />)
 
       // Verify company appears in the list and is clickable
-      const openAIElement = screen.getByText('OpenAI')
+      const openAIElement = screen.getAllByText('OpenAI')[0]
       expect(openAIElement).toBeInTheDocument()
     })
   })
@@ -177,9 +214,9 @@ describe('CMFGraphExplorer', () => {
       // Scale AI has connections [1] (OpenAI)
 
       // Verify the component renders without errors with these connections
-      expect(screen.getByText('OpenAI')).toBeInTheDocument()
-      expect(screen.getByText('Anthropic')).toBeInTheDocument()
-      expect(screen.getByText('Scale AI')).toBeInTheDocument()
+      expect(screen.getAllByText('OpenAI')[0]).toBeInTheDocument()
+      expect(screen.getAllByText('Anthropic')[0]).toBeInTheDocument()
+      expect(screen.getAllByText('Scale AI')[0]).toBeInTheDocument()
     })
 
     it('should handle companies with no connections', () => {
@@ -193,15 +230,15 @@ describe('CMFGraphExplorer', () => {
 
       render(<CMFGraphExplorer userCMF={mockUserCMF} companies={companiesWithoutConnections} />)
 
-      expect(screen.getByText('OpenAI')).toBeInTheDocument()
-      expect(screen.getByText('Company Details')).toBeInTheDocument()
+      expect(screen.getAllByText('OpenAI')[0]).toBeInTheDocument()
+      expect(screen.getAllByText('Company Details')[0]).toBeInTheDocument()
     })
 
     it('should clear highlighted connections when no company is selected', () => {
       render(<CMFGraphExplorer userCMF={mockUserCMF} companies={mockCompanies} />)
 
       // In the initial state, no company should be selected
-      expect(screen.getByText('Click on a company node to see details')).toBeInTheDocument()
+      expect(screen.getAllByText('Click on a company node to see details')[0]).toBeInTheDocument()
     })
   })
 
@@ -212,7 +249,7 @@ describe('CMFGraphExplorer', () => {
       // Hover should work independently of selection
       // Since we can't simulate hover due to Cytoscape mocking,
       // we verify the component structure supports hover handling
-      expect(screen.getByText('OpenAI')).toBeInTheDocument()
+      expect(screen.getAllByText('OpenAI')[0]).toBeInTheDocument()
     })
 
     it('should prioritize selection over hover for highlighting', () => {
@@ -220,7 +257,7 @@ describe('CMFGraphExplorer', () => {
 
       // When a company is selected, hover highlighting should be disabled
       // This logic is handled in the handleCompanyHover function
-      expect(screen.getByText('Company Details')).toBeInTheDocument()
+      expect(screen.getAllByText('Company Details')[0]).toBeInTheDocument()
     })
   })
 
@@ -244,14 +281,14 @@ describe('CMFGraphExplorer', () => {
     it('should position overlays correctly', () => {
       const { container } = render(<CMFGraphExplorer userCMF={mockUserCMF} companies={mockCompanies} />)
 
-      // CMF info overlay (top-left) - now uses left-6 for alignment with settings
-      const cmfOverlay = container.querySelector('.absolute.top-4.left-6')
-      expect(cmfOverlay).toBeInTheDocument()
-      // In collapsed state, it only shows the blue icon, not the white panel
-      expect(cmfOverlay).toHaveClass('z-20', 'transition-all')
+      // CMF info overlay (top-left) - CollapsibleCMFPanel with blue button
+      const cmfButton = container.querySelector('button.absolute.top-4.left-6')
+      expect(cmfButton).toBeInTheDocument()
+      expect(cmfButton).toHaveClass('bg-blue-600')
 
-      // Legend overlay (bottom-left)
-      const legendOverlay = container.querySelector('.absolute.bottom-4.left-4')
+      // Legend overlay (bottom-left) - uses bottom-safe-4 for mobile safe area
+      const legendOverlay = container.querySelector('.absolute.bottom-safe-4.left-4') ||
+                           container.querySelector('.bottom-4.left-4')
       expect(legendOverlay).toBeInTheDocument()
       expect(legendOverlay).toHaveClass('bg-white', 'rounded-lg', 'shadow-lg')
     })

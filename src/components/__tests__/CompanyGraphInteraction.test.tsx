@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import CompanyGraph from '../CompanyGraph';
 
@@ -10,25 +10,22 @@ import CompanyGraph from '../CompanyGraph';
 
 // Mock Cytoscape since we're testing interaction logic, not the graph library
 vi.mock('cytoscape', () => {
+  const createMockCollection = () => ({
+    removeClass: vi.fn().mockReturnThis(),
+    addClass: vi.fn().mockReturnThis(),
+    length: 1,
+    hasClass: vi.fn(() => false),
+    forEach: vi.fn(),
+    data: vi.fn(() => ({ company: { id: 1 } })),
+    connectedEdges: vi.fn(() => []),
+    renderedPosition: vi.fn(() => ({ x: 0, y: 0 }))
+  });
+
   const mockCy = {
     on: vi.fn(),
-    nodes: vi.fn(() => ({
-      removeClass: vi.fn(),
-      addClass: vi.fn(),
-      length: 1,
-      hasClass: vi.fn(() => false)
-    })),
-    edges: vi.fn(() => ({
-      removeClass: vi.fn(),
-      addClass: vi.fn()
-    })),
-    getElementById: vi.fn(() => ({
-      length: 1,
-      addClass: vi.fn(),
-      removeClass: vi.fn(),
-      hasClass: vi.fn(() => false),
-      connectedEdges: vi.fn(() => [])
-    })),
+    nodes: vi.fn(() => createMockCollection()),
+    edges: vi.fn(() => createMockCollection()),
+    getElementById: vi.fn(() => createMockCollection()),
     zoom: vi.fn(() => 1),
     pan: vi.fn(() => ({ x: 0, y: 0 })),
     fit: vi.fn(),
@@ -39,8 +36,8 @@ vi.mock('cytoscape', () => {
     style: vi.fn(),
     layout: vi.fn(() => ({ run: vi.fn() }))
   };
-  
-  return vi.fn(() => mockCy);
+
+  return { default: vi.fn(() => mockCy) };
 });
 
 describe('CompanyGraph Interaction Regression Tests', () => {

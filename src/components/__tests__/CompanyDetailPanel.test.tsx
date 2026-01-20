@@ -218,6 +218,7 @@ describe('CompanyDetailPanel', () => {
         />
       )
 
+      expect(screen.getByText('Company Info')).toBeInTheDocument()
       expect(screen.getByText('Late Stage')).toBeInTheDocument()
       expect(screen.getByText('~1500')).toBeInTheDocument()
       expect(screen.getByText('San Francisco, CA')).toBeInTheDocument()
@@ -322,11 +323,12 @@ describe('CompanyDetailPanel', () => {
         />
       )
 
-      expect(screen.getByText('Save to Watchlist')).toBeInTheDocument()
-      expect(screen.getByText('Learn More')).toBeInTheDocument()
+      expect(screen.getByText('Setup Job Alerts')).toBeInTheDocument()
+      expect(screen.getByText('My Connections')).toBeInTheDocument()
+      expect(screen.getByText('Remove Company')).toBeInTheDocument()
     })
 
-    it('should have a close button that calls onCompanySelect', () => {
+    it('should have watchlist heart button that calls onToggleWatchlist', () => {
       render(
         <CompanyDetailPanel
           selectedCompany={selectedCompany}
@@ -340,10 +342,10 @@ describe('CompanyDetailPanel', () => {
         />
       )
 
-      const closeButton = screen.getByTitle('Close details')
-      fireEvent.click(closeButton)
-      
-      expect(mockOnCompanySelect).toHaveBeenCalledWith(null)
+      const watchlistButton = screen.getByTitle('Add to watchlist')
+      fireEvent.click(watchlistButton)
+
+      expect(mockOnToggleWatchlist).toHaveBeenCalledWith(selectedCompany.id)
     })
 
     it('should handle clicking on related companies', () => {
