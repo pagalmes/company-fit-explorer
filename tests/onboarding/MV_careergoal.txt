@@ -1,0 +1,20 @@
+Michael Vieth
+Career Goals - Short-term
+Seeking Senior/Principal/Staff level roles in Product security to lead application/product security functions which have a strong balance of security assessment, R&D, and tool development work.I have experience performing security assessments across multiple application/infrastructure stacks, developing complex solutions for common security problems, M&A work, have worked in highly regulated environment (CME Group) and consulting (specifically for application security and infrastructure work). I am considering startups in late funding rounds and public companies. My target compensation is 400-500k.
+
+I’m looking for a company culture where the product sells itself, the people I work with are invested in technical expertise, and intrinsically are interested in complex technical matters. I want to work with other people who are self-starters and are dedicated to a philosophy of life-long learning. I want my colleagues and myself to enjoy working and genuinely have fun. I don’t mind working from an office but I have to be bought in on the company and the coworkers I surround myself with.
+Must-Haves
+High Velocity of Execution: A dynamic pace of work where we move and learn quickly, with a tangible sense of progress and clear visibility of results and outcomes.
+Growth-Oriented Environment: A workplace that actively promotes continuous learning and development, offering challenging roles, strong leadership sponsorship, and clear opportunities for professional growth.
+People-First Mentality: A company culture that truly values its people as its most important asset, demonstrating care and support for individuals.
+Location & Schedule: Ideally, hybrid work in San Diego or Remote. Alternatively, hybrid in San Diego County, Los Angeles, Riverside County, or Orange County. Schedule flexibility to balance work and family responsibilities.
+
+Want-to-have
+Driving Product & Platform Strategy: Defining and executing product strategies to build and scale platforms that deliver significant impact to millions of users.
+Fostering Cross-Functional Collaboration: Championing open-minded collaboration across teams and with external partners to build innovative solutions.
+Building High-Performing Product Teams: Cultivating and leading product teams to achieve ambitious goals, fostering a culture of collaboration and excellence.
+Customer-Obsessed Culture: I thrive in environments where teams are genuinely invested in and obsessed with delivering exceptional customer experiences.
+Ensuring Product Excellence & Craftsmanship: Obsessing over the details to craft high-quality, highly polished products that address complex challenges and delight users.
+Accountability & Humility - A culture that fosters kind accountability, allowing us to openly acknowledge shortcomings and commit to collective solutions, epitomized by a "disagree and commit" philosophy.
+Building for Developer Success: Deeply understanding developers needs to create products that truly resonate and empower them, especially within new and emerging technical landscapes.
+Exploring Technical Depths & Innovation: Diving into the intricacies of new technologies, particularly in areas like AI models and their tool stacks, to identify opportunities for innovation.

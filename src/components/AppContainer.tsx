@@ -3,7 +3,7 @@ import DreamyFirstContact from './DreamyFirstContact';
 import CMFGraphExplorerNew from './CMFGraphExplorerNew';
 import { useFirstTimeExperience } from '../hooks/useFirstTimeExperience';
 import { createUserProfileFromFiles } from '../utils/fileProcessing';
-import { UserCMF, UserExplorationState } from '../types';
+import { UserExplorationState } from '../types';
 import { activeUserProfile } from '../data/companies';
 import { createProfileForUser } from '../utils/userProfileCreation';
 import { migrateCompanyLogos } from '../utils/logoMigration';
@@ -147,47 +147,68 @@ const AppContainer: React.FC = () => {
 
   const handleFirstTimeComplete = async (resumeFile: File, cmfFile: File) => {
     setIsLoading(true);
-    
+
     try {
-      // Process the uploaded files to create user profile
-      const newUserCMF: UserCMF = await createUserProfileFromFiles(resumeFile, cmfFile, activeUserProfile.id);
-      
-      // Create new user exploration state with the processed profile
+      // Process the uploaded files and discover companies using Perplexity
+      // Returns: { id, name, cmf: {...}, baseCompanies: [...] }
+      const discoveryData = await createUserProfileFromFiles(resumeFile, cmfFile, activeUserProfile.id);
+
+      console.log('📦 Received discovery data:', {
+        name: discoveryData.name,
+        cmf: discoveryData.cmf,
+        companiesCount: discoveryData.baseCompanies?.length || 0
+      });
+
+      // Create new user exploration state with the discovered profile and companies
       const newUserProfile: UserExplorationState = {
         ...activeUserProfile,
-        cmf: newUserCMF,
-        name: newUserCMF.name
+        id: discoveryData.id || activeUserProfile.id,
+        name: discoveryData.name || discoveryData.cmf.name,
+        cmf: discoveryData.cmf,
+        baseCompanies: discoveryData.baseCompanies || [],
+        addedCompanies: [], // User hasn't manually added any yet
+        removedCompanyIds: [],
+        watchlistCompanyIds: [],
+        viewMode: 'explore'
       };
-      
+
+      console.log('✅ Created user profile with', newUserProfile.baseCompanies.length, 'companies');
+
       // Mark as visited
       markAsVisited();
-      
-      // Simulate processing time for dramatic effect
+
+      // Simulate processing time for dramatic effect (let user read "universe awakening" message)
       setTimeout(() => {
         setUserProfile(newUserProfile);
         setIsLoading(false);
         setIsTransitioning(true);
-        
+
         // After a brief transition, remove transition state
         setTimeout(() => {
           setIsTransitioning(false);
         }, 1000);
       }, 3000);
-      
+
     } catch (error) {
-      console.error('Error processing files:', error);
-      
-      // Fallback to default profile if processing fails
-      setTimeout(() => {
-        setUserProfile(activeUserProfile);
-        markAsVisited();
-        setIsLoading(false);
-        setIsTransitioning(true);
-        
-        setTimeout(() => {
-          setIsTransitioning(false);
-        }, 1000);
-      }, 2000);
+      console.error('❌ Error processing files:', error);
+
+      // Show error to user instead of silently falling back
+      const errorMessage = error instanceof Error ? error.message : 'Failed to process files';
+
+      setIsLoading(false);
+
+      // Show user-friendly error message
+      alert(
+        `🔍 Company Discovery Failed\n\n` +
+        `${errorMessage}\n\n` +
+        `What you can try:\n` +
+        `• Check that your PERPLEXITY_API_KEY is configured correctly\n` +
+        `• Verify your files are readable (PDF/TXT/DOCX)\n` +
+        `• Try uploading different files\n` +
+        `• Contact support if the issue persists`
+      );
+
+      // Don't mark as visited - let them try again on the first-time screen
     }
   };
 

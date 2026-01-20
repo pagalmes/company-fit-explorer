@@ -1,4 +1,108 @@
-import { UserCMF } from '../types';
+import { UserCMF, UserExplorationState } from '../types';
+
+/**
+ * Read file content as text
+ */
+async function readFileAsText(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      resolve(text);
+    };
+
+    reader.onerror = () => reject(new Error(`Failed to read file: ${file.name}`));
+
+    // For PDFs, this will get binary content, but for text files it works
+    // TODO: Add PDF parsing library (pdf-parse) for better PDF support
+    reader.readAsText(file);
+  });
+}
+
+/**
+ * Call Perplexity API to discover companies based on CV and CMF files
+ */
+async function discoverCompaniesWithPerplexity(
+  resumeText: string,
+  cmfText: string,
+  candidateName: string
+): Promise<any> {
+  console.log('🔍 Calling Perplexity company discovery API...');
+
+  // First, extract basic CMF data from the text files
+  const extractedCMF = extractCMFFromText(cmfText, resumeText);
+
+  const response = await fetch('/api/llm/perplexity/discover-companies', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      candidateName: candidateName || extractedCMF.name || 'User',
+      targetRole: extractedCMF.targetRole || 'Professional Role',
+      experience: extractedCMF.experience || [],
+      targetCompanies: extractedCMF.targetCompanies || 'Growth-oriented companies',
+      mustHaves: extractedCMF.mustHaves || [],
+      wantToHave: extractedCMF.wantToHave || [],
+      resumeText,
+      cmfText
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Perplexity API error: ${response.status}`);
+  }
+
+  const result = await response.json();
+
+  if (!result.success) {
+    throw new Error(result.error || 'Failed to discover companies');
+  }
+
+  return result.data;
+}
+
+/**
+ * Extract CMF data from text using improved regex patterns
+ */
+function extractCMFFromText(cmfText: string, resumeText: string): Partial<UserCMF> {
+  const combinedText = `${cmfText}\n\n${resumeText}`;
+
+  return {
+    name: extractNameFromText(combinedText),
+    targetRole: extractRoleFromText(cmfText) || extractRoleFromText(resumeText),
+    mustHaves: extractMustHavesFromText(cmfText),
+    wantToHave: extractWantToHaveFromText(cmfText),
+    experience: extractExperienceFromText(resumeText),
+    targetCompanies: extractCompanyTypesFromText(cmfText)
+  };
+}
+
+/**
+ * Extract candidate name from text
+ */
+function extractNameFromText(text: string): string | undefined {
+  // Look for common name patterns at the start of resumes/CVs
+  const namePatterns = [
+    /^([A-Z][a-z]+\s+[A-Z][a-z]+)/m, // "John Doe" at start
+    /Name:\s*([A-Z][a-z]+\s+[A-Z][a-z]+)/i,
+    /([A-Z][A-Z\s]+)\s*\n/m // ALL CAPS name
+  ];
+
+  for (const pattern of namePatterns) {
+    const match = text.match(pattern);
+    if (match && match[1]) {
+      const name = match[1].trim();
+      if (name.length > 3 && name.length < 50) {
+        return name;
+      }
+    }
+  }
+
+  return undefined;
+}
 
 // Simple text analysis to extract information from files
 const extractExperienceFromText = (text: string): string[] => {
@@ -176,28 +280,53 @@ export const processCMFFile = async (file: File): Promise<Partial<UserCMF>> => {
   });
 };
 
+/**
+ * NEW: Create user profile and discover companies using Perplexity API
+ * Returns the full discovery data (CMF + companies)
+ */
 export const createUserProfileFromFiles = async (
-  resumeFile: File, 
-  cmfFile: File, 
+  resumeFile: File,
+  cmfFile: File,
   baseId: string = 'user'
-): Promise<UserCMF> => {
-  // TODO: Replace with sophisticated extraction logic in future
-  // For now, return empty profile regardless of file content
+): Promise<any> => {
   console.log(`📁 Files received for processing: ${resumeFile.name}, ${cmfFile.name}`);
-  console.log('🔧 Simple extraction disabled - returning empty profile (will be replaced with sophisticated logic)');
-  
-  // Extract just the name from resume filename for personalization
-  const fileName = resumeFile.name.split('.')[0];
-  const name = fileName.charAt(0).toUpperCase() + fileName.slice(1).replace(/[_-]/g, ' ');
-  
-  // Return completely empty CMF profile
-  return {
-    id: baseId,
-    name: name || 'User',
-    targetRole: '',
-    mustHaves: [],
-    wantToHave: [],
-    experience: [],
-    targetCompanies: ''
-  };
+
+  try {
+    // Read file contents
+    const resumeText = await readFileAsText(resumeFile);
+    const cmfText = await readFileAsText(cmfFile);
+
+    console.log(`📄 Resume text length: ${resumeText.length} characters`);
+    console.log(`📄 CMF text length: ${cmfText.length} characters`);
+
+    // Extract name from filename for fallback
+    const fileName = resumeFile.name.split('.')[0];
+    const candidateName = fileName.charAt(0).toUpperCase() + fileName.slice(1).replace(/[_-]/g, ' ');
+
+    // Call Perplexity API to discover companies
+    console.log('🚀 Starting Perplexity company discovery...');
+    const discoveryData = await discoverCompaniesWithPerplexity(
+      resumeText,
+      cmfText,
+      candidateName
+    );
+
+    console.log(`✅ Discovery complete!`);
+    console.log(`   Profile: ${discoveryData.cmf.name}`);
+    console.log(`   Target Role: ${discoveryData.cmf.targetRole}`);
+    console.log(`   Companies discovered: ${discoveryData.baseCompanies.length}`);
+    console.log(`   Must-Haves: ${discoveryData.cmf.mustHaves.length} items`);
+    console.log(`   Want-to-Have: ${discoveryData.cmf.wantToHave.length} items`);
+
+    // Return the full discovery data (CMF + companies)
+    // The calling code (AppContainer) will handle merging this into UserExplorationState
+    return discoveryData;
+
+  } catch (error) {
+    console.error('❌ Error in Perplexity company discovery:', error);
+
+    // Throw error with descriptive message instead of silently falling back
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    throw new Error(`Company discovery failed: ${errorMessage}`);
+  }
 };

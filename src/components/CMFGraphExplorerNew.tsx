@@ -20,6 +20,7 @@ import { loadPanelState, savePanelState } from '../utils/panelStorage';
 import CollapsibleCMFPanel from './CollapsibleCMFPanel';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useSwipeGesture } from '../hooks/useSwipeGesture';
+import EmptyCosmosState from './EmptyCosmosState';
 // Using inline SVG icons instead of lucide-react
 const SearchIcon = () => (
   <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -752,6 +753,25 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
     setLLMConfigured(llmService.isConfigured());
   }, []);
 
+  // ===== COMPANY DISCOVERY HANDLER =====
+
+  const handleDiscoveryComplete = useCallback((discoveryData: any) => {
+    console.log('📦 Discovery complete, updating state...', discoveryData);
+
+    // Update the state manager with new CMF and companies
+    stateManager.updateUserCMF(discoveryData.cmf);
+
+    if (discoveryData.baseCompanies && discoveryData.baseCompanies.length > 0) {
+      // Add all discovered companies
+      discoveryData.baseCompanies.forEach((company: Company) => {
+        stateManager.addCompany(company, 'base');
+      });
+    }
+
+    // Force re-render
+    forceUpdate();
+  }, [stateManager, forceUpdate]);
+
   // ===== RENDER =====
 
   if (isLoading) {
@@ -763,6 +783,16 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   }
 
   const userCMF = stateManager.getUserCMF();
+
+  // Show empty state if user has no companies
+  if (allCompanies.length === 0) {
+    return (
+      <EmptyCosmosState
+        userId={stateManager.getCurrentState().id}
+        onDiscoveryComplete={handleDiscoveryComplete}
+      />
+    );
+  }
 
   return (
     <div className="flex bg-transparent" style={{ height: '100dvh' }}>

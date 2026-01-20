@@ -27,6 +27,7 @@
     "test:critical": "playwright test tests/e2e/critical-interactions.spec.ts",
     "test:regression": "npm run test:performance && npm run test:critical",
     "eval:company-extraction": "tsx evals/company-extraction/run-eval.ts",
+    "eval:company-discovery": "tsx evals/company-discovery/run-eval-small.ts",
     "setup:supabase": "node scripts/setup-supabase.js",
     "db:migrate": "node scripts/setup-supabase.js",
     "db:reset": "echo 'This will reset your database. Are you sure?' && node scripts/setup-supabase.js --reset",
@@ -37,6 +38,7 @@
     "cleanup:supabase-links": "npx tsx scripts/cleanup-supabase-links.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.57.2",
     "@types/uuid": "^10.0.0",

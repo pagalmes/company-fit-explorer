@@ -1,0 +1,94 @@
+‍ Michael Vieth – Application Security Engineer
+Remote/San Diego, CA, 92130 | 765-894-0664 | michael.vieth.pl@gmail.com
+Technical Skills Overview:
+·
+·
+·
+·
+·
+·
+·
+Web Application Penetration Testing and Ethical Hacking - CVE-2019-11655, CVE-2019-11656, CVE-2019-11657, eWPT Certified,
+eWPTx Certified, BURP Suite, Wireshark, Nmap
+Software Development and Scripting – PHP , Go, Java, C#, Python, JavaScript, VisualStudio, IntelliJ IDE, PHP Storm IDE, PyCharm IDE, GIT
+Infrastructure Design and Operations – Docker, Kubernetes, Container & Orchestration security, Linux Administration & Security
+(Ubuntu/Debian/CentOS)
+Experience:
+Salesforce – Senior Product Security Engineer 9/2021 – Present
+Developed an external attack surface management tool which identifies HTTP assets and ties external scan data with internal data sources to
+provide insights into related source code, product owners, engineering points of contact, and architecture/service documentation to assist
+with assessment scoping and prioritization
+Developed a custom application risk assessment calculator, based on CVSSv3.1, to better prioritize assessment requests
+Developed custom automation for assessment in-take and backlog management in our native ticketing system (GUS)
+Analyzed architecture diagrams and documentation for assessment targets to create a customized risk driven scope for whitebox manual
+application security assessments
+·
+Conducted manual security assessments of Docker/Kubernetes deployments, applications, and application infrastructure
+·
+Threat modeled third party applications and performed security assessments targeting attack surface identified during the threat model
+·
+Mentored junior team members by helping them identify and improve gaps in their skill set
+·
+Developed a mentoring methodology to assist junior team members with up-skilling the following fundamentals required to be successful in
+application security: Application Security, Docker, and Kubernetes
+Bishop Fox – Application Security Subcontractor 1/2022 – 01/2023
+·
+Identified, exploited, and reported vulnerabilities as part of strictly scoped blackbox and whitebox manual application security assessments
+nVisium – Principal Application Security Consultant 10/2020 – 9/2021
+·
+Conducted blackbox and whitebox manual application security assessments
+·
+Performed manual assessments of Docker/Kubernetes deployments
+·
+Delivered threat modeling training discussing the basics of threat modeling and practical ways to scale threat modeling with the Python
+Threat Modeling (PyTM) framework
+·
+Developed internal testing methodologies for Docker/Kubernetes for consultants to reference during engagements
+·
+Mentored junior team members by helping them identify and improve gaps in their skill set
+Red Point Security – Application Security Subcontractor 10/2019 – 10/2020
+·
+Identified, exploited, and reported vulnerabilities as part of strictly scoped blackbox and whitebox manual application security assessments
+CME Group – Application Security Engineer III 09/2016 – 10/2020
+·
+Created an internal Capture the Flag (CTF) competition using the ctfd platform for which I developed multiple CTF challenges spanning
+various Application Security vulnerability classes
+·
+Conducted blackbox and whitebox manual application security assessments of web applications and thick clients
+·
+Developed intern program for the application security team and mentored junior team members
+·
+Created Proof of Concepts for various web application vulnerabilities (OWASP Top 10 and others)
+·
+Wrote comprehensive technical reports and presented findings to developers and project managers
+·
+Designed and assisted with implementation of a secure container and orchestrator ecosystem
+Bank of America - Red Team Summer Intern 06/2016 - 08/2016
+·
+Performed a red team network assessment in collaboration with senior team members
+CME Group - Application Security Intern ·
+Participated in manual assessments of internal web applications and reported findings to developers
+Bank of America - Global Information Security Summer Intern ·
+Developed tools to combine threat intelligence from multiple OSINT feeds to a central location for analysts to review
+·
+Performed DAST scanning using IBM AppScan and manual application security assessments using Burp Suite
+Pk Reality LLC – Founder ·
+Full stack development and deployment including website UI, Rest API, and game servers (PHP , Java, SQL, CSS, HTML)
+·
+Integrated PayPal and mobile payments for purchases of digital gaming currency
+·
+Created and sold premium scripts for a bot client for a large MMORPG (Java)
+01/2016 - 06/2016
+06/2015 - 08/2015
+01/2013 - 08/2015
+Education:
+DePaul University – Chicago, Illinois
+·
+·
+·
+·
+Masters in Cybersecurity with a concentration in Computer Security (3.87 GPA) Masters Thesis - Cyber operations range [CORE]: a lightweight and scalable platform for cybersecurity education through gamification
+B.S. in Information Assurance and Security Engineering Major, Computer Science Minor (3.6 GPA) HackIllinois 2017 – Cure Me Track (1st) – Project Companion Alexa Skill
+2020
+2018
+Page 2
