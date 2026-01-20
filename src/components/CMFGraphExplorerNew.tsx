@@ -20,8 +20,9 @@ import { loadPanelState, savePanelState } from '../utils/panelStorage';
 import CollapsibleCMFPanel from './CollapsibleCMFPanel';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useSwipeGesture } from '../hooks/useSwipeGesture';
-import EmptyCosmosState from './EmptyCosmosState';
 import { track } from '../lib/analytics';
+import EmptyCosmosState from './EmptyCosmosState';
+import { createUserProfileFromFiles } from '../utils/fileProcessing';
 // Using inline SVG icons instead of lucide-react
 const SearchIcon = () => (
   <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -749,31 +750,60 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
     savePanelState({ cmfCollapsed: newState });
   }, [isCMFPanelCollapsed]);
 
+  // ===== FILE UPLOAD & DISCOVERY =====
+
+  const handleFilesUploaded = useCallback(async (resumeFile: File, cmfFile: File) => {
+    setIsLoading(true);
+
+    try {
+      // Process the uploaded files and discover companies using Perplexity
+      console.log('📁 Processing files:', resumeFile.name, cmfFile.name);
+      const discoveryData = await createUserProfileFromFiles(resumeFile, cmfFile, stateManager.getCurrentState().id);
+
+      console.log('📦 Received discovery data:', {
+        name: discoveryData.name,
+        cmf: discoveryData.cmf,
+        companiesCount: discoveryData.baseCompanies?.length || 0
+      });
+
+      // Update the state manager with new CMF and companies
+      stateManager.updateUserCMF(discoveryData.cmf);
+
+      if (discoveryData.baseCompanies && discoveryData.baseCompanies.length > 0) {
+        // Add all discovered companies
+        discoveryData.baseCompanies.forEach((company: Company) => {
+          stateManager.addCompany(company);
+        });
+      }
+
+      // Force re-render
+      forceCompaniesUpdate();
+
+      // Analytics: Track discovery completed (use onboarding_completed event)
+      track('onboarding_completed', { company_count: discoveryData.baseCompanies?.length || 0 });
+
+    } catch (error) {
+      console.error('❌ Error processing files:', error);
+      alert(
+        `🔍 Company Discovery Failed\n\n` +
+        `${error instanceof Error ? error.message : 'Unknown error'}\n\n` +
+        `What you can try:\n` +
+        `• Check that your PERPLEXITY_API_KEY is configured correctly\n` +
+        `• Verify your files are readable (PDF/TXT/DOCX)\n` +
+        `• Try uploading different files\n` +
+        `• Contact support if the issue persists`
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [stateManager, forceCompaniesUpdate]);
+
   // ===== LLM SETTINGS =====
 
   // Update LLM configured status on mount and periodically
   useEffect(() => {
     setLLMConfigured(llmService.isConfigured());
   }, []);
-
-  // ===== COMPANY DISCOVERY HANDLER =====
-
-  const handleDiscoveryComplete = useCallback((discoveryData: any) => {
-    console.log('📦 Discovery complete, updating state...', discoveryData);
-
-    // Update the state manager with new CMF and companies
-    stateManager.updateUserCMF(discoveryData.cmf);
-
-    if (discoveryData.baseCompanies && discoveryData.baseCompanies.length > 0) {
-      // Add all discovered companies
-      discoveryData.baseCompanies.forEach((company: Company) => {
-        stateManager.addCompany(company);
-      });
-    }
-
-    // Force re-render
-    forceUpdate();
-  }, [stateManager, forceUpdate]);
 
   // ===== RENDER =====
 
@@ -790,10 +820,58 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   // Show empty state if user has no companies
   if (allCompanies.length === 0) {
     return (
-      <EmptyCosmosState
-        userId={stateManager.getCurrentState().id}
-        onDiscoveryComplete={handleDiscoveryComplete}
-      />
+      <>
+        <EmptyCosmosState
+          onAddCompany={() => setShowAddCompanyModal(true)}
+          onPasteList={() => setShowPasteModal(true)}
+          onScreenshotImport={() => setShowScreenshotModal(true)}
+          onFilesUploaded={handleFilesUploaded}
+        />
+
+        {/* Modals - needed for empty state actions */}
+        {showAddCompanyModal && (
+          <AddCompanyModal
+            isOpen={showAddCompanyModal}
+            onClose={() => setShowAddCompanyModal(false)}
+            onAddCompany={handleAddCompany}
+            onBatchUpdateCompanies={handleBatchUpdateCompanies}
+            existingCompanies={allCompanies}
+            onCheckForRemovedCompany={checkForRemovedCompany}
+            onRestoreRemovedCompany={restoreRemovedCompany}
+            onCompanySelect={handleCompanySelect}
+            onToggleWatchlist={handleToggleWatchlist}
+            isInWatchlist={isInWatchlist}
+            userCMF={userCMF}
+            viewMode={viewMode}
+          />
+        )}
+
+        <PasteCompanyListModal
+          isOpen={showPasteModal}
+          onClose={() => setShowPasteModal(false)}
+          onImportCompanies={handleBatchAddCompanies}
+          existingCompanies={stateManager.getAllCompanies()}
+          viewMode={viewMode}
+          onShowLLMSettings={() => setShowLLMSettings(true)}
+        />
+
+        <ScreenshotCompanyImportModal
+          isOpen={showScreenshotModal}
+          onClose={() => setShowScreenshotModal(false)}
+          onImportCompanies={handleBatchAddCompanies}
+          existingCompanies={stateManager.getAllCompanies()}
+          viewMode={viewMode}
+          onShowLLMSettings={() => setShowLLMSettings(true)}
+        />
+
+        {showLLMSettings && (
+          <SettingsViewModal
+            isOpen={showLLMSettings}
+            onClose={() => setShowLLMSettings(false)}
+            onShowKeyboardShortcuts={() => setShowKeyboardShortcuts(true)}
+          />
+        )}
+      </>
     );
   }
 
