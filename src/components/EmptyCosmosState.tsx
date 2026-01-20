@@ -19,7 +19,7 @@ const EmptyCosmosState: React.FC<EmptyCosmosStateProps> = ({
   onScreenshotImport,
   onFilesUploaded,
 }) => {
-  const [showFileUpload, setShowFileUpload] = useState(false);
+  const [showFileUpload, setShowFileUpload] = useState(true);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [cmfFile, setCmfFile] = useState<File | null>(null);
 
