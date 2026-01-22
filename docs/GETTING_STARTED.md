@@ -61,6 +61,18 @@ For high-quality company logos:
   ```
 - Falls back to Clearbit logos if not configured
 
+#### PostHog Analytics (Usage Tracking)
+For tracking user behavior and product analytics:
+
+- Create account at [PostHog](https://posthog.com) (free tier: 1M events/month)
+- Get your project API key from Project Settings → Project API Key
+- Add to `.env.local`:
+  ```bash
+  NEXT_PUBLIC_POSTHOG_KEY=phc_your_project_key
+  NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+  ```
+- If not configured, analytics are disabled silently (no errors)
+
 ## Development Modes
 
 ### Quick Start (Recommended for Testing)

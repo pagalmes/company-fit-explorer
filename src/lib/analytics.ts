@@ -25,9 +25,18 @@ export interface AnalyticsProperties {
   [key: string]: unknown
 }
 
+// Track if PostHog has been initialized
+let posthogInitialized = false
+
+// Check if PostHog is configured
+export function isAnalyticsConfigured(): boolean {
+  return !!process.env.NEXT_PUBLIC_POSTHOG_KEY
+}
+
 // Initialize Posthog (call once on app mount)
 export function initAnalytics() {
   if (typeof window === 'undefined') return
+  if (posthogInitialized) return
 
   // Skip analytics in E2E tests (Playwright sets this)
   if (typeof navigator !== 'undefined' && navigator.userAgent.includes('Playwright')) {
@@ -37,50 +46,65 @@ export function initAnalytics() {
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
 
   if (!key) {
-    console.warn('Posthog key not configured')
+    // Warning logged in PosthogProvider, no need to duplicate here
     return
   }
 
-  posthog.init(key, {
-    api_host: '/ingest',
-    ui_host: 'https://us.posthog.com',
-    person_profiles: 'identified_only',
-    capture_pageview: true,
-    capture_pageleave: true,
-    autocapture: true,
-    persistence: 'localStorage',
-    loaded: (posthog) => {
-      // Debug mode in development
-      if (process.env.NODE_ENV === 'development') {
-        posthog.debug()
+  try {
+    posthog.init(key, {
+      api_host: '/ingest',
+      ui_host: 'https://us.posthog.com',
+      person_profiles: 'identified_only',
+      capture_pageview: true,
+      capture_pageleave: true,
+      autocapture: true,
+      persistence: 'localStorage',
+      loaded: (posthog) => {
+        // Debug mode in development
+        if (process.env.NODE_ENV === 'development') {
+          posthog.debug()
+        }
       }
-    }
-  })
+    })
+    posthogInitialized = true
+  } catch (error) {
+    console.error('Failed to initialize PostHog:', error)
+  }
 }
 
 // Identify user (call after authentication)
 export function identifyUser(userId: string, properties?: { email?: string; [key: string]: unknown }) {
   if (typeof window === 'undefined') return
+  if (!posthogInitialized) return
 
-  posthog.identify(userId, properties)
+  try {
+    posthog.identify(userId, properties)
+  } catch {
+    // Silent failure
+  }
 }
 
 // Reset user identity (call on logout)
 export function resetUser() {
   if (typeof window === 'undefined') return
+  if (!posthogInitialized) return
 
-  posthog.reset()
+  try {
+    posthog.reset()
+  } catch {
+    // Silent failure
+  }
 }
 
 // Track custom event
 export function track(event: AnalyticsEvent, properties?: AnalyticsProperties) {
   if (typeof window === 'undefined') return
+  if (!posthogInitialized) return
 
   try {
     posthog.capture(event, properties)
-  } catch (error) {
+  } catch {
     // Silent failure - analytics should never break the app
-    console.error('Analytics error:', error)
   }
 }
 
