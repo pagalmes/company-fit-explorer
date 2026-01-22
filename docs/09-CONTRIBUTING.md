@@ -182,9 +182,9 @@ Update documentation when:
 **Files to update:**
 
 - `README.md` - If user-facing changes
-- `docs/GETTING_STARTED.md` - If setup changes
-- `docs/DATA_STRUCTURES.md` - If data models change
-- `docs/CUSTOMIZATION.md` - If customization options change
+- `docs/01-GETTING_STARTED.md` - If setup changes
+- `docs/04-DATA_STRUCTURES.md` - If data models change
+- `docs/05-CUSTOMIZATION.md` - If customization options change
 - Inline code comments - For complex logic
 
 ## Commit Messages

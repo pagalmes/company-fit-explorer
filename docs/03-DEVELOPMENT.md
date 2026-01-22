@@ -317,7 +317,7 @@ Create `.vscode/launch.json`:
 
 ### Common Issues
 
-See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for solutions.
+See [08-TROUBLESHOOTING.md](08-TROUBLESHOOTING.md) for solutions.
 
 ## Git Workflow
 
@@ -391,6 +391,6 @@ NEXT_PUBLIC_LOGO_DEV_KEY=
 ## Need Help?
 
 - Check [Testing Guide](guides/TESTING.md)
-- See [Troubleshooting](TROUBLESHOOTING.md)
-- Review [Contributing Guide](CONTRIBUTING.md)
+- See [Troubleshooting](08-TROUBLESHOOTING.md)
+- Review [Contributing Guide](09-CONTRIBUTING.md)
 - Open an issue on GitHub

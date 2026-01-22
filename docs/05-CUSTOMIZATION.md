@@ -232,6 +232,6 @@ localStorage.setItem(key, JSON.stringify(isCollapsed));
 
 ## See Also
 
-- [Data Structures](DATA_STRUCTURES.md) - Understanding data models
-- [Development Guide](DEVELOPMENT.md) - Development workflow
+- [Data Structures](04-DATA_STRUCTURES.md) - Understanding data models
+- [Development Guide](03-DEVELOPMENT.md) - Development workflow
 - [Testing Guide](guides/TESTING.md) - Testing your changes

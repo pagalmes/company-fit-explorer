@@ -55,22 +55,22 @@ Get your key at [console.anthropic.com](https://console.anthropic.com/)
 ## 📚 Documentation
 
 ### Getting Started
-- **[Complete Setup Guide](docs/GETTING_STARTED.md)** - Detailed installation and configuration
+- **[Complete Setup Guide](docs/01-GETTING_STARTED.md)** - Detailed installation and configuration
 - **[Project Structure](docs/guides/PROJECT_STRUCTURE.md)** - Code organization and architecture
 - **[Testing Guide](docs/guides/TESTING.md)** - Unit, performance, and E2E tests
 
 ### User Guides
-- **[Customization Guide](docs/CUSTOMIZATION.md)** - Customize CMF profile and companies
-- **[Data Structures](docs/DATA_STRUCTURES.md)** - TypeScript interfaces and data models
-- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Customization Guide](docs/05-CUSTOMIZATION.md)** - Customize CMF profile and companies
+- **[Data Structures](docs/04-DATA_STRUCTURES.md)** - TypeScript interfaces and data models
+- **[Troubleshooting](docs/08-TROUBLESHOOTING.md)** - Common issues and solutions
 
 ### Architecture
 - **[Persistence Architecture](docs/architecture/PERSISTENCE_ARCHITECTURE.md)** - Database and storage strategies
 - **[LLM Integration](docs/guides/LLM_INTEGRATION.md)** - AI features and setup
 
 ### Development
-- **[Development Guide](docs/DEVELOPMENT.md)** - TDD workflow and development servers
-- **[Contributing Guide](docs/CONTRIBUTING.md)** - How to contribute to the project
+- **[Development Guide](docs/03-DEVELOPMENT.md)** - TDD workflow and development servers
+- **[Contributing Guide](docs/09-CONTRIBUTING.md)** - How to contribute to the project
 
 ## 🧪 Testing
 
@@ -96,7 +96,7 @@ We follow Test-Driven Development. Before contributing:
 3. Implement features to make tests pass
 4. Ensure coverage stays above 85%
 
-See [Contributing Guide](docs/CONTRIBUTING.md) for detailed guidelines.
+See [Contributing Guide](docs/09-CONTRIBUTING.md) for detailed guidelines.
 
 ## 📄 License
 

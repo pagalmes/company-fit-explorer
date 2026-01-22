@@ -272,6 +272,6 @@ const exampleCompany: Company = {
 
 ## See Also
 
-- [Customization Guide](CUSTOMIZATION.md) - How to modify CMF and company data
+- [Customization Guide](05-CUSTOMIZATION.md) - How to modify CMF and company data
 - [Persistence Architecture](architecture/PERSISTENCE_ARCHITECTURE.md) - Storage strategies
 - [LLM Integration](guides/LLM_INTEGRATION.md) - AI analysis details

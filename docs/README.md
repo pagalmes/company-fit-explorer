@@ -31,7 +31,7 @@ Security implementation and best practices:
 
 Product specifications and feature documentation:
 
-- **[Product Overview](./PRODUCT_OVERVIEW.md)** - Feature specifications, user flows, and product requirements
+- **[Product Overview](./10-PRODUCT_OVERVIEW.md)** - Feature specifications, user flows, and product requirements
 
 ## 🗂️ Database Documentation
 
@@ -39,7 +39,7 @@ Database setup and configuration (located in `/supabase/`):
 
 - **[RLS Setup](../supabase/RLS_SETUP.md)** - Row-Level Security configuration
 - **[Dashboard Security Settings](../supabase/DASHBOARD_SECURITY_SETTINGS.md)** - Supabase dashboard configuration
-- **[Supabase Setup](../docs/SUPABASE_SETUP.md)** - Complete database setup guide
+- **[Supabase Setup](../docs/02-SUPABASE_SETUP.md)** - Complete database setup guide
 
 ## 📝 Quick Navigation
 

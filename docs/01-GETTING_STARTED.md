@@ -39,7 +39,7 @@ For user authentication and cloud data persistence:
   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
   ```
 - Run automated setup: `npm run setup:supabase`
-- 📖 See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) for complete guide
+- 📖 See [02-SUPABASE_SETUP.md](02-SUPABASE_SETUP.md) for complete guide
 
 #### Anthropic Claude (AI Analysis)
 For intelligent company matching and analysis:
@@ -163,14 +163,14 @@ For new users, the app shows a magical onboarding flow:
 
 ## Next Steps
 
-- **[Customization Guide](CUSTOMIZATION.md)** - Customize your CMF profile and companies
-- **[Data Structures](DATA_STRUCTURES.md)** - Understand the data models
-- **[Development Guide](DEVELOPMENT.md)** - Set up TDD workflow
+- **[Customization Guide](05-CUSTOMIZATION.md)** - Customize your CMF profile and companies
+- **[Data Structures](04-DATA_STRUCTURES.md)** - Understand the data models
+- **[Development Guide](03-DEVELOPMENT.md)** - Set up TDD workflow
 - **[Testing Guide](guides/TESTING.md)** - Run tests and add new ones
 
 ## Troubleshooting
 
-See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common issues and solutions.
+See [08-TROUBLESHOOTING.md](08-TROUBLESHOOTING.md) for common issues and solutions.
 
 ## Production Build
 
@@ -182,4 +182,4 @@ npm run build
 npm run preview
 ```
 
-For deployment, see [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md).
+For deployment, see [06-VERCEL_DEPLOYMENT.md](06-VERCEL_DEPLOYMENT.md).

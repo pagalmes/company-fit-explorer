@@ -346,6 +346,6 @@ PORT=3001 npm run dev
 
 ## See Also
 
-- [Getting Started](GETTING_STARTED.md) - Installation guide
-- [Development Guide](DEVELOPMENT.md) - Development workflow
+- [Getting Started](01-GETTING_STARTED.md) - Installation guide
+- [Development Guide](03-DEVELOPMENT.md) - Development workflow
 - [Testing Guide](guides/TESTING.md) - Testing documentation
