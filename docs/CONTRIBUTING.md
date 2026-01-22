@@ -120,19 +120,19 @@ export default function CompanyCard(props: any) {
 
 ```typescript
 // ✅ Good - Descriptive test names
-describe('CompanyCard', () => {
-  it('should display company name and match score', () => {
+describe("CompanyCard", () => {
+  it("should display company name and match score", () => {
     // Test implementation
   });
 
-  it('should call onSelect when clicked', () => {
+  it("should call onSelect when clicked", () => {
     // Test implementation
   });
 });
 
 // ❌ Avoid - Vague test names
-describe('CompanyCard', () => {
-  it('works', () => {
+describe("CompanyCard", () => {
+  it("works", () => {
     // ...
   });
 });
@@ -180,6 +180,7 @@ Update documentation when:
 - Fixing bugs that affect usage
 
 **Files to update:**
+
 - `README.md` - If user-facing changes
 - `docs/GETTING_STARTED.md` - If setup changes
 - `docs/DATA_STRUCTURES.md` - If data models change
@@ -199,6 +200,7 @@ type(scope): description
 ```
 
 **Types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation only
@@ -208,6 +210,7 @@ type(scope): description
 - `chore`: Maintenance tasks
 
 **Examples:**
+
 ```bash
 feat(graph): add company filtering by industry
 fix(watchlist): resolve cross-tab sync issue
@@ -219,6 +222,7 @@ test(performance): add infinite loop detection
 
 - Check [existing issues](https://github.com/your-repo/issues)
 - Read [documentation](README.md)
+- Join our [Discord server](https://discord.gg/pG2GNRseyh)
 - Ask in discussions
 
 Thank you for contributing! 🎉
