@@ -113,13 +113,35 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.PERPLEXITY_API_KEY;
 
     if (!apiKey) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'PERPLEXITY_API_KEY not configured. Please add it to your environment variables.'
+      // Graceful degradation: return empty profile with warning instead of error
+      console.warn('⚠️ PERPLEXITY_API_KEY not configured - returning empty company list');
+      return NextResponse.json({
+        success: true,
+        warning: 'PERPLEXITY_API_KEY not configured. Company discovery is disabled. Add the key to your environment variables to enable AI-powered company discovery.',
+        data: {
+          id: `user-${Date.now()}`,
+          name: discoveryRequest.candidateName || 'User',
+          cmf: {
+            id: `cmf-${Date.now()}`,
+            name: discoveryRequest.candidateName || 'User',
+            mustHaves: discoveryRequest.mustHaves || [],
+            wantToHave: discoveryRequest.wantToHave || [],
+            experience: discoveryRequest.experience || [],
+            targetRole: discoveryRequest.targetRole || 'Professional Role',
+            targetCompanies: discoveryRequest.targetCompanies || 'Growth-oriented companies'
+          },
+          baseCompanies: [],
+          addedCompanies: [],
+          removedCompanyIds: [],
+          watchlistCompanyIds: [],
+          viewMode: 'explore' as const
         },
-        { status: 400 }
-      );
+        citations: [],
+        usage: {
+          model: 'none',
+          tokensUsed: 0
+        }
+      });
     }
 
     console.log(`🔍 Starting Perplexity company discovery for: ${discoveryRequest.candidateName}`);

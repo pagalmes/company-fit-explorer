@@ -61,7 +61,16 @@ async function discoverCompaniesWithPerplexity(
     throw new Error(result.error || 'Failed to discover companies');
   }
 
-  return result.data;
+  // Log warning if present (e.g., Perplexity API key not configured)
+  if (result.warning) {
+    console.warn(`⚠️ ${result.warning}`);
+  }
+
+  // Return data with warning attached if present
+  return {
+    ...result.data,
+    _warning: result.warning
+  };
 }
 
 /**
@@ -311,15 +320,23 @@ export const createUserProfileFromFiles = async (
       candidateName
     );
 
-    console.log(`✅ Discovery complete!`);
+    // Log warning if Perplexity was not available
+    if (discoveryData._warning) {
+      console.warn(`⚠️ Discovery warning: ${discoveryData._warning}`);
+      console.log(`   Profile created with empty company list`);
+    } else {
+      console.log(`✅ Discovery complete!`);
+      console.log(`   Companies discovered: ${discoveryData.baseCompanies.length}`);
+    }
+
     console.log(`   Profile: ${discoveryData.cmf.name}`);
     console.log(`   Target Role: ${discoveryData.cmf.targetRole}`);
-    console.log(`   Companies discovered: ${discoveryData.baseCompanies.length}`);
     console.log(`   Must-Haves: ${discoveryData.cmf.mustHaves.length} items`);
     console.log(`   Want-to-Have: ${discoveryData.cmf.wantToHave.length} items`);
 
     // Return the full discovery data (CMF + companies)
     // The calling code (AppContainer) will handle merging this into UserExplorationState
+    // _warning is passed through for the UI to display if needed
     return discoveryData;
 
   } catch (error) {
