@@ -102,6 +102,9 @@ dist
 .out
 .storybook-out
 
+# TypeScript build outputs
+tsconfig.tsbuildinfo
+
 # Temporary folders
 tmp/
 temp/
