@@ -222,7 +222,7 @@ test(performance): add infinite loop detection
 
 - Check [existing issues](https://github.com/your-repo/issues)
 - Read [documentation](README.md)
-- Join our [Discord server](https://discord.gg/pG2GNRseyh)
+- Join our [Discord server](https://discord.gg/nuj6GrVt) (if invite expired, open a GitHub issue)
 - Ask in discussions
 
 Thank you for contributing! 🎉

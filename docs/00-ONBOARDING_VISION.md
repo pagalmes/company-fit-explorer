@@ -16,6 +16,8 @@ This document will help you get up to speed on the vision, methodology, and phil
 
 **Action**: Get added to the `cosmos-pm` repo (product documentation)
 
+> **Note**: The `cosmos-pm` repo is private. To request access, join our [Discord server](https://discord.gg/nuj6GrVt) and share your GitHub username in the #dev-onboarding channel. If the Discord invite has expired, open an issue on GitHub requesting access.
+
 The `cosmos-pm` repo contains our product strategy and vision documents. Start with the foundation documents in this order:
 
 1. **01-cosmos-vision.md** — The soul of Cosmos. Why we exist and what we believe about job searching.
