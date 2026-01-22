@@ -49,6 +49,7 @@
 
 ### Technical Debt
 - [ ] Fix memory exhaustion test - CompanyGraph.integration.test.tsx (see docs/testing/known-test-issues.md) #tech-debt
+- [ ] Fix flaky "Critical interactions" E2E test @Nathan #tech-debt
 
 ### Minor
 - [ ] Admin: Add confirmation to the delete account button
