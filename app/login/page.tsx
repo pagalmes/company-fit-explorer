@@ -5,9 +5,6 @@ import { useRouter } from 'next/navigation'
 import { LogIn, Mail, Lock, Loader2, Sparkles } from 'lucide-react'
 import { CosmosBackground } from '../../src/components/CosmosBackground'
 
-// Force dynamic rendering for auth pages
-export const dynamic = 'force-dynamic'
-
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

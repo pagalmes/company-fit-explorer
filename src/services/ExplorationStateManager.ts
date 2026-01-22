@@ -283,6 +283,15 @@ export class ExplorationStateManager {
   }
 
   /**
+   * Update the user's CMF data
+   */
+  updateUserCMF(cmf: UserExplorationState['cmf']): void {
+    this.currentState.cmf = { ...cmf };
+    this.persistState();
+    console.log('Updated user CMF:', cmf.name);
+  }
+
+  /**
    * Get complete current state (for development/debugging)
    */
   getCurrentState(): UserExplorationState {
