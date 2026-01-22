@@ -44,8 +44,8 @@ app.get('/api/dev/health', (req, res) => {
 // Backup companies.ts file
 app.post('/api/dev/backup-companies', async (req, res) => {
   try {
-    const companiesPath = path.join(__dirname, 'src', 'data', 'companies.ts');
-    const backupPath = path.join(__dirname, 'src', 'data', `companies.backup.${Date.now()}.ts`);
+    const companiesPath = path.join(__dirname, '..', 'src', 'data', 'companies.ts');
+    const backupPath = path.join(__dirname, '..', 'src', 'data', `companies.backup.${Date.now()}.ts`);
     
     // Read current file and create backup
     const currentContent = await fs.readFile(companiesPath, 'utf8');
@@ -79,7 +79,7 @@ app.post('/api/dev/write-companies', async (req, res) => {
       });
     }
 
-    const companiesPath = path.join(__dirname, 'src', 'data', 'companies.ts');
+    const companiesPath = path.join(__dirname, '..', 'src', 'data', 'companies.ts');
     
     // Generate new file content
     const fileContent = generateCompaniesFileContent(profileName, state);
@@ -88,7 +88,7 @@ app.post('/api/dev/write-companies', async (req, res) => {
     
     // Create backup only if enabled
     if (ENABLE_BACKUPS) {
-      const backupPath = path.join(__dirname, 'src', 'data', `companies.backup.${Date.now()}.ts`);
+      const backupPath = path.join(__dirname, '..', 'src', 'data', `companies.backup.${Date.now()}.ts`);
       const currentContent = await fs.readFile(companiesPath, 'utf8');
       await fs.writeFile(backupPath, currentContent, 'utf8');
       backupInfo = path.basename(backupPath);

@@ -196,7 +196,7 @@ echo "NEXT_PUBLIC_DEV_PERSISTENCE_MODE=file-only" >> .env.local
 npm run dev
 
 # 3. Start file server for automatic updates (optional)
-node dev-server.js
+node scripts/dev-server.cjs
 
 # 4. Make changes in UI
 # → Changes save directly to companies.ts

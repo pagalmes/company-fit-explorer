@@ -36,7 +36,7 @@ export class ExplorationStateManager {
       if (this.devServerAvailable) {
         console.log('🔧 Development file server detected - automatic companies.ts updates enabled');
       } else {
-        console.log('ℹ️ Development file server not available - run `node dev-server.js` to enable automatic file updates');
+        console.log('ℹ️ Development file server not available - run `node scripts/dev-server.cjs` to enable automatic file updates');
         logFileWriteInstructions(this.currentState);
       }
     }

@@ -12,7 +12,7 @@
     "preview": "next start",
     "lint": "eslint . --ext ts,tsx",
     "lint:fix": "eslint . --ext ts,tsx --fix",
-    "dev:file-server": "node dev-server.cjs",
+    "dev:file-server": "node scripts/dev-server.cjs",
     "dev:llm-server": "cd server && PORT=3002 npm start",
     "dev:full": "concurrently --names \"REACT,FILE,LLM\" --prefix-colors \"cyan,green,yellow\" \"npm run dev\" \"npm run dev:file-server\" \"npm run dev:llm-server\"",
     "test": "vitest run --no-coverage || exit 0",
