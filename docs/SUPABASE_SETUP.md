@@ -71,27 +71,70 @@ If the automated setup doesn't work, follow these manual steps:
 
 ### 1. Create Database Schema
 
-Go to your Supabase dashboard → **SQL Editor** and run these files in order:
+Go to your Supabase dashboard → **SQL Editor** and run:
 
-1. **Run `supabase/migrations/001_initial_schema.sql`**
-   - Creates core tables (`profiles`, `user_company_data`, `user_preferences`, `user_invitations`)
-   - Sets up indexes and triggers
-   - Inserts sample data
+**Run `supabase/migrations/001_initial_schema.sql`**
+- Creates all core tables (`profiles`, `user_company_data`, `user_preferences`, `user_invitations`, `waitlist`)
+- Sets up indexes and triggers
+- Enables Row Level Security with all policies
+- Grants permissions to authenticated, anon, and service_role
 
-2. **Run `supabase/migrations/002_row_level_security.sql`**
-   - Enables Row Level Security
-   - Creates policies for data access control
-   - Sets up admin and user permissions
+### 2. Enable Auto-Profile Creation (Recommended)
 
-### 2. Verify Tables Created
+Run this in the SQL Editor to automatically create profiles when users sign up:
+
+```sql
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, full_name)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name')
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+```
+
+### 3. Create Your First Admin User
+
+Since the app is invite-only, you need to manually create the first admin:
+
+1. Go to **Authentication** → **Users** → **Add user**
+2. Create a user with your email and a password
+3. Copy the user's UUID from the Users table
+4. Run this in the SQL Editor (if you didn't enable the trigger above):
+   ```sql
+   INSERT INTO profiles (id, email, full_name, role)
+   VALUES (
+     'paste-uuid-here',
+     'your-email@example.com',
+     'Your Name',
+     'admin'
+   );
+   ```
+5. If you enabled the auto-profile trigger, just promote the user to admin:
+   ```sql
+   UPDATE profiles SET role = 'admin' WHERE email = 'your-email@example.com';
+   ```
+
+### 4. Verify Tables Created
 
 In Supabase dashboard → **Table Editor**, you should see:
 - `profiles` - User authentication data
 - `user_company_data` - Personalized company lists
-- `user_preferences` - Watchlist and UI preferences  
-- `user_invitations` - Invite system (optional)
+- `user_preferences` - Watchlist and UI preferences
+- `user_invitations` - Invite system
+- `waitlist` - Public waitlist signups
 
-### 3. Test the Application
+### 5. Test the Application
 
 Start your dev server and verify everything works:
 
@@ -211,7 +254,7 @@ SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
 
 ### Adding New Migrations
 
-1. Create new file: `supabase/migrations/003_your_migration.sql`
+1. Create new file: `supabase/migrations/002_your_migration.sql`
 2. Add the migration to `scripts/setup-supabase.js`
 3. Test locally first
 4. Document changes in this guide
