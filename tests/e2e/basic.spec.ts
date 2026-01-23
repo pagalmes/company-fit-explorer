@@ -20,7 +20,7 @@ test.describe('Application Smoke Tests', () => {
     await page.waitForTimeout(2000);
     
     // Verify the page title is correct
-    await expect(page).toHaveTitle(/Company Fit Explorer/);
+    await expect(page).toHaveTitle(/Cosmos/);
     
     // Wait for some content to appear (body should have loaded)
     await page.waitForSelector('body', { timeout: 10000 });

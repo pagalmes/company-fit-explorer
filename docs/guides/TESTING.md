@@ -1,4 +1,4 @@
-# Testing Guide - Company Fit Explorer
+# Testing Guide - Cosmos
 
 [![Tests](https://img.shields.io/badge/tests-212%20passing-brightgreen)](./TESTING.md)
 [![Coverage](https://img.shields.io/badge/coverage-85%25-green)](./TESTING.md#coverage-reports)
@@ -333,4 +333,4 @@ Key areas covered:
 3. **Coverage Thresholds**: Prevent coverage degradation
 4. **Parallel Execution**: Faster test runs
 
-This comprehensive testing setup ensures that the Company Fit Explorer maintains high quality and reliability as new features are added and existing functionality is modified.
+This comprehensive testing setup ensures that Cosmos maintains high quality and reliability as new features are added and existing functionality is modified.

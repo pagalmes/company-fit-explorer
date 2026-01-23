@@ -1,6 +1,6 @@
 # Data Structures
 
-TypeScript interfaces and data models used in Company Fit Explorer.
+TypeScript interfaces and data models used in Cosmos.
 
 ## Core Interfaces
 

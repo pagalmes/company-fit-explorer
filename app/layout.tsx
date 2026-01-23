@@ -5,9 +5,9 @@ import { PosthogProvider } from '../src/components/PosthogProvider'
 import '../src/styles/index.css'
 
 export const metadata: Metadata = {
-  title: 'Company Fit Explorer',
+  title: 'Cosmos',
   description: 'Interactive company graph explorer to find companies that fit your career preferences',
-  applicationName: 'Company Fit Explorer',
+  applicationName: 'Cosmos',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',

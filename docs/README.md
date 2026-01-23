@@ -1,6 +1,6 @@
-# Company Fit Explorer Documentation
+# Cosmos Documentation
 
-This directory contains comprehensive documentation for the Company Fit Explorer project, organized by category for easy navigation.
+This directory contains comprehensive documentation for the Cosmos project, organized by category for easy navigation.
 
 ## 🏗️ Architecture
 

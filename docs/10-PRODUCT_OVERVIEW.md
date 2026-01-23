@@ -1,7 +1,7 @@
-# Company Fit Explorer - Product Overview
+# Cosmos - Product Overview
 
 ## **Product Concept**
-Company Fit Explorer is an interactive visualization tool that helps professionals discover and evaluate companies that align with their career goals. It uses a Candidate Market Fit (CMF) approach to position companies in a visual graph based on how well they match the user's preferences, requirements, and career aspirations.
+Cosmos is an interactive visualization tool that helps professionals discover and evaluate companies that align with their career goals. It uses a Candidate Market Fit (CMF) approach to position companies in a visual graph based on how well they match the user's preferences, requirements, and career aspirations.
 
 ## **Core Value Proposition**
 Instead of browsing endless company lists or job boards, users get a personalized, visual map of their career opportunities with companies positioned based on actual fit scores and relationships to their professional profile.

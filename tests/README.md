@@ -1,6 +1,6 @@
 # Test Organization
 
-This directory contains all tests for the Company Fit Explorer project, organized following 2025 React TypeScript best practices.
+This directory contains all tests for the Cosmos project, organized following 2025 React TypeScript best practices.
 
 ## Directory Structure
 

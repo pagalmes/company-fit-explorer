@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Company Fit Explorer uses a centralized logo system that fetches company logos from Logo.dev through a CORS-safe proxy. This system replaces the deprecated Clearbit Logo API.
+Cosmos uses a centralized logo system that fetches company logos from Logo.dev through a CORS-safe proxy. This system replaces the deprecated Clearbit Logo API.
 
 ## Architecture
 

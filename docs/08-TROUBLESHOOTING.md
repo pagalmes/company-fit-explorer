@@ -1,6 +1,6 @@
 # Troubleshooting
 
-Common issues and solutions for Company Fit Explorer.
+Common issues and solutions for Cosmos.
 
 ## Installation & Setup Issues
 
