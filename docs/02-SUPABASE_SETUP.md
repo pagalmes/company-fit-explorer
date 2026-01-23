@@ -1,21 +1,19 @@
-# Supabase Setup Guide for CMF Explorer
+# Supabase Setup Guide for Cosmos
 
-This guide walks you through setting up a Supabase instance for the CMF Explorer application.
+This guide walks you through setting up a Supabase instance for the Cosmos application.
 
-## 🚀 Quick Setup (Automated)
+## Prerequisites
 
-### Prerequisites
 1. **Supabase Account**: Sign up at [supabase.com](https://supabase.com)
-2. **Node.js**: Ensure you have Node.js installed
-3. **Repository**: Clone this repository
+2. **Repository**: Clone this repository
 
-### Step 1: Create Supabase Project
+## Step 1: Create Supabase Project
 
 1. Go to [supabase.com](https://supabase.com) and create a new project
 2. Choose a name, database password, and region
-3. Wait for the project to be created (takes ~2 minutes)
+3. Wait for the project to be created
 
-### Step 2: Get Your Credentials
+## Step 2: Get Your Credentials
 
 In your Supabase dashboard:
 
@@ -25,7 +23,7 @@ In your Supabase dashboard:
    - **anon public** key (starts with `eyJ...`)
    - **service_role** key (starts with `eyJ...`)
 
-### Step 3: Configure Environment
+## Step 3: Configure Environment
 
 1. Copy the environment template:
    ```bash
@@ -39,47 +37,19 @@ In your Supabase dashboard:
    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
    ```
 
-### Step 4: Run Automated Setup
+## Step 4: Create Database Schema
 
-```bash
-# Install dependencies (if not already done)
-npm install
+Go to your Supabase dashboard → **SQL Editor** and run the contents of:
 
-# Run the automated setup script
-node scripts/setup-supabase.js
-```
+**`supabase/migrations/001_initial_schema.sql`**
 
-The script will:
-- ✅ Create all required database tables
-- ✅ Set up Row Level Security policies  
-- ✅ Insert sample data for development
-- ✅ Validate the setup
+This creates:
+- All core tables (`profiles`, `user_company_data`, `user_preferences`, `user_invitations`, `waitlist`)
+- Indexes and triggers
+- Row Level Security with all policies
+- Permissions for authenticated, anon, and service_role
 
-### Step 5: Start the Application
-
-```bash
-npm run dev
-```
-
-Visit `http://localhost:3000` - you should see the CMF Explorer with sample data!
-
----
-
-## 🔧 Manual Setup (If Automated Setup Fails)
-
-If the automated setup doesn't work, follow these manual steps:
-
-### 1. Create Database Schema
-
-Go to your Supabase dashboard → **SQL Editor** and run:
-
-**Run `supabase/migrations/001_initial_schema.sql`**
-- Creates all core tables (`profiles`, `user_company_data`, `user_preferences`, `user_invitations`, `waitlist`)
-- Sets up indexes and triggers
-- Enables Row Level Security with all policies
-- Grants permissions to authenticated, anon, and service_role
-
-### 2. Enable Auto-Profile Creation (Recommended)
+## Step 5: Enable Auto-Profile Creation (Recommended)
 
 Run this in the SQL Editor to automatically create profiles when users sign up:
 
@@ -103,14 +73,18 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 ```
 
-### 3. Create Your First Admin User
+## Step 6: Create Your First Admin User
 
 Since the app is invite-only, you need to manually create the first admin:
 
 1. Go to **Authentication** → **Users** → **Add user**
 2. Create a user with your email and a password
 3. Copy the user's UUID from the Users table
-4. Run this in the SQL Editor (if you didn't enable the trigger above):
+4. If you enabled the auto-profile trigger (Step 5), promote the user to admin:
+   ```sql
+   UPDATE profiles SET role = 'admin' WHERE email = 'your-email@example.com';
+   ```
+5. If you didn't enable the trigger, insert the profile manually:
    ```sql
    INSERT INTO profiles (id, email, full_name, role)
    VALUES (
@@ -120,12 +94,8 @@ Since the app is invite-only, you need to manually create the first admin:
      'admin'
    );
    ```
-5. If you enabled the auto-profile trigger, just promote the user to admin:
-   ```sql
-   UPDATE profiles SET role = 'admin' WHERE email = 'your-email@example.com';
-   ```
 
-### 4. Verify Tables Created
+## Step 7: Verify Tables Created
 
 In Supabase dashboard → **Table Editor**, you should see:
 - `profiles` - User authentication data
@@ -134,17 +104,18 @@ In Supabase dashboard → **Table Editor**, you should see:
 - `user_invitations` - Invite system
 - `waitlist` - Public waitlist signups
 
-### 5. Test the Application
-
-Start your dev server and verify everything works:
+## Step 8: Start the Application
 
 ```bash
+npm install
 npm run dev
 ```
 
+Visit `http://localhost:3000` - you should see the app ready to use.
+
 ---
 
-## 🗂️ Database Schema Overview
+## Database Schema Overview
 
 ### Core Tables
 
@@ -158,27 +129,29 @@ npm run dev
 - Contains CMF profile data (skills, preferences)
 - JSONB format for flexible data structure
 
-#### `user_preferences`  
+#### `user_preferences`
 - User's watchlist company IDs
 - Removed company IDs
 - UI preferences (view mode, etc.)
 
-#### `user_invitations` (Optional)
+#### `user_invitations`
 - Manages invite-only access
 - Tracks invitation tokens and usage
 - Links to inviting user
+
+#### `waitlist`
+- Public waitlist for early access signups
 
 ### Key Features
 
 - **Row Level Security**: Users can only access their own data
 - **Admin Access**: Admin users can manage all data
-- **Sample Data**: Development-ready sample data included
 - **Automatic Timestamps**: `created_at` and `updated_at` auto-managed
 - **Foreign Key Constraints**: Data integrity enforcement
 
 ---
 
-## 🔐 Security Configuration
+## Security Configuration
 
 ### Row Level Security (RLS)
 
@@ -191,18 +164,16 @@ RLS is enabled by default with these policies:
 ### Development vs Production
 
 **Development:**
-- Sample data is automatically created
 - RLS can be temporarily disabled for debugging
 - Detailed logging enabled
 
-**Production:**  
-- Remove sample data before deployment
+**Production:**
 - Ensure RLS is enabled
 - Use service role key only in API routes (server-side)
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -211,8 +182,8 @@ RLS is enabled by default with these policies:
 - Verify service role key is used in API routes
 - Ensure user is authenticated for client operations
 
-#### "Table doesn't exist" errors  
-- Run the migration scripts in order
+#### "Table doesn't exist" errors
+- Run the migration SQL in the SQL Editor
 - Check Supabase dashboard → Table Editor
 - Verify SQL executed without errors
 
@@ -233,42 +204,33 @@ RLS is enabled by default with these policies:
 3. **Server Logs**: Check terminal output for API errors
 4. **Sample Queries**: Test database access in Supabase SQL Editor
 
-### Debugging Commands
+### Debugging
 
-```bash
-# Test database connection
-node -e "
-const { createClient } = require('@supabase/supabase-js');
-const supabase = createClient('$NEXT_PUBLIC_SUPABASE_URL', '$SUPABASE_SERVICE_ROLE_KEY');
-supabase.from('profiles').select('count').then(r => console.log('Connection:', r.error ? 'Failed' : 'Success'));
-"
-
-# Check table structure  
-# Run in Supabase SQL Editor:
+Check table structure in Supabase SQL Editor:
+```sql
 SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
 ```
 
 ---
 
-## 🔄 Database Migrations
+## Database Migrations
 
 ### Adding New Migrations
 
 1. Create new file: `supabase/migrations/002_your_migration.sql`
-2. Add the migration to `scripts/setup-supabase.js`
-3. Test locally first
-4. Document changes in this guide
+2. Run the SQL in Supabase SQL Editor
+3. Document changes in this guide
 
 ### Migration Best Practices
 
 - **Incremental**: Each migration should be self-contained
-- **Reversible**: Consider how to undo changes if needed  
+- **Reversible**: Consider how to undo changes if needed
 - **Tested**: Test migrations on a copy of production data
 - **Documented**: Update this guide with schema changes
 
 ---
 
-## 📊 Monitoring and Maintenance
+## Monitoring and Maintenance
 
 ### Regular Tasks
 
@@ -283,7 +245,3 @@ SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
 - **JSONB Queries**: Use GIN indexes for JSONB columns if needed
 - **Connection Pooling**: Monitor connection usage
 - **Query Analysis**: Use EXPLAIN for slow queries
-
----
-
-Your CMF Explorer database is now ready! 🚀
