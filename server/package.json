@@ -1,7 +1,7 @@
 {
-  "name": "company-fit-explorer-api",
+  "name": "cosmos-api",
   "version": "1.0.0",
-  "description": "Backend API for Company Fit Explorer LLM integration",
+  "description": "Backend API for Cosmos LLM integration",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

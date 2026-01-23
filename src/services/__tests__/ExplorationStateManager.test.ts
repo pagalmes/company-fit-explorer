@@ -208,7 +208,7 @@ describe('ExplorationStateManager', () => {
       stateManager.toggleWatchlist(mockCompany.id)
       
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        'cmf-exploration-state',
+        'cosmos-exploration-state',
         expect.stringContaining('"watchlistCompanyIds":[1001]')
       )
     })

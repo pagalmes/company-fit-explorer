@@ -37,7 +37,7 @@ describe('panelStorage', () => {
       savePanelState(newState)
 
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        'cmf-explorer-panel-state-v2',
+        'cosmos-panel-state',
         expect.stringContaining('"cmfCollapsed":true')
       )
     })
@@ -99,7 +99,7 @@ describe('panelStorage', () => {
       const result = loadPanelState()
       
       expect(result).toEqual(mockState)
-      expect(mockLocalStorage.getItem).toHaveBeenCalledWith('cmf-explorer-panel-state-v2')
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith('cosmos-panel-state')
     })
 
     it('should return default state when no stored data exists', () => {

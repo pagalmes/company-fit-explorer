@@ -97,7 +97,7 @@ After completing this onboarding:
 
 Once you've completed the vision onboarding:
 
-1. **Star the repo** — Help us grow visibility by [starring the project on GitHub](https://github.com/pagalmes/company-fit-explorer)
+1. **Star the repo** — Help us grow visibility by [starring the project on GitHub](https://github.com/pagalmes/cosmos-app)
 2. **[Getting Started](01-GETTING_STARTED.md)** — Set up your development environment
 3. **[Contributing](09-CONTRIBUTING.md)** — Our TDD workflow and code standards
 4. **[Product Overview](10-PRODUCT_OVERVIEW.md)** — Detailed product documentation

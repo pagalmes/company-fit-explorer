@@ -36,7 +36,7 @@ describe('removedCompaniesStorage', () => {
       saveRemovedCompaniesToStorage(companyIds)
 
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        'cmf-explorer-removed-companies',
+        'cosmos-removed-companies',
         JSON.stringify([1, 2, 3])
       )
     })
@@ -47,7 +47,7 @@ describe('removedCompaniesStorage', () => {
       saveRemovedCompaniesToStorage(companyIds)
 
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        'cmf-explorer-removed-companies',
+        'cosmos-removed-companies',
         JSON.stringify([])
       )
     })
@@ -110,7 +110,7 @@ describe('removedCompaniesStorage', () => {
       const result = loadRemovedCompaniesFromStorage()
       
       expect(result).toEqual(new Set([1, 2, 3]))
-      expect(mockLocalStorage.getItem).toHaveBeenCalledWith('cmf-explorer-removed-companies')
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith('cosmos-removed-companies')
     })
 
     it('should return empty set when no stored data exists', () => {
@@ -190,7 +190,7 @@ describe('removedCompaniesStorage', () => {
     it('should clear storage successfully', () => {
       clearRemovedCompaniesStorage()
 
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('cmf-explorer-removed-companies')
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('cosmos-removed-companies')
     })
 
     it('should handle localStorage removeItem errors gracefully', () => {
@@ -230,7 +230,7 @@ describe('removedCompaniesStorage', () => {
       removeFromRemovedCompanies(2)
 
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        'cmf-explorer-removed-companies',
+        'cosmos-removed-companies',
         JSON.stringify([1, 3])
       )
     })
@@ -242,7 +242,7 @@ describe('removedCompaniesStorage', () => {
       removeFromRemovedCompanies(4)
 
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        'cmf-explorer-removed-companies',
+        'cosmos-removed-companies',
         JSON.stringify([1, 2, 3])
       )
     })
@@ -253,7 +253,7 @@ describe('removedCompaniesStorage', () => {
       removeFromRemovedCompanies(1)
 
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        'cmf-explorer-removed-companies',
+        'cosmos-removed-companies',
         JSON.stringify([])
       )
     })
@@ -296,7 +296,7 @@ describe('removedCompaniesStorage', () => {
       
       expect(() => saveRemovedCompaniesToStorage(largeSet)).not.toThrow()
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        'cmf-explorer-removed-companies',
+        'cosmos-removed-companies',
         expect.stringContaining('999')
       )
     })

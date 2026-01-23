@@ -112,6 +112,12 @@ const AppContainer: React.FC = () => {
           
           // Clear localStorage only if NOT using local fallback
           if (process.env.NEXT_PUBLIC_USE_LOCAL_FALLBACK !== 'true') {
+            // Clear new cosmos keys
+            localStorage.removeItem('cosmos-exploration-state');
+            localStorage.removeItem('cosmos-watchlist');
+            localStorage.removeItem('cosmos-custom-companies');
+            localStorage.removeItem('cosmos-removed-companies');
+            // Also clear legacy keys for backwards compatibility
             localStorage.removeItem('cmf-exploration-state');
             localStorage.removeItem('cmf-explorer-watchlist');
             localStorage.removeItem('cmf-explorer-custom-companies');

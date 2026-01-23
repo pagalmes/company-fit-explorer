@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { CosmosBackground } from '../src/components/CosmosBackground'
-import appPreviewImage from '../assets/images/company-fit-explorer-ui.jpg'
+import appPreviewImage from '../assets/images/cosmos-ui.jpg'
 import { Sparkles, Mail, Rocket, LogIn, X, ZoomIn } from 'lucide-react'
 import Link from 'next/link'
 

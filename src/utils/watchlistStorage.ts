@@ -5,7 +5,8 @@
 
 import { WatchlistData, StorageError } from '../types/watchlist';
 
-const WATCHLIST_STORAGE_KEY = 'cmf-explorer-watchlist';
+const WATCHLIST_STORAGE_KEY = 'cosmos-watchlist';
+const LEGACY_WATCHLIST_KEY = 'cmf-explorer-watchlist';
 const STORAGE_VERSION = 1;
 const MAX_RETRIES = 3;
 
@@ -147,8 +148,8 @@ export const saveWatchlistToStorage = async (
         // Try to free up space by removing older data
         try {
           const keys = Object.keys(localStorage);
-          const oldKeys = keys.filter(key => 
-            key.startsWith('cmf-explorer-') && 
+          const oldKeys = keys.filter(key =>
+            (key.startsWith('cmf-explorer-') || key.startsWith('cosmos-')) &&
             key !== WATCHLIST_STORAGE_KEY
           );
           
@@ -193,7 +194,19 @@ export const loadWatchlistFromStorage = (userId?: string): {
   }
 
   try {
-    const stored = localStorage.getItem(WATCHLIST_STORAGE_KEY);
+    let stored = localStorage.getItem(WATCHLIST_STORAGE_KEY);
+
+    // Migrate from legacy key if new key doesn't exist
+    if (!stored) {
+      const legacyStored = localStorage.getItem(LEGACY_WATCHLIST_KEY);
+      if (legacyStored) {
+        // Migrate to new key
+        localStorage.setItem(WATCHLIST_STORAGE_KEY, legacyStored);
+        localStorage.removeItem(LEGACY_WATCHLIST_KEY);
+        stored = legacyStored;
+      }
+    }
+
     if (!stored) {
       return { data: new Set() };
     }

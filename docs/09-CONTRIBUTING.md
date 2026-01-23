@@ -1,4 +1,4 @@
-# Contributing to Company Fit Explorer
+# Contributing to Cosmos
 
 Thank you for your interest in contributing! We follow Test-Driven Development to ensure code quality.
 
@@ -7,8 +7,8 @@ Thank you for your interest in contributing! We follow Test-Driven Development t
 1. **Fork the repository**
 2. **Clone your fork:**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/company-fit-explorer.git
-   cd company-fit-explorer
+   git clone https://github.com/YOUR_USERNAME/cosmos-app.git
+   cd cosmos-app
    ```
 3. **Install dependencies:**
    ```bash

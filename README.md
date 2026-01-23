@@ -1,10 +1,10 @@
-# Cosmos App
+# Cosmos
 
 A visual career exploration tool that helps you discover companies aligned with your skills, goals, and preferences. See your perfect matches at a glance with an interactive graph showing how companies relate to your Candidate Market Fit (CMF) profile.
 
-> **Want to try it?** [Join the waitlist](https://company-fit-explorer.vercel.app/) for early access.
+> **Want to try it?** [Join the waitlist](https://cosmos-find.me/) for early access.
 
-![Cosmos App](./assets/images/company-fit-explorer-ui.jpg)
+![Cosmos](./assets/images/cosmos-ui.jpg)
 
 ## ✨ Features
 
@@ -23,7 +23,7 @@ A visual career exploration tool that helps you discover companies aligned with 
 ```bash
 # Clone and install
 git clone <repository-url>
-cd company-fit-explorer
+cd cosmos-app
 npm install
 
 # Start the app

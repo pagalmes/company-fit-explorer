@@ -102,7 +102,7 @@ export const useWatchlist = (options: UseWatchlistOptions): UseWatchlistReturn =
     
     // Also listen for native storage events
     const handleNativeStorageChange = (event: StorageEvent) => {
-      if (event.key === 'cmf-explorer-watchlist' && event.newValue) {
+      if ((event.key === 'cosmos-watchlist' || event.key === 'cmf-explorer-watchlist') && event.newValue) {
         try {
           const parsed = JSON.parse(event.newValue);
           const ids = Array.isArray(parsed) ? parsed : parsed.companyIds || [];

@@ -3,7 +3,8 @@
  * Handles persistence of companies that users want to hide from exploration
  */
 
-const REMOVED_COMPANIES_STORAGE_KEY = 'cmf-explorer-removed-companies';
+const REMOVED_COMPANIES_STORAGE_KEY = 'cosmos-removed-companies';
+const LEGACY_REMOVED_KEY = 'cmf-explorer-removed-companies';
 
 export const saveRemovedCompaniesToStorage = (companyIds: Set<number>): void => {
   try {
@@ -15,7 +16,18 @@ export const saveRemovedCompaniesToStorage = (companyIds: Set<number>): void => 
 
 export const loadRemovedCompaniesFromStorage = (): Set<number> => {
   try {
-    const stored = localStorage.getItem(REMOVED_COMPANIES_STORAGE_KEY);
+    let stored = localStorage.getItem(REMOVED_COMPANIES_STORAGE_KEY);
+
+    // Migrate from legacy key if new key doesn't exist
+    if (!stored) {
+      const legacyStored = localStorage.getItem(LEGACY_REMOVED_KEY);
+      if (legacyStored) {
+        localStorage.setItem(REMOVED_COMPANIES_STORAGE_KEY, legacyStored);
+        localStorage.removeItem(LEGACY_REMOVED_KEY);
+        stored = legacyStored;
+      }
+    }
+
     if (stored) {
       const ids = JSON.parse(stored) as number[];
       return new Set(ids);

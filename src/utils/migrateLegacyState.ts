@@ -21,9 +21,9 @@ export interface LegacyMigrationResult {
  */
 export const hasLegacyState = (): boolean => {
   try {
-    const watchlistData = localStorage.getItem('cmf-explorer-watchlist');
-    const removedData = localStorage.getItem('cmf-explorer-removed-companies');
-    const customCompaniesData = localStorage.getItem('cmf-explorer-custom-companies');
+    const watchlistData = localStorage.getItem('cosmos-watchlist');
+    const removedData = localStorage.getItem('cosmos-removed-companies');
+    const customCompaniesData = localStorage.getItem('cosmos-custom-companies');
     
     return !!(watchlistData || removedData || customCompaniesData);
   } catch (error) {
@@ -37,9 +37,9 @@ export const hasLegacyState = (): boolean => {
  */
 export const migrateLegacyState = (): LegacyMigrationResult => {
   try {
-    const watchlistData = localStorage.getItem('cmf-explorer-watchlist');
-    const removedData = localStorage.getItem('cmf-explorer-removed-companies');
-    const customCompaniesData = localStorage.getItem('cmf-explorer-custom-companies');
+    const watchlistData = localStorage.getItem('cosmos-watchlist');
+    const removedData = localStorage.getItem('cosmos-removed-companies');
+    const customCompaniesData = localStorage.getItem('cosmos-custom-companies');
     
     if (!watchlistData && !removedData && !customCompaniesData) {
       return {
@@ -116,9 +116,9 @@ export const applyMigratedState = (migratedState: Partial<UserExplorationState>)
  */
 export const clearLegacyState = (): void => {
   try {
-    localStorage.removeItem('cmf-explorer-watchlist');
-    localStorage.removeItem('cmf-explorer-removed-companies');
-    localStorage.removeItem('cmf-explorer-custom-companies');
+    localStorage.removeItem('cosmos-watchlist');
+    localStorage.removeItem('cosmos-removed-companies');
+    localStorage.removeItem('cosmos-custom-companies');
     
     console.log('✅ Legacy localStorage data cleared');
   } catch (error) {

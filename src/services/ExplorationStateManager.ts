@@ -243,7 +243,7 @@ export class ExplorationStateManager {
   setSelectedCompany(companyId: number | null): void {
     this.currentState.lastSelectedCompanyId = companyId || undefined;
     // Only save selection to localStorage, not to disk to avoid HMR cycles
-    localStorage.setItem('cmf-exploration-state', JSON.stringify(this.currentState));
+    localStorage.setItem('cosmos-exploration-state', JSON.stringify(this.currentState));
   }
 
   /**
@@ -352,7 +352,7 @@ export class ExplorationStateManager {
   private async persistState(): Promise<void> {
     try {
       // Always save to localStorage as backup
-      localStorage.setItem('cmf-exploration-state', JSON.stringify(this.currentState));
+      localStorage.setItem('cosmos-exploration-state', JSON.stringify(this.currentState));
       
       const persistenceMode = this.getPersistenceMode();
       console.log(`🔧 Persistence mode: ${persistenceMode}`);

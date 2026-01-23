@@ -151,12 +151,11 @@ interface NodeStyle {
 
 ```typescript
 const STORAGE_KEYS = {
-  EXPLORATION_STATE: 'company-fit-explorer-state',
-  WATCHLIST: 'company-fit-explorer-watchlist',
-  REMOVED_COMPANIES: 'company-fit-explorer-removed',
-  VIEW_MODE: 'company-fit-explorer-view-mode',
-  CMF_PANEL_COLLAPSED: 'company-fit-explorer-cmf-collapsed',
-  LAST_SELECTED: 'company-fit-explorer-last-selected'
+  EXPLORATION_STATE: 'cosmos-exploration-state',
+  WATCHLIST: 'cosmos-watchlist',
+  REMOVED_COMPANIES: 'cosmos-removed-companies',
+  PANEL_STATE: 'cosmos-panel-state',
+  VISITED: 'cosmos-visited'
 };
 ```
 

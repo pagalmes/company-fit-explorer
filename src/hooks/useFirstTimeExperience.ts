@@ -21,19 +21,27 @@ export const useFirstTimeExperience = () => {
       return;
     }
 
-    // Check if user has visited before
-    const hasVisited = localStorage.getItem('cmf-explorer-visited');
+    // Check if user has visited before (with legacy key migration)
+    let hasVisited = localStorage.getItem('cosmos-visited');
+    if (!hasVisited) {
+      const legacyVisited = localStorage.getItem('cmf-explorer-visited');
+      if (legacyVisited) {
+        localStorage.setItem('cosmos-visited', legacyVisited);
+        localStorage.removeItem('cmf-explorer-visited');
+        hasVisited = legacyVisited;
+      }
+    }
     setIsFirstTime(!hasVisited);
     setHasChecked(true);
   }, []);
 
   const markAsVisited = () => {
-    localStorage.setItem('cmf-explorer-visited', 'true');
+    localStorage.setItem('cosmos-visited', 'true');
     setIsFirstTime(false);
   };
 
   const resetFirstTime = () => {
-    localStorage.removeItem('cmf-explorer-visited');
+    localStorage.removeItem('cosmos-visited');
     setIsFirstTime(true);
   };
 

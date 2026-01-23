@@ -1,6 +1,6 @@
 # Development Guide
 
-Complete guide for developers working on Company Fit Explorer.
+Complete guide for developers working on Cosmos.
 
 ## Development Setup
 
@@ -19,7 +19,7 @@ Complete guide for developers working on Company Fit Explorer.
 ```bash
 # Clone repository
 git clone <repository-url>
-cd company-fit-explorer
+cd cosmos-app
 
 # Install dependencies
 npm install
@@ -66,7 +66,7 @@ npm run dev:llm-server
 ## Project Structure
 
 ```
-company-fit-explorer/
+cosmos-app/
 ├── src/
 │   ├── components/         # React components
 │   │   ├── CMFGraphExplorerNew.tsx

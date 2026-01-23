@@ -1,6 +1,6 @@
-# Getting Started with Company Fit Explorer
+# Getting Started with Cosmos
 
-Complete setup guide for Company Fit Explorer, including all optional features and development tools.
+Complete setup guide for Cosmos, including all optional features and development tools.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ Complete setup guide for Company Fit Explorer, including all optional features a
 
 ```bash
 git clone <repository-url>
-cd company-fit-explorer
+cd cosmos-app
 npm install
 ```
 
