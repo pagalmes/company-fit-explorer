@@ -1,0 +1,67 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Outer glow gradient (purple to pink) -->
+    <radialGradient id="outerGlow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#F9A8D4" stop-opacity="0.6"/>
+      <stop offset="70%" stop-color="#C084FC" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Main sun outer ring gradient (orange to pink to purple) -->
+    <linearGradient id="outerRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDBA74"/>
+      <stop offset="50%" stop-color="#F472B6"/>
+      <stop offset="100%" stop-color="#A855F7"/>
+    </linearGradient>
+
+    <!-- Middle ring gradient (yellow to orange to pink) -->
+    <linearGradient id="middleRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A"/>
+      <stop offset="50%" stop-color="#FDBA74"/>
+      <stop offset="100%" stop-color="#F9A8D4"/>
+    </linearGradient>
+
+    <!-- Inner core gradient (light yellow to orange) -->
+    <linearGradient id="innerCore" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF3C7"/>
+      <stop offset="50%" stop-color="#FDE68A"/>
+      <stop offset="100%" stop-color="#FBBF24"/>
+    </linearGradient>
+
+    <!-- Sparkle gradient -->
+    <radialGradient id="sparkle" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#FDE68A"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Outer ambient glow -->
+  <circle cx="256" cy="256" r="240" fill="url(#outerGlow)"/>
+
+  <!-- Main sun body - outer ring -->
+  <circle cx="256" cy="256" r="192" fill="url(#outerRing)"/>
+
+  <!-- Middle ring -->
+  <circle cx="256" cy="256" r="160" fill="url(#middleRing)"/>
+
+  <!-- Inner core -->
+  <circle cx="256" cy="256" r="128" fill="url(#innerCore)"/>
+
+  <!-- Top sparkle -->
+  <g transform="translate(256, 72)">
+    <path d="M0,-12 L3,0 L0,12 L-3,0 Z" fill="url(#sparkle)"/>
+    <path d="M-12,0 L0,3 L12,0 L0,-3 Z" fill="url(#sparkle)"/>
+  </g>
+
+  <!-- Top-right sparkle -->
+  <g transform="translate(384, 128)">
+    <path d="M0,-8 L2,0 L0,8 L-2,0 Z" fill="url(#sparkle)"/>
+    <path d="M-8,0 L0,2 L8,0 L0,-2 Z" fill="url(#sparkle)"/>
+  </g>
+
+  <!-- Top-left sparkle -->
+  <g transform="translate(128, 128)">
+    <path d="M0,-6 L1.5,0 L0,6 L-1.5,0 Z" fill="url(#sparkle)"/>
+    <path d="M-6,0 L0,1.5 L6,0 L0,-1.5 Z" fill="url(#sparkle)"/>
+  </g>
+</svg>

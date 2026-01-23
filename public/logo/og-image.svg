@@ -1,0 +1,94 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background gradient (cosmos theme) -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="50%" stop-color="#1E3A8A"/>
+      <stop offset="100%" stop-color="#312E81"/>
+    </linearGradient>
+
+    <!-- Outer glow gradient -->
+    <radialGradient id="outerGlow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#F9A8D4" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#C084FC" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Sun gradients -->
+    <linearGradient id="outerRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDBA74"/>
+      <stop offset="50%" stop-color="#F472B6"/>
+      <stop offset="100%" stop-color="#A855F7"/>
+    </linearGradient>
+    <linearGradient id="middleRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A"/>
+      <stop offset="50%" stop-color="#FDBA74"/>
+      <stop offset="100%" stop-color="#F9A8D4"/>
+    </linearGradient>
+    <linearGradient id="innerCore" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF3C7"/>
+      <stop offset="50%" stop-color="#FDE68A"/>
+      <stop offset="100%" stop-color="#FBBF24"/>
+    </linearGradient>
+    <radialGradient id="sparkle" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#FDE68A"/>
+    </radialGradient>
+
+    <!-- Text gradient -->
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FDBA74"/>
+      <stop offset="50%" stop-color="#F9A8D4"/>
+      <stop offset="100%" stop-color="#C084FC"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+
+  <!-- Dotted grid overlay -->
+  <pattern id="dots" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+    <circle cx="1" cy="1" r="1" fill="rgba(255,255,255,0.1)"/>
+  </pattern>
+  <rect width="1200" height="630" fill="url(#dots)"/>
+
+  <!-- Ambient orbs -->
+  <circle cx="200" cy="150" r="200" fill="#8B5CF6" opacity="0.05" filter="blur(60px)"/>
+  <circle cx="1000" cy="500" r="180" fill="#3B82F6" opacity="0.05" filter="blur(50px)"/>
+  <circle cx="600" cy="100" r="150" fill="#EC4899" opacity="0.03" filter="blur(40px)"/>
+
+  <!-- Sun logo (positioned left of center) -->
+  <g transform="translate(350, 315)">
+    <!-- Outer ambient glow -->
+    <circle cx="0" cy="0" r="180" fill="url(#outerGlow)"/>
+    <!-- Main sun body -->
+    <circle cx="0" cy="0" r="140" fill="url(#outerRing)"/>
+    <circle cx="0" cy="0" r="116" fill="url(#middleRing)"/>
+    <circle cx="0" cy="0" r="92" fill="url(#innerCore)"/>
+    <!-- Sparkles -->
+    <g transform="translate(0, -160)">
+      <path d="M0,-12 L3,0 L0,12 L-3,0 Z" fill="url(#sparkle)"/>
+      <path d="M-12,0 L0,3 L12,0 L0,-3 Z" fill="url(#sparkle)"/>
+    </g>
+    <g transform="translate(120, -100)">
+      <path d="M0,-8 L2,0 L0,8 L-2,0 Z" fill="url(#sparkle)"/>
+      <path d="M-8,0 L0,2 L8,0 L0,-2 Z" fill="url(#sparkle)"/>
+    </g>
+    <g transform="translate(-120, -100)">
+      <path d="M0,-6 L1.5,0 L0,6 L-1.5,0 Z" fill="url(#sparkle)"/>
+      <path d="M-6,0 L0,1.5 L6,0 L0,-1.5 Z" fill="url(#sparkle)"/>
+    </g>
+  </g>
+
+  <!-- Brand text -->
+  <text x="580" y="290" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="bold" fill="white">Cosmos</text>
+  <text x="580" y="370" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#93C5FD">Find your perfect company match</text>
+
+  <!-- Floating stars decoration -->
+  <circle cx="100" cy="80" r="2" fill="#93C5FD" opacity="0.5"/>
+  <circle cx="1100" cy="120" r="3" fill="#93C5FD" opacity="0.4"/>
+  <circle cx="150" cy="550" r="2" fill="#C4B5FD" opacity="0.5"/>
+  <circle cx="1050" cy="480" r="2" fill="#FBCFE8" opacity="0.4"/>
+  <circle cx="950" cy="80" r="2" fill="#FDE68A" opacity="0.5"/>
+  <circle cx="80" cy="300" r="2" fill="#93C5FD" opacity="0.3"/>
+</svg>
