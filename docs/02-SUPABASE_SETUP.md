@@ -49,42 +49,21 @@ This creates:
 - Row Level Security with all policies
 - Permissions for authenticated, anon, and service_role
 
-## Step 5: Enable Auto-Profile Creation (Recommended)
+## Step 5: Verify Tables Created
 
-Run this in the SQL Editor to automatically create profiles when users sign up:
-
-```sql
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO public.profiles (id, email, full_name)
-  VALUES (
-    NEW.id,
-    NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name')
-  );
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-```
+In Supabase dashboard → **Table Editor**, you should see:
+- `profiles` - User authentication data
+- `user_company_data` - Personalized company lists
+- `user_preferences` - Watchlist and UI preferences
+- `user_invitations` - Invite system
+- `waitlist` - Public waitlist signups
 
 ## Step 6: Create Your First Admin User
-
-Since the app is invite-only, you need to manually create the first admin:
 
 1. Go to **Authentication** → **Users** → **Add user**
 2. Create a user with your email and a password
 3. Copy the user's UUID from the Users table
-4. If you enabled the auto-profile trigger (Step 5), promote the user to admin:
-   ```sql
-   UPDATE profiles SET role = 'admin' WHERE email = 'your-email@example.com';
-   ```
-5. If you didn't enable the trigger, insert the profile manually:
+4. In **SQL Editor**, run:
    ```sql
    INSERT INTO profiles (id, email, full_name, role)
    VALUES (
@@ -95,16 +74,7 @@ Since the app is invite-only, you need to manually create the first admin:
    );
    ```
 
-## Step 7: Verify Tables Created
-
-In Supabase dashboard → **Table Editor**, you should see:
-- `profiles` - User authentication data
-- `user_company_data` - Personalized company lists
-- `user_preferences` - Watchlist and UI preferences
-- `user_invitations` - Invite system
-- `waitlist` - Public waitlist signups
-
-## Step 8: Start the Application
+## Step 7: Start the Application
 
 ```bash
 npm install
