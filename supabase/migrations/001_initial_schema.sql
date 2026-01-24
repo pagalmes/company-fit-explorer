@@ -163,6 +163,20 @@ CREATE TRIGGER update_user_preferences_updated_at
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================================
+-- HELPER FUNCTIONS FOR RLS
+-- ============================================================================
+
+-- Function to check if current user is admin
+-- Uses SECURITY DEFINER to bypass RLS and avoid infinite recursion
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS BOOLEAN AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  );
+$$ LANGUAGE sql SECURITY DEFINER STABLE;
+
+-- ============================================================================
 -- ROW LEVEL SECURITY (RLS)
 -- ============================================================================
 
@@ -195,12 +209,7 @@ CREATE POLICY "Users can insert their own profile" ON profiles
 -- Admins can view all profiles
 DROP POLICY IF EXISTS "Admins can view all profiles" ON profiles;
 CREATE POLICY "Admins can view all profiles" ON profiles
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  FOR SELECT USING (is_admin());
 
 -- ----------------------------------------------------------------------------
 -- User company data policies
@@ -224,12 +233,7 @@ CREATE POLICY "Users can delete their own company data" ON user_company_data
 
 DROP POLICY IF EXISTS "Admins can access all company data" ON user_company_data;
 CREATE POLICY "Admins can access all company data" ON user_company_data
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  FOR ALL USING (is_admin());
 
 -- ----------------------------------------------------------------------------
 -- User preferences policies
@@ -253,12 +257,7 @@ CREATE POLICY "Users can delete their own preferences" ON user_preferences
 
 DROP POLICY IF EXISTS "Admins can access all preferences" ON user_preferences;
 CREATE POLICY "Admins can access all preferences" ON user_preferences
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  FOR ALL USING (is_admin());
 
 -- ----------------------------------------------------------------------------
 -- User invitations policies
@@ -279,12 +278,7 @@ CREATE POLICY "Users can view their sent invitations" ON user_invitations
 -- Admins can manage all invitations
 DROP POLICY IF EXISTS "Admins can manage invitations" ON user_invitations;
 CREATE POLICY "Admins can manage invitations" ON user_invitations
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  FOR ALL USING (is_admin());
 
 -- Anyone can view invitations by token (for accepting invites while logged out)
 DROP POLICY IF EXISTS "Anyone can view invitations by token" ON user_invitations;

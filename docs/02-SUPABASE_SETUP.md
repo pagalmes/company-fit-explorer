@@ -17,11 +17,13 @@ This guide walks you through setting up a Supabase instance for the Cosmos appli
 
 In your Supabase dashboard:
 
-1. Go to **Settings** → **API**
+1. Go to **Project Settings** → **API**
 2. Copy these values:
    - **Project URL** (looks like `https://xxx.supabase.co`)
    - **anon public** key (starts with `eyJ...`)
    - **service_role** key (starts with `eyJ...`)
+
+> **Note:** Use the legacy JWT-based keys (under "Project API keys"), not the new Publishable/Secret keys. The new keys have [compatibility issues](https://github.com/supabase/supabase/issues/39136) with `@supabase/ssr` and RLS policies.
 
 ## Step 3: Configure Environment
 
@@ -33,8 +35,8 @@ In your Supabase dashboard:
 2. Edit `.env.local` with your Supabase credentials:
    ```bash
    NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
    ```
 
 ## Step 4: Create Database Schema
@@ -58,12 +60,29 @@ In Supabase dashboard → **Table Editor**, you should see:
 - `user_invitations` - Invite system
 - `waitlist` - Public waitlist signups
 
-## Step 6: Create Your First Admin User
+## Step 6: Create Your First User
 
 1. Go to **Authentication** → **Users** → **Add user**
 2. Create a user with your email and a password
-3. Copy the user's UUID from the Users table
-4. In **SQL Editor**, run:
+
+## Step 7: Test the Application
+
+```bash
+npm install
+npm run dev
+```
+
+1. Visit `http://localhost:3000`
+2. Log in with the user you just created
+3. Verify you can access the app
+
+## Step 8: Make Your User an Admin (Optional)
+
+To grant admin privileges:
+
+1. In Supabase dashboard, go to **Authentication** → **Users**
+2. Copy the user's UUID from the Users table
+3. Go to **SQL Editor** and run:
    ```sql
    INSERT INTO profiles (id, email, full_name, role)
    VALUES (
@@ -74,14 +93,8 @@ In Supabase dashboard → **Table Editor**, you should see:
    );
    ```
 
-## Step 7: Start the Application
-
-```bash
-npm install
-npm run dev
-```
-
-Visit `http://localhost:3000` - you should see the app ready to use.
+4. Visit `http://localhost:3000/admin`
+5. Verify you see the admin console
 
 ---
 

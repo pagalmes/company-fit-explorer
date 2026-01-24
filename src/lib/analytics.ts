@@ -28,9 +28,11 @@ export interface AnalyticsProperties {
 // Track if PostHog has been initialized
 let posthogInitialized = false
 
-// Check if PostHog is configured
+// Check if PostHog is configured with a valid-looking key
 export function isAnalyticsConfigured(): boolean {
-  return !!process.env.NEXT_PUBLIC_POSTHOG_KEY
+  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
+  // Must exist and look like a real key (not a placeholder)
+  return !!key && key.startsWith('phc_') && key.length > 10 && !key.includes('xxxxx')
 }
 
 // Initialize Posthog (call once on app mount)
@@ -43,12 +45,12 @@ export function initAnalytics() {
     return
   }
 
-  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
-
-  if (!key) {
+  if (!isAnalyticsConfigured()) {
     // Warning logged in PosthogProvider, no need to duplicate here
     return
   }
+
+  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY!
 
   try {
     posthog.init(key, {

@@ -18,28 +18,36 @@ cd cosmos-app
 npm install
 ```
 
-### 2. Environment Variables (Optional)
-
-The app works perfectly without any configuration, but you can enable optional features:
+### 2. Environment Variables
 
 ```bash
 # Copy environment template
 cp .env.example .env.local
 ```
 
+#### Supabase (Required)
+
+The app requires Supabase for authentication and data persistence:
+
+1. Create a project at [Supabase Dashboard](https://supabase.com/dashboard)
+2. Get your credentials:
+   - Go to **Project Settings** → **API**
+   - Copy the **Project URL**
+   - Under **Project API keys**, copy the **anon public** key (starts with `eyJ...`)
+   - Copy the **service_role** key (starts with `eyJ...`)
+
+   > **Note:** Use the legacy JWT-based keys (under "Project API keys"), not the new Publishable/Secret keys. The new keys have [compatibility issues](https://github.com/supabase/supabase/issues/39136) with `@supabase/ssr` and RLS policies.
+3. Add to `.env.local`:
+   ```bash
+   NEXT_PUBLIC_SUPABASE_URL=your_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+   ```
+4. Create database tables: Run the SQL from `supabase/migrations/001_initial_schema.sql` in your Supabase dashboard → SQL Editor
+
+📖 See [02-SUPABASE_SETUP.md](02-SUPABASE_SETUP.md) for complete guide including admin user setup
+
 **Optional Services:**
-
-#### Supabase (Multi-User Persistence)
-For user authentication and cloud data persistence:
-
-- Get credentials from [Supabase Dashboard](https://supabase.com/dashboard) → Settings → API
-- Add to `.env.local`:
-  ```bash
-  NEXT_PUBLIC_SUPABASE_URL=your_project_url
-  NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-  ```
-- Run automated setup: `npm run setup:supabase`
-- 📖 See [02-SUPABASE_SETUP.md](02-SUPABASE_SETUP.md) for complete guide
 
 #### Anthropic Claude (AI Analysis)
 For intelligent company matching and analysis:

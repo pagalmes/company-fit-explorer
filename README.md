@@ -20,28 +20,7 @@ A visual career exploration tool that helps you discover companies aligned with 
 
 ## 🚀 Quick Start
 
-```bash
-# Clone and install
-git clone <repository-url>
-cd cosmos-app
-npm install
-
-# Start the app
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to explore!
-
-### Optional: Enable AI Features
-
-For AI-powered company analysis, add your Anthropic API key:
-
-```bash
-cp .env.example .env.local
-# Edit .env.local and add: ANTHROPIC_API_KEY=your-key
-```
-
-Get your key at [console.anthropic.com](https://console.anthropic.com/)
+See the **[Complete Setup Guide](docs/01-GETTING_STARTED.md)** for installation, environment configuration, and development modes.
 
 ## 🏗️ Tech Stack
 
