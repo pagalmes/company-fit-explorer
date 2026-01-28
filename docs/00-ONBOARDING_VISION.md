@@ -38,7 +38,7 @@ The `cosmos-pm` repo contains our product strategy and vision documents. Start w
 
 These will give you a feel for the product experience we're creating—the Cosmos metaphor, the UI, and how users interact with the system.
 
-*[Link to demo videos TBD]*
+- 
 
 ---
 

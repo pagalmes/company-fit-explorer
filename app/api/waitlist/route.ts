@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     // Analytics: Track waitlist signup (use email as distinct_id since no user yet)
     const normalizedEmail = email.toLowerCase().trim()
-    trackServerEvent('waitlist_signup', normalizedEmail, { email: normalizedEmail })
+    await trackServerEvent('waitlist_signup', normalizedEmail, { email: normalizedEmail })
 
     return NextResponse.json({ success: true, data })
   } catch (error) {

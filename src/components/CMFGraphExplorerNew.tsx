@@ -400,6 +400,13 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
     // Toggle watchlist status FIRST so that recalculation sees the correct state
     stateManager.toggleWatchlist(companyId);
 
+    // Analytics: Track watchlist changes
+    if (wasInWatchlist) {
+      track('company_removed_from_watchlist', { company_id: companyId });
+    } else {
+      track('company_added_to_watchlist', { company_id: companyId });
+    }
+
     // Recalculate position for the target view (now with updated watchlist state)
     const targetView = wasInWatchlist ? 'explore' : 'watchlist';
     const companyWithNewPosition = recalculatePositionForView(company, targetView);
