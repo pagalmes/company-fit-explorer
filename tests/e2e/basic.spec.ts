@@ -13,31 +13,31 @@ test.describe('Application Smoke Tests', () => {
     // Navigate to the application
     await page.goto('/explorer?skip-intro=true');
 
-    // Wait for React app to load
-    await page.waitForLoadState('networkidle');
+    // Wait for DOM to be ready (avoid 'networkidle' - unreliable on webkit)
+    await page.waitForLoadState('domcontentloaded');
 
-    // Give app time to initialize
-    await page.waitForTimeout(2000);
-    
+    // Wait for the graph container to be visible - indicates app is ready
+    await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 30000 });
+
     // Verify the page title is correct
     await expect(page).toHaveTitle(/Cosmos/);
-    
-    // Wait for some content to appear (body should have loaded)
-    await page.waitForSelector('body', { timeout: 10000 });
-    
-    // Wait for JavaScript to execute and render content
-    await page.waitForTimeout(3000);
-    
+
+    // Brief wait for any animations to settle before screenshot
+    await page.waitForTimeout(2000);
+
     // Basic screenshot to verify visual state - this will show what's actually rendered
     await expect(page).toHaveScreenshot('app-loaded.png');
   });
 
   test('should allow company interaction', async ({ page }) => {
     await page.goto('/explorer?skip-intro=true');
-    await page.waitForLoadState('networkidle');
-    
-    // Wait for the application to fully load
-    await page.waitForTimeout(3000);
+    await page.waitForLoadState('domcontentloaded');
+
+    // Wait for the graph container to be visible
+    await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 30000 });
+
+    // Brief wait for app to stabilize
+    await page.waitForTimeout(1000);
     
     // Try to find any clickable element (company node, detail panel, button)
     const clickableElements = page.locator('canvas, [role="button"], button, [class*="cursor-pointer"]');

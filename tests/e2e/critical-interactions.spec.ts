@@ -7,10 +7,14 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Critical User Interactions', () => {
   // Helper function for common page setup
+  // Note: We avoid 'networkidle' as it's unreliable on webkit due to analytics/polling
   async function setupPage(page: any) {
     await page.goto('/explorer?skip-intro=true');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('domcontentloaded');
+    // Wait for the graph container to be visible - this indicates the app is ready
+    await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 30000 });
+    // Brief additional wait for any initial renders to complete
+    await page.waitForTimeout(1000);
   }
 
   test('should maintain node selection without flickering', async ({ page }) => {
@@ -135,8 +139,9 @@ test.describe('Critical User Interactions', () => {
 
     // Navigate with mocked error response
     await page.goto('/explorer?skip-intro=true');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('domcontentloaded');
+    // Wait for app to attempt loading (even with error, some UI should render)
+    await page.waitForTimeout(3000);
 
     // Should handle error gracefully without crashing
     // The app should still render (not white screen of death)
