@@ -66,6 +66,12 @@ npm run test:e2e
 
 **244 tests** covering unit, integration, performance, and visual regression. See [Testing Guide](docs/guides/TESTING.md) for details.
 
+## 📋 Task Management
+
+All tasks are tracked in [GitHub Issues](https://github.com/pagalmes/company-fit-explorer/issues).
+
+See [CONTRIBUTORS.md](.github/CONTRIBUTORS.md) for team member GitHub handles.
+
 ## 🤝 Contributing
 
 We follow Test-Driven Development. Before contributing:
