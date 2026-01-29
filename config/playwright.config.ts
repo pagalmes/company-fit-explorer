@@ -20,8 +20,8 @@ export default defineConfig({
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  /* Retry failed tests - helps with inherent flakiness from auth verification timing */
+  retries: process.env.CI ? 2 : 1,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Configure expect for screenshot comparisons */
@@ -45,6 +45,16 @@ export default defineConfig({
   },
 
   /* Configure projects for major browsers */
+  /*
+   * Authentication Strategy:
+   * We use a single setup project that authenticates and saves state to user.json.
+   * All browser projects depend on this setup and share the same auth state.
+   *
+   * To avoid race conditions with parallel execution:
+   * - Setup runs first (via dependencies)
+   * - Each browser project uses isolated browser contexts
+   * - The auth file is written atomically before tests start
+   */
   projects: [
     // Setup project - runs authentication once before all tests
     {

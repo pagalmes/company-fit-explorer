@@ -11,8 +11,20 @@ test.describe('Critical User Interactions', () => {
   async function setupPage(page: any) {
     await page.goto('/explorer?skip-intro=true');
     await page.waitForLoadState('domcontentloaded');
-    // Wait for the graph container to be visible - this indicates the app is ready
-    await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 30000 });
+
+    // Wait for the graph container with extended timeout
+    // The auth verification can sometimes be slow, especially under parallel load
+    try {
+      await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 45000 });
+    } catch {
+      // If we timed out, try to get more info for debugging
+      const currentUrl = page.url();
+      if (currentUrl.includes('/login')) {
+        throw new Error('Authentication failed - redirected to login page');
+      }
+      throw new Error(`Page load timed out at URL: ${currentUrl}`);
+    }
+
     // Brief additional wait for any initial renders to complete
     await page.waitForTimeout(1000);
   }

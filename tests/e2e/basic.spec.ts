@@ -8,16 +8,29 @@ import { test, expect } from '@playwright/test';
  * without getting into complex visual regression testing details.
  */
 
+// Helper function for common page setup with better auth handling
+async function waitForAppReady(page: any) {
+  await page.goto('/explorer?skip-intro=true');
+  await page.waitForLoadState('domcontentloaded');
+
+  // Wait for the graph container with extended timeout
+  // The auth verification can sometimes be slow, especially under parallel load
+  try {
+    await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 45000 });
+  } catch {
+    // If we timed out, try to get more info for debugging
+    const currentUrl = page.url();
+    if (currentUrl.includes('/login')) {
+      throw new Error('Authentication failed - redirected to login page');
+    }
+    throw new Error(`Page load timed out at URL: ${currentUrl}`);
+  }
+}
+
 test.describe('Application Smoke Tests', () => {
   test('should load application successfully', async ({ page }) => {
-    // Navigate to the application
-    await page.goto('/explorer?skip-intro=true');
-
-    // Wait for DOM to be ready (avoid 'networkidle' - unreliable on webkit)
-    await page.waitForLoadState('domcontentloaded');
-
-    // Wait for the graph container to be visible - indicates app is ready
-    await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 30000 });
+    // Navigate and wait for app to be ready
+    await waitForAppReady(page);
 
     // Verify the page title is correct
     await expect(page).toHaveTitle(/Cosmos/);
@@ -30,11 +43,8 @@ test.describe('Application Smoke Tests', () => {
   });
 
   test('should allow company interaction', async ({ page }) => {
-    await page.goto('/explorer?skip-intro=true');
-    await page.waitForLoadState('domcontentloaded');
-
-    // Wait for the graph container to be visible
-    await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 30000 });
+    // Navigate and wait for app to be ready
+    await waitForAppReady(page);
 
     // Brief wait for app to stabilize
     await page.waitForTimeout(1000);

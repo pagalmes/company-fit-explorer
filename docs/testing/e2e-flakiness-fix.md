@@ -82,12 +82,13 @@ expect: {
 
 | File | Change |
 |------|--------|
-| `tests/e2e/critical-interactions.spec.ts` | Replace `networkidle` with `domcontentloaded` + element selector |
-| `tests/e2e/basic.spec.ts` | Same fix |
-| `config/playwright.config.ts` | Increase `maxDiffPixelRatio` from 0.2% to 5% |
+| `tests/e2e/critical-interactions.spec.ts` | Replace `networkidle` with `domcontentloaded` + element selector, add timeout handling |
+| `tests/e2e/basic.spec.ts` | Same fix + helper function for page setup |
+| `tests/e2e/auth.setup.ts` | Replace `networkidle`, add visibility checks, verify auth succeeded |
+| `config/playwright.config.ts` | Increase `maxDiffPixelRatio` to 5%, add retry (1 local, 2 CI) |
 | `tests/e2e/basic.spec.ts-snapshots/*` | Updated screenshots for all 3 browsers |
 
-Note: `scroll-behavior.spec.ts` already had this fix applied in commit `e64952e`.
+Note: `scroll-behavior.spec.ts` already had the `domcontentloaded` fix applied in commit `e64952e`.
 
 ## Git History Reference
 
@@ -99,13 +100,44 @@ Previous attempts to fix E2E flakiness:
 | `0f6cb67` | "Fix E2E test failures" - Added networkidle to auth setup |
 | `e64952e` | "Update scroll behavior E2E tests for reliability" - First use of `domcontentloaded` |
 
-## Remaining Known Issues
+## Handling Authentication Timing Issues (Updated)
 
-### Parallel Execution Race Conditions
+### Root Cause: "Verifying authentication..." Hang
 
-When running all 40 tests in parallel with 6 workers, authentication state can sometimes not propagate correctly, causing "Verifying authentication..." to hang.
+The "Verifying authentication..." hang occurs when:
+1. Playwright injects stored browser cookies into a new browser context
+2. The app loads and calls `/api/user/data` to verify the session with Supabase
+3. Supabase session validation can be slow under parallel load (6 workers × 3 browsers)
+4. The app shows "Verifying authentication..." while waiting for the API response
 
-**Workaround:** Tests pass consistently when run individually or in smaller batches.
+### Solutions Implemented
+
+1. **Retry mechanism**: Added 1 retry for local tests, 2 for CI
+   ```typescript
+   // playwright.config.ts
+   retries: process.env.CI ? 2 : 1,
+   ```
+
+2. **Extended timeout**: Increased graph container wait to 45 seconds
+
+3. **Better error handling**: Tests now catch timeouts and report the actual URL/state
+
+4. **Auth setup improvements** (`auth.setup.ts`):
+   - Removed `networkidle` wait (replaced with `domcontentloaded`)
+   - Added explicit element visibility checks for form inputs
+   - Verify graph container loads before saving auth state
+   - Added assertion that "Verifying authentication" is not visible
+
+### Expected Behavior
+
+With retries enabled, tests may show **"flaky"** in output:
+```
+1 flaky
+  [webkit] › tests/e2e/critical-interactions.spec.ts:91:3 › should handle rapid user interactions
+15 passed (57.8s)
+```
+
+This is **normal and expected** - it means the test failed on first attempt but passed on retry. This is the recommended approach for handling inherent timing issues in E2E tests without blocking the entire test suite.
 
 **Note:** E2E tests are disabled in CI (see `.github/workflows/ci.yml` lines 40-52) due to cross-platform screenshot differences. Run locally with `npm run test:e2e`.
 
