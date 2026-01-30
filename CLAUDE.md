@@ -17,6 +17,7 @@ See [.github/CONTRIBUTORS.md](.github/CONTRIBUTORS.md) for the full list.
 | Nathan Fant | @NathanFant | |
 | Alan Hege | @AHegeT | |
 | Michael Vieth | @MichaelVieth | |
+| Nina Volodicheva | @ninkaber1 | |
 
 ## Task Management
 

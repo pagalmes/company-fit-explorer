@@ -10,6 +10,7 @@ This file maps team member names to their GitHub handles for issue assignment an
 | Alan Hege | [@AHegeT](https://github.com/AHegeT) | Collaborator |
 | Michael Vieth | [@MichaelVieth](https://github.com/MichaelVieth) | Collaborator |
 | Jackson | TBD | Collaborator |
+| Nina Volodicheva |[@ninkaber1](https://github.com/ninkaber1) | Collaborator | 
 
 ---
 
