@@ -161,6 +161,24 @@ export async function POST(request: Request) {
       console.warn('Preferences import failed, but company data was imported successfully')
     }
 
+    // Update profile_status to 'complete' and set onboarding_completed_at
+    // This marks admin-imported users as having completed onboarding
+    const { error: profileStatusError } = await supabase
+      .from('profiles')
+      .update({
+        profile_status: 'complete',
+        onboarding_completed_at: new Date().toISOString()
+      })
+      .eq('id', userId)
+
+    if (profileStatusError) {
+      console.error('Error updating profile status:', profileStatusError)
+      // Don't fail the entire import for profile status errors
+      console.warn('Profile status update failed, but company data was imported successfully')
+    } else {
+      console.log('✅ Updated profile_status to complete for user:', userProfile.email)
+    }
+
     console.log('✅ Successfully imported companies data for user:', userProfile.email)
 
     return NextResponse.json({ 

@@ -323,21 +323,24 @@ function getDiscoveryResponseSchema(): any {
 
 /**
  * Build the company discovery prompt based on user's profile
+ *
+ * NOTE: Profile extraction is now handled by Claude (extract-profile endpoint).
+ * This prompt receives pre-extracted CMF data and focuses purely on company discovery.
  */
 function buildDiscoveryPrompt(request: CompanyDiscoveryRequest): string {
   return `You are a Company Discovery Specialist with deep knowledge of the US company ecosystem. Your task is to identify companies that match a candidate's profile and requirements.
 
-## CANDIDATE PROFILE
+## CANDIDATE PROFILE (Pre-extracted)
 Name: ${request.candidateName}
 Target Role: ${request.targetRole}
-Experience: ${request.experience.join(', ')}
+Experience: ${request.experience.length > 0 ? request.experience.join(', ') : 'Not specified'}
 Target Companies: ${request.targetCompanies}
 
 ## MUST-HAVE CRITERIA (All must be met)
-${request.mustHaves.map((item, i) => `${i + 1}. ${item}`).join('\n')}
+${request.mustHaves.length > 0 ? request.mustHaves.map((item, i) => `${i + 1}. ${item}`).join('\n') : 'Not specified'}
 
 ## WANT-TO-HAVE CRITERIA (More = better match)
-${request.wantToHave.map((item, i) => `${i + 1}. ${item}`).join('\n')}
+${request.wantToHave.length > 0 ? request.wantToHave.map((item, i) => `${i + 1}. ${item}`).join('\n') : 'Not specified'}
 
 ## DISCOVERY TASK
 Find 30-40 companies that match this profile. Include a mix of:

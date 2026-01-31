@@ -59,6 +59,13 @@ export async function GET(request: NextRequest) {
 
   console.log('🔐 Authenticated user found:', user.email);
 
+  // Get the user's profile to check profile_status
+  const { data: userProfile } = await supabase
+    .from('profiles')
+    .select('profile_status, onboarding_completed_at')
+    .eq('id', user.id)
+    .single();
+
   // Check if this is an admin viewing as another user
   const { searchParams } = new URL(request.url);
   const viewAsUserId = searchParams.get('viewAsUserId');
@@ -100,6 +107,8 @@ export async function GET(request: NextRequest) {
         authenticated: true,
         hasData: false,
         userId: targetUserId, // Include target user ID for profile creation
+        profileStatus: userProfile?.profile_status || 'pending',
+        onboardingCompletedAt: userProfile?.onboarding_completed_at || null,
         isViewingAsUser,
         viewedUserId: isViewingAsUser ? targetUserId : undefined,
         companyData: null,
@@ -160,6 +169,8 @@ export async function GET(request: NextRequest) {
     const response = {
       authenticated: true,
       hasData: true,
+      profileStatus: userProfile?.profile_status || 'complete', // Users with data default to complete
+      onboardingCompletedAt: userProfile?.onboarding_completed_at || null,
       isViewingAsUser,
       viewedUserId: isViewingAsUser ? targetUserId : undefined,
       viewedUserInfo: isViewingAsUser ? viewedUserInfo : undefined,
@@ -206,12 +217,36 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { userId, userProfile, companies, preferences } = body
+    const { userId, userProfile, companies, preferences, profileStatus } = body
 
     console.log('💾 Saving user data for user:', userId)
 
     if (!userId) {
       return NextResponse.json({ error: 'User ID required' }, { status: 400 })
+    }
+
+    // Update profile_status if provided
+    if (profileStatus) {
+      const updateData: { profile_status: string; onboarding_completed_at?: string } = {
+        profile_status: profileStatus
+      }
+
+      // Set onboarding_completed_at when transitioning to 'complete' or 'incomplete'
+      if (profileStatus === 'complete' || profileStatus === 'incomplete') {
+        updateData.onboarding_completed_at = new Date().toISOString()
+      }
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('id', userId)
+
+      if (profileError) {
+        console.error('Error updating profile status:', profileError)
+        return NextResponse.json({ error: profileError.message }, { status: 500 })
+      }
+
+      console.log('✅ Updated profile_status to:', profileStatus)
     }
 
     // Update user company data

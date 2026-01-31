@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { createClientComponentClient } from '../../src/lib/supabase'
 import { useRouter } from 'next/navigation'
 import AuthWrapper from '../../src/components/AuthWrapper'
-import { Users, Plus, LogOut, Settings, Trash2, FileUp, Download, Eye } from 'lucide-react'
+import { Users, Plus, LogOut, Settings, Trash2, FileUp, Download, Eye, RotateCcw } from 'lucide-react'
 import LLMSettingsModal from '../../src/components/LLMSettingsModal'
 import ImportDataModal from '../../src/components/ImportDataModal'
 import { DeleteUserConfirmationModal } from '../../src/components/DeleteUserConfirmationModal'
@@ -137,6 +137,35 @@ export default function AdminPage() {
   const handleDeleteUser = (userId: string, userEmail: string) => {
     setUserToDelete({ id: userId, email: userEmail })
     setShowDeleteModal(true)
+  }
+
+  const handleResetOnboarding = async (userId: string, userEmail: string) => {
+    if (!confirm(`Reset onboarding for ${userEmail}?\n\nThis will:\n• Clear all their companies and preferences\n• Reset their profile status to 'pending'\n• They will see the onboarding flow on next login`)) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/reset-user-onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setMessage(`Onboarding reset for ${userEmail}`)
+        setMessageType('success')
+        fetchUsers()
+      } else {
+        setMessage(data.error || 'Failed to reset onboarding')
+        setMessageType('error')
+      }
+    } catch (error) {
+      console.error('Error resetting onboarding:', error)
+      setMessage('Failed to reset onboarding')
+      setMessageType('error')
+    }
   }
 
   const confirmDeleteUser = async () => {
@@ -354,6 +383,13 @@ export default function AdminPage() {
                                 title="View as User"
                               >
                                 <Eye className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleResetOnboarding(user.id, user.email)}
+                                className="p-1 text-orange-600 hover:text-orange-800 hover:bg-orange-50 rounded transition-colors"
+                                title="Reset Onboarding"
+                              >
+                                <RotateCcw className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleDeleteUser(user.id, user.email)}

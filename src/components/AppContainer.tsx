@@ -201,7 +201,7 @@ const AppContainer: React.FC = () => {
 
       console.log('✅ Created user profile with', newUserProfile.baseCompanies.length, 'companies');
 
-      // Update profile_status to 'complete' in Supabase
+      // Save profile data AND update profile_status to 'complete' in Supabase
       if (userId) {
         try {
           await fetch('/api/user/data', {
@@ -209,13 +209,24 @@ const AppContainer: React.FC = () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               userId,
-              profileStatus: 'complete'
+              profileStatus: 'complete',
+              // Save the full profile data (CMF + companies)
+              userProfile: newUserProfile.cmf,
+              companies: [
+                ...newUserProfile.baseCompanies,
+                ...newUserProfile.addedCompanies
+              ],
+              preferences: {
+                watchlist_company_ids: newUserProfile.watchlistCompanyIds,
+                removed_company_ids: newUserProfile.removedCompanyIds,
+                view_mode: newUserProfile.viewMode
+              }
             })
           });
           setProfileStatus('complete');
-          console.log('✅ Updated profile_status to complete in Supabase');
+          console.log('✅ Saved user profile and companies to Supabase');
         } catch (error) {
-          console.error('Failed to update profile_status:', error);
+          console.error('Failed to save profile data:', error);
           // Continue anyway - the user can still use the app
         }
       }

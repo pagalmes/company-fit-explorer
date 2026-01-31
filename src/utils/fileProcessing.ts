@@ -1,4 +1,4 @@
-import { UserCMF } from '../types';
+import { UserCMF, getCMFCombinedText } from '../types';
 
 /**
  * Read file content as text
@@ -15,23 +15,104 @@ async function readFileAsText(file: File): Promise<string> {
     reader.onerror = () => reject(new Error(`Failed to read file: ${file.name}`));
 
     // For PDFs, this will get binary content, but for text files it works
-    // TODO: Add PDF parsing library (pdf-parse) for better PDF support
     reader.readAsText(file);
   });
 }
 
 /**
- * Call Perplexity API to discover companies based on CV and CMF files
+ * Convert file to base64 for API transmission
  */
-async function discoverCompaniesWithPerplexity(
-  resumeText: string,
-  cmfText: string,
-  candidateName: string
+async function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      // Remove the data URL prefix (e.g., "data:application/pdf;base64,")
+      const base64 = result.split(',')[1];
+      resolve(base64);
+    };
+
+    reader.onerror = () => reject(new Error(`Failed to read file: ${file.name}`));
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Extract profile using Claude API
+ * Returns structured UserCMF data from resume and career goals documents
+ */
+async function extractProfileWithClaude(
+  resumeFile: File,
+  careerGoalsFile: File
+): Promise<Partial<UserCMF>> {
+  console.log('🤖 Extracting profile with Claude Opus 4.5...');
+
+  // Convert files to base64
+  const resumeBase64 = await fileToBase64(resumeFile);
+  const careerGoalsBase64 = await fileToBase64(careerGoalsFile);
+
+  const response = await fetch('/api/llm/anthropic/extract-profile', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      resume: {
+        data: resumeBase64,
+        type: resumeFile.type,
+        name: resumeFile.name
+      },
+      careerGoals: {
+        data: careerGoalsBase64,
+        type: careerGoalsFile.type,
+        name: careerGoalsFile.name
+      }
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Profile extraction failed: ${response.status}`);
+  }
+
+  const result = await response.json();
+
+  if (!result.success) {
+    throw new Error(result.error || 'Profile extraction failed');
+  }
+
+  console.log('✅ Profile extracted successfully');
+  console.log(`   Name: ${result.cmf.name}`);
+  console.log(`   Target Role: ${result.cmf.targetRole}`);
+  console.log(`   Must-Haves: ${result.cmf.mustHaves.length} items`);
+  console.log(`   Want-to-Have: ${result.cmf.wantToHave.length} items`);
+  console.log(`   Experience: ${result.cmf.experience.length} items`);
+
+  if (result.usage) {
+    console.log(`   Tokens: ${result.usage.inputTokens} in / ${result.usage.outputTokens} out`);
+    console.log(`   Cost: $${result.usage.totalCost.toFixed(4)}`);
+  }
+
+  return result.cmf;
+}
+
+/**
+ * Call Perplexity API to discover companies based on extracted CMF profile
+ * @internal Currently disabled for debugging - will be re-enabled after profile extraction is verified
+ */
+export async function discoverCompaniesWithPerplexity(
+  extractedCMF: Partial<UserCMF>,
+  resumeText?: string,
+  cmfText?: string
 ): Promise<any> {
   console.log('🔍 Calling Perplexity company discovery API...');
 
-  // First, extract basic CMF data from the text files
-  const extractedCMF = extractCMFFromText(cmfText, resumeText);
+  // Convert CMFItem arrays to combined "Short: Detailed" format for Perplexity matching
+  // This gives Perplexity both the concise label and full context for better company matching
+  // Format: "High Velocity of Execution: A dynamic pace of work where we move and learn quickly..."
+  const mustHavesForMatching = (extractedCMF.mustHaves || []).map(getCMFCombinedText);
+  const wantToHaveForMatching = (extractedCMF.wantToHave || []).map(getCMFCombinedText);
 
   const response = await fetch('/api/llm/perplexity/discover-companies', {
     method: 'POST',
@@ -39,14 +120,14 @@ async function discoverCompaniesWithPerplexity(
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      candidateName: candidateName || extractedCMF.name || 'User',
+      candidateName: extractedCMF.name || 'User',
       targetRole: extractedCMF.targetRole || 'Professional Role',
       experience: extractedCMF.experience || [],
       targetCompanies: extractedCMF.targetCompanies || 'Growth-oriented companies',
-      mustHaves: extractedCMF.mustHaves || [],
-      wantToHave: extractedCMF.wantToHave || [],
-      resumeText,
-      cmfText
+      mustHaves: mustHavesForMatching,
+      wantToHave: wantToHaveForMatching,
+      resumeText: resumeText || '',
+      cmfText: cmfText || ''
     })
   });
 
@@ -290,7 +371,12 @@ export const processCMFFile = async (file: File): Promise<Partial<UserCMF>> => {
 };
 
 /**
- * NEW: Create user profile and discover companies using Perplexity API
+ * Create user profile and discover companies
+ *
+ * Two-phase architecture:
+ * 1. Claude Opus 4.5 extracts structured profile from resume + career goals (PDF support)
+ * 2. Perplexity discovers matching companies based on extracted profile
+ *
  * Returns the full discovery data (CMF + companies)
  */
 export const createUserProfileFromFiles = async (
@@ -301,23 +387,77 @@ export const createUserProfileFromFiles = async (
   console.log(`📁 Files received for processing: ${resumeFile.name}, ${cmfFile.name}`);
 
   try {
-    // Read file contents
-    const resumeText = await readFileAsText(resumeFile);
-    const cmfText = await readFileAsText(cmfFile);
+    // Phase 1: Extract profile using Claude Opus 4.5
+    // This supports PDFs and provides much better extraction than regex
+    console.log('📋 Phase 1: Extracting profile with Claude...');
+    let extractedCMF: Partial<UserCMF>;
 
-    console.log(`📄 Resume text length: ${resumeText.length} characters`);
-    console.log(`📄 CMF text length: ${cmfText.length} characters`);
+    try {
+      extractedCMF = await extractProfileWithClaude(resumeFile, cmfFile);
+    } catch (extractError) {
+      console.error('❌ Claude extraction failed, falling back to regex:', extractError);
 
-    // Extract name from filename for fallback
-    const fileName = resumeFile.name.split('.')[0];
-    const candidateName = fileName.charAt(0).toUpperCase() + fileName.slice(1).replace(/[_-]/g, ' ');
+      // Fallback to regex-based extraction if Claude fails
+      const resumeText = await readFileAsText(resumeFile);
+      const cmfText = await readFileAsText(cmfFile);
+      extractedCMF = extractCMFFromText(cmfText, resumeText);
 
-    // Call Perplexity API to discover companies
-    console.log('🚀 Starting Perplexity company discovery...');
+      // Extract name from filename for fallback
+      if (!extractedCMF.name) {
+        const fileName = resumeFile.name.split('.')[0];
+        extractedCMF.name = fileName.charAt(0).toUpperCase() + fileName.slice(1).replace(/[_-]/g, ' ');
+      }
+    }
+
+    // DEBUG MODE: Skip Perplexity call, just return profile with empty companies
+    // TODO: Re-enable Phase 2 after profile extraction is working
+    console.log('⚠️ DEBUG MODE: Skipping Perplexity company discovery');
+    console.log(`   Profile: ${extractedCMF.name}`);
+    console.log(`   Target Role: ${extractedCMF.targetRole}`);
+    console.log(`   Target Companies: ${extractedCMF.targetCompanies}`);
+    console.log(`   Must-Haves: ${extractedCMF.mustHaves?.length || 0} items`);
+    console.log(`   Want-to-Have: ${extractedCMF.wantToHave?.length || 0} items`);
+    console.log(`   Experience: ${extractedCMF.experience?.length || 0} items`);
+
+    // Return profile with empty company list
+    return {
+      id: `user-${Date.now()}`,
+      name: extractedCMF.name || 'User',
+      cmf: {
+        id: `cmf-${Date.now()}`,
+        ...extractedCMF
+      },
+      baseCompanies: [],
+      addedCompanies: [],
+      removedCompanyIds: [],
+      watchlistCompanyIds: [],
+      viewMode: 'explore' as const,
+      _warning: 'DEBUG MODE: Company discovery skipped'
+    };
+
+    /* Phase 2: Discover companies using Perplexity (disabled for debugging)
+    console.log('🚀 Phase 2: Discovering companies with Perplexity...');
+
+    // Read text versions for Perplexity (it can use raw text for additional context)
+    // Note: For PDFs, this will be binary garbage but Perplexity can still work with the CMF data
+    let resumeText = '';
+    let cmfText = '';
+    try {
+      // Only try to read as text for non-PDF files
+      if (!resumeFile.type.includes('pdf')) {
+        resumeText = await readFileAsText(resumeFile);
+      }
+      if (!cmfFile.type.includes('pdf')) {
+        cmfText = await readFileAsText(cmfFile);
+      }
+    } catch {
+      // Ignore text reading errors - we have the extracted CMF
+    }
+
     const discoveryData = await discoverCompaniesWithPerplexity(
+      extractedCMF,
       resumeText,
-      cmfText,
-      candidateName
+      cmfText
     );
 
     // Log warning if Perplexity was not available
@@ -326,24 +466,33 @@ export const createUserProfileFromFiles = async (
       console.log(`   Profile created with empty company list`);
     } else {
       console.log(`✅ Discovery complete!`);
-      console.log(`   Companies discovered: ${discoveryData.baseCompanies.length}`);
+      console.log(`   Companies discovered: ${discoveryData.baseCompanies?.length || 0}`);
     }
+
+    // Override Perplexity's CMF with Claude's extraction (more accurate)
+    discoveryData.cmf = {
+      ...discoveryData.cmf,
+      ...extractedCMF,
+      id: discoveryData.cmf?.id || 'user-cmf'
+    };
 
     console.log(`   Profile: ${discoveryData.cmf.name}`);
     console.log(`   Target Role: ${discoveryData.cmf.targetRole}`);
-    console.log(`   Must-Haves: ${discoveryData.cmf.mustHaves.length} items`);
-    console.log(`   Want-to-Have: ${discoveryData.cmf.wantToHave.length} items`);
+    console.log(`   Must-Haves: ${discoveryData.cmf.mustHaves?.length || 0} items`);
+    console.log(`   Want-to-Have: ${discoveryData.cmf.wantToHave?.length || 0} items`);
+    console.log(`   Experience: ${discoveryData.cmf.experience?.length || 0} items`);
 
     // Return the full discovery data (CMF + companies)
     // The calling code (AppContainer) will handle merging this into UserExplorationState
     // _warning is passed through for the UI to display if needed
     return discoveryData;
+    */
 
   } catch (error) {
-    console.error('❌ Error in Perplexity company discovery:', error);
+    console.error('❌ Error in profile extraction/company discovery:', error);
 
     // Throw error with descriptive message instead of silently falling back
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    throw new Error(`Company discovery failed: ${errorMessage}`);
+    throw new Error(`Profile extraction or company discovery failed: ${errorMessage}`);
   }
 };
