@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { DEFAULT_ANTHROPIC_MODEL } from '@/utils/llm/config';
+import { getModelForTask } from '@/utils/llm/config';
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
         'anthropic-beta': 'structured-outputs-2025-11-13'
       },
       body: JSON.stringify({
-        model: DEFAULT_ANTHROPIC_MODEL,
+        model: getModelForTask('COMPANY_ANALYSIS'),
         max_tokens: 2048,
         temperature: 0.7,
         messages: [
