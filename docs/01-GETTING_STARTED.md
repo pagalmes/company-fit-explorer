@@ -44,6 +44,10 @@ The app requires Supabase for authentication and data persistence:
    SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
    ```
 4. Create database tables: Run the SQL from `supabase/migrations/001_initial_schema.sql` in your Supabase dashboard → SQL Editor
+5. **(Optional)** Create test user for E2E tests: Run the SQL from `supabase/migrations/002_seed_test_user.sql` in the SQL Editor
+   - Creates a test user with credentials from `.env.example` (test@example.com / testpassword123)
+   - Allows you to run E2E tests immediately without manual user creation
+   - Only needed if you plan to run automated tests
 
 📖 See [02-SUPABASE_SETUP.md](02-SUPABASE_SETUP.md) for complete guide including admin user setup
 

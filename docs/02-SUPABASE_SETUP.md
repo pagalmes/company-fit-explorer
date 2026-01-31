@@ -51,7 +51,24 @@ This creates:
 - Row Level Security with all policies
 - Permissions for authenticated, anon, and service_role
 
-## Step 5: Verify Tables Created
+## Step 4.5: (Optional) Create Test User for E2E Tests
+
+If you plan to run automated E2E tests, create a test user by running:
+
+**`supabase/migrations/002_seed_test_user.sql`**
+
+This creates a test user with default credentials:
+- **Email:** test@example.com
+- **Password:** testpassword123
+
+The test user is automatically set up with:
+- Profile in the `profiles` table
+- Empty CMF profile in `user_company_data`
+- Default preferences in `user_preferences`
+
+**Note:** This is for development only. Do not run this migration in production!
+
+## Step 5: Verify Tables and Test User Created
 
 In Supabase dashboard → **Table Editor**, you should see:
 - `profiles` - User authentication data
@@ -59,6 +76,10 @@ In Supabase dashboard → **Table Editor**, you should see:
 - `user_preferences` - Watchlist and UI preferences
 - `user_invitations` - Invite system
 - `waitlist` - Public waitlist signups
+
+If you ran the test user migration, verify in **Authentication** → **Users**:
+- You should see `test@example.com` in the users list
+- Email should show as confirmed
 
 ## Step 6: Create Your First User
 
