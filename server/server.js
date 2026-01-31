@@ -6,7 +6,23 @@ const app = express();
 const PORT = process.env.PORT || 3002;
 
 // Anthropic model configuration - single source of truth
-const DEFAULT_ANTHROPIC_MODEL = 'claude-sonnet-4-5-20250929';
+// Keep in sync with src/utils/llm/config.ts
+const ANTHROPIC_MODELS = {
+  OPUS_4_5: 'claude-opus-4-5-20251101',
+  SONNET_4_5: 'claude-sonnet-4-5-20250929',
+  HAIKU_4_5: 'claude-haiku-4-5-20251001',
+};
+
+// Task-based model selection (mirrors src/utils/llm/config.ts)
+const TASK_MODELS = {
+  PROFILE_EXTRACTION: ANTHROPIC_MODELS.OPUS_4_5,
+  COMPANY_ANALYSIS: ANTHROPIC_MODELS.SONNET_4_5,
+  COMPANY_EXTRACTION: ANTHROPIC_MODELS.SONNET_4_5,
+  API_VALIDATION: ANTHROPIC_MODELS.HAIKU_4_5,
+  DEFAULT: ANTHROPIC_MODELS.SONNET_4_5,
+};
+
+const getModelForTask = (task) => TASK_MODELS[task] || TASK_MODELS.DEFAULT;
 
 // Middleware
 app.use(cors());
@@ -43,7 +59,7 @@ app.post('/api/llm/anthropic/analyze', async (req, res) => {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: DEFAULT_ANTHROPIC_MODEL,
+        model: getModelForTask('COMPANY_ANALYSIS'),
         max_tokens: 1500,
         temperature: 0.7,
         messages: [
@@ -109,7 +125,7 @@ app.post('/api/llm/anthropic/validate', async (req, res) => {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: DEFAULT_ANTHROPIC_MODEL,
+        model: getModelForTask('API_VALIDATION'),
         max_tokens: 5,
         messages: [{ role: 'user', content: 'Hi' }]
       })

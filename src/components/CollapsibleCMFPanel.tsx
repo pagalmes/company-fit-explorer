@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { UserCMF } from '../types';
+import { UserCMF, getCMFDisplayText } from '../types';
 
 interface CollapsibleCMFPanelProps {
   userCMF: UserCMF;
@@ -136,7 +136,7 @@ const CollapsibleCMFPanel: React.FC<CollapsibleCMFPanelProps> = ({
                     userCMF.mustHaves.map((item, index) => (
                       <div key={index} className="flex items-center space-x-2">
                         <div className="w-1.5 h-1.5 bg-rose-500 rounded-full flex-shrink-0"></div>
-                        <span className="text-sm text-slate-600">{item}</span>
+                        <span className="text-sm text-slate-600">{getCMFDisplayText(item)}</span>
                       </div>
                     ))
                   ) : (
@@ -153,7 +153,7 @@ const CollapsibleCMFPanel: React.FC<CollapsibleCMFPanelProps> = ({
                     userCMF.wantToHave.map((item, index) => (
                       <div key={index} className="flex items-center space-x-2">
                         <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full flex-shrink-0"></div>
-                        <span className="text-sm text-slate-600">{item}</span>
+                        <span className="text-sm text-slate-600">{getCMFDisplayText(item)}</span>
                       </div>
                     ))
                   ) : (

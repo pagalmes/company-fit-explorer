@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { DEFAULT_ANTHROPIC_MODEL } from '@/utils/llm/config';
+import { getModelForTask } from '@/utils/llm/config';
 
 export async function POST() {
   try {
@@ -17,7 +17,7 @@ export async function POST() {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: DEFAULT_ANTHROPIC_MODEL,
+        model: getModelForTask('API_VALIDATION'),
         max_tokens: 5,
         messages: [{ role: 'user', content: 'Hi' }]
       })

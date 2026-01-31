@@ -46,18 +46,43 @@ export async function GET() {
   console.log('Found profiles:', profiles?.length || 0)
   console.log('Found company data records:', companyData?.length || 0)
 
-  // Manually join the data
+  // Manually join the data and count actual companies
   const users = profiles?.map(profile => {
     const userCompanyData = companyData?.filter(data => data.user_id === profile.id) || []
-    const hasData = userCompanyData.length > 0
-    console.log(`User ${profile.email} (ID: ${profile.id}): ${hasData ? 'HAS DATA' : 'NO DATA'}`)
-    
+
+    // Count actual companies - check multiple possible column names and structures
+    let companyCount = 0
+    userCompanyData.forEach(record => {
+      // Check 'companies' column (current schema)
+      if (record.companies && Array.isArray(record.companies)) {
+        companyCount += record.companies.length
+      }
+      // Check 'company_data' column (legacy)
+      else if (record.company_data && Array.isArray(record.company_data)) {
+        companyCount += record.company_data.length
+      }
+      // Check if user_profile contains baseCompanies/addedCompanies (UserExplorationState format)
+      else if (record.user_profile) {
+        const profile = record.user_profile
+        if (profile.baseCompanies && Array.isArray(profile.baseCompanies)) {
+          companyCount += profile.baseCompanies.length
+        }
+        if (profile.addedCompanies && Array.isArray(profile.addedCompanies)) {
+          companyCount += profile.addedCompanies.length
+        }
+      }
+    })
+
+    const hasData = companyCount > 0 || userCompanyData.length > 0
+    console.log(`User ${profile.email} (ID: ${profile.id}): ${hasData ? `${companyCount} companies` : 'NO DATA'}`)
+
     return {
       ...profile,
-      user_company_data: userCompanyData
+      user_company_data: userCompanyData,
+      company_count: companyCount
     }
   }) || []
-  
+
   return NextResponse.json({ users })
 }
 

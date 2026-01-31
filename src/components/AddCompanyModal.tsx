@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { toast } from 'sonner';
-import { UserCMF, Company } from '../types';
+import { UserCMF, Company, getCMFCombinedText } from '../types';
 import { getCompanySuggestions, getPopularCompanies, CompanySuggestion } from '../utils/companySuggestions';
 import { getCompanyPreview, CompanyPreview, validateCompanyData } from '../utils/companyValidation';
 import { getColorForScore, resolveCareerUrl, mapConnectionsToExistingCompanies } from '../utils/companyPositioning';
@@ -251,12 +251,17 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
                              (!userCMF.targetRole || userCMF.targetRole.trim() === '') &&
                              (!userCMF.targetCompanies || userCMF.targetCompanies.trim() === '');
           
+          // Convert CMFItem arrays to combined "Short: Detailed" format for LLM analysis
+          // This gives the LLM both the concise label and full context
+          const mustHavesForLLM = (userCMF.mustHaves || []).map(getCMFCombinedText);
+          const wantToHaveForLLM = (userCMF.wantToHave || []).map(getCMFCombinedText);
+
           const llmResponse = await llmService.analyzeCompany({
             companyName: companyPreview.name,
             userCMF: {
               targetRole: userCMF.targetRole || (isCMFEmpty ? 'Exploring career opportunities' : ''),
-              mustHaves: userCMF.mustHaves || [],
-              wantToHave: userCMF.wantToHave || [],
+              mustHaves: mustHavesForLLM,
+              wantToHave: wantToHaveForLLM,
               experience: userCMF.experience || [],
               targetCompanies: userCMF.targetCompanies || (isCMFEmpty ? 'Open to exploring various companies and industries' : '')
             },

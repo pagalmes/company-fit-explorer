@@ -123,4 +123,6 @@ src/data/companies.ts
 
 # Database setup and diagnostic scripts (one-time use, environment-specific)
 supabase/*.sql
-!supabase/migrations/tests/e2e/.auth/
+
+# E2E test auth state (contains session tokens)
+tests/e2e/.auth/

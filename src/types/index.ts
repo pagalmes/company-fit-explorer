@@ -1,9 +1,45 @@
+/**
+ * CMF Item with short (display) and detailed (matching) versions
+ * - short: Condensed label for UI display (e.g., "High Velocity of Execution")
+ * - detailed: Full context for API matching (e.g., "High Velocity of Execution: A dynamic pace...")
+ */
+export interface CMFItem {
+  short: string;
+  detailed: string;
+}
+
+/**
+ * Helper to get display text from a CMF item (handles both string and CMFItem formats)
+ */
+export function getCMFDisplayText(item: string | CMFItem): string {
+  return typeof item === 'string' ? item : item.short;
+}
+
+/**
+ * Helper to get detailed text from a CMF item (handles both string and CMFItem formats)
+ */
+export function getCMFDetailedText(item: string | CMFItem): string {
+  return typeof item === 'string' ? item : item.detailed;
+}
+
+/**
+ * Helper to get combined text from a CMF item for LLM matching
+ * Format: "Short Label: Full detailed description..."
+ * This gives LLMs both the concise label and full context
+ */
+export function getCMFCombinedText(item: string | CMFItem): string {
+  if (typeof item === 'string') {
+    return item;
+  }
+  return `${item.short}: ${item.detailed}`;
+}
+
 export interface UserCMF {
   id: string;
   name: string;
-  mustHaves: string[];
-  wantToHave: string[];
-  experience: string[];
+  mustHaves: (string | CMFItem)[];
+  wantToHave: (string | CMFItem)[];
+  experience: string[];  // Experience stays as simple strings (short labels)
   targetRole: string;
   targetCompanies: string;
 }

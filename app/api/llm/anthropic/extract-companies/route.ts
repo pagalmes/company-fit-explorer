@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { DEFAULT_ANTHROPIC_MODEL } from '@/utils/llm/config';
+import { getModelForTask } from '@/utils/llm/config';
 import { processCareerUrl } from './urlProcessors';
 
 interface ExtractedCompany {
@@ -143,7 +143,7 @@ ${contentToAnalyze}${extractedLinks.length > 0 ? `\n\nHyperlinks found in the te
         'anthropic-beta': 'structured-outputs-2025-11-13'
       },
       body: JSON.stringify({
-        model: DEFAULT_ANTHROPIC_MODEL,
+        model: getModelForTask('COMPANY_EXTRACTION'),
         max_tokens: 2048, // Reduced from 4096 - URLs are pre-processed before sending to LLM
         temperature: 0.1, // Low temperature for consistent extraction
         messages: [

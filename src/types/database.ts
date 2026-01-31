@@ -1,11 +1,15 @@
 // Database entity types for our CMF Explorer
 import { UserCMF, Company } from './index';
 
+export type ProfileStatus = 'pending' | 'complete' | 'incomplete'
+
 export interface UserProfile {
   id: string
   email: string
   full_name?: string
   role: 'admin' | 'user'
+  profile_status: ProfileStatus
+  onboarding_completed_at: string | null
   created_at: string
   updated_at: string
 }

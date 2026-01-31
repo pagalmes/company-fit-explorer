@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { createClientComponentClient } from '../../src/lib/supabase'
 import { useRouter } from 'next/navigation'
 import AuthWrapper from '../../src/components/AuthWrapper'
-import { Users, Plus, LogOut, Settings, Trash2, FileUp, Download, Eye } from 'lucide-react'
+import { Users, Plus, LogOut, Settings, Trash2, FileUp, Download, Eye, RotateCcw, HelpCircle } from 'lucide-react'
 import LLMSettingsModal from '../../src/components/LLMSettingsModal'
 import ImportDataModal from '../../src/components/ImportDataModal'
 import { DeleteUserConfirmationModal } from '../../src/components/DeleteUserConfirmationModal'
@@ -11,6 +11,55 @@ import { llmService } from '../../src/utils/llm/service'
 
 // Force dynamic rendering for admin pages
 export const dynamic = 'force-dynamic'
+
+// Profile status determines if user will see onboarding
+type ProfileStatus = 'pending' | 'complete' | 'error' | null
+
+// Helper to get onboarding status info
+function getOnboardingStatus(profileStatus: ProfileStatus, hasData: boolean): {
+  label: string
+  color: string
+  bgColor: string
+  willOnboard: boolean
+  tooltip: string
+} {
+  if (profileStatus === 'complete') {
+    return {
+      label: 'Complete',
+      color: 'text-green-800',
+      bgColor: 'bg-green-100',
+      willOnboard: false,
+      tooltip: 'User has completed onboarding and will go directly to the explorer'
+    }
+  } else if (profileStatus === 'error') {
+    return {
+      label: 'Error',
+      color: 'text-red-800',
+      bgColor: 'bg-red-100',
+      willOnboard: true,
+      tooltip: 'Onboarding failed - user will retry on next login'
+    }
+  } else if (profileStatus === 'pending') {
+    return {
+      label: 'Pending',
+      color: 'text-orange-800',
+      bgColor: 'bg-orange-100',
+      willOnboard: true,
+      tooltip: 'User will see onboarding flow on next login'
+    }
+  } else {
+    // null or undefined - new user
+    return {
+      label: hasData ? 'Legacy' : 'New',
+      color: hasData ? 'text-blue-800' : 'text-slate-800',
+      bgColor: hasData ? 'bg-blue-100' : 'bg-slate-100',
+      willOnboard: !hasData, // Legacy users with data skip onboarding
+      tooltip: hasData
+        ? 'Legacy user with existing data - will skip onboarding'
+        : 'New user - will see onboarding on first login'
+    }
+  }
+}
 
 export default function AdminPage() {
   const [users, setUsers] = useState([])
@@ -137,6 +186,35 @@ export default function AdminPage() {
   const handleDeleteUser = (userId: string, userEmail: string) => {
     setUserToDelete({ id: userId, email: userEmail })
     setShowDeleteModal(true)
+  }
+
+  const handleResetOnboarding = async (userId: string, userEmail: string) => {
+    if (!confirm(`Reset onboarding for ${userEmail}?\n\nThis will:\n• Clear all their companies and preferences\n• Reset their profile status to 'pending'\n• They will see the onboarding flow on next login`)) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/reset-user-onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setMessage(`Onboarding reset for ${userEmail}`)
+        setMessageType('success')
+        fetchUsers()
+      } else {
+        setMessage(data.error || 'Failed to reset onboarding')
+        setMessageType('error')
+      }
+    } catch (error) {
+      console.error('Error resetting onboarding:', error)
+      setMessage('Failed to reset onboarding')
+      setMessageType('error')
+    }
   }
 
   const confirmDeleteUser = async () => {
@@ -284,9 +362,39 @@ export default function AdminPage() {
 
           {/* Users List */}
           <div className="bg-white/60 backdrop-blur-sm rounded-xl shadow-lg border border-blue-200/40 p-6">
-            <div className="flex items-center space-x-3 mb-6">
-              <Users className="w-6 h-6 text-blue-600" />
-              <h2 className="text-xl font-semibold text-slate-900">Users</h2>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <Users className="w-6 h-6 text-blue-600" />
+                <h2 className="text-xl font-semibold text-slate-900">Users</h2>
+              </div>
+
+              {/* Actions Legend */}
+              <div className="flex items-center space-x-1 text-xs text-slate-500">
+                <HelpCircle className="w-3.5 h-3.5" />
+                <span>Actions:</span>
+                <div className="flex items-center space-x-3 ml-2">
+                  <span className="flex items-center space-x-1">
+                    <FileUp className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Import</span>
+                  </span>
+                  <span className="flex items-center space-x-1">
+                    <Download className="w-3.5 h-3.5 text-green-600" />
+                    <span>Export</span>
+                  </span>
+                  <span className="flex items-center space-x-1">
+                    <Eye className="w-3.5 h-3.5 text-purple-600" />
+                    <span>View As</span>
+                  </span>
+                  <span className="flex items-center space-x-1">
+                    <RotateCcw className="w-3.5 h-3.5 text-orange-600" />
+                    <span>Reset Onboarding</span>
+                  </span>
+                  <span className="flex items-center space-x-1">
+                    <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                    <span>Delete</span>
+                  </span>
+                </div>
+              </div>
             </div>
 
             {loading ? (
@@ -302,74 +410,104 @@ export default function AdminPage() {
                       <th className="text-left py-3 px-4 font-semibold text-slate-700">Email</th>
                       <th className="text-left py-3 px-4 font-semibold text-slate-700">Name</th>
                       <th className="text-left py-3 px-4 font-semibold text-slate-700">Role</th>
-                      <th className="text-left py-3 px-4 font-semibold text-slate-700">Data Status</th>
+                      <th className="text-left py-3 px-4 font-semibold text-slate-700">Onboarding</th>
+                      <th className="text-left py-3 px-4 font-semibold text-slate-700">Data</th>
                       <th className="text-left py-3 px-4 font-semibold text-slate-700">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map((user: any) => (
-                      <tr key={user.id} className="border-b border-slate-100 hover:bg-white/40">
-                        <td className="py-3 px-4">{user.email}</td>
-                        <td className="py-3 px-4">{user.full_name || '-'}</td>
-                        <td className="py-3 px-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            user.role === 'admin' 
-                              ? 'bg-purple-100 text-purple-800' 
-                              : 'bg-gray-100 text-gray-700'
-                          }`}>
-                            {user.role}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          {user.user_company_data && user.user_company_data.length > 0 ? (
-                            <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                              Has Data
+                    {users.map((user: any) => {
+                      // Use company_count from API (counts actual companies in JSON)
+                      const companyCount = user.company_count || 0
+                      const hasData = companyCount > 0
+                      const onboardingStatus = getOnboardingStatus(user.profile_status, hasData)
+
+                      return (
+                        <tr key={user.id} className="border-b border-slate-100 hover:bg-white/40">
+                          <td className="py-3 px-4">{user.email}</td>
+                          <td className="py-3 px-4">{user.full_name || '-'}</td>
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              user.role === 'admin'
+                                ? 'bg-purple-100 text-purple-800'
+                                : 'bg-gray-100 text-gray-700'
+                            }`}>
+                              {user.role}
                             </span>
-                          ) : (
-                            <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium">
-                              No Data
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 px-4">
-                          {user.role !== 'admin' && (
+                          </td>
+                          <td className="py-3 px-4">
                             <div className="flex items-center space-x-2">
-                              <button
-                                onClick={() => handleImportData(user.id, user.email)}
-                                className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
-                                title="Import Data"
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${onboardingStatus.bgColor} ${onboardingStatus.color}`}
+                                title={onboardingStatus.tooltip}
                               >
-                                <FileUp className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleExportData(user.id, user.email)}
-                                className="p-1 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors"
-                                title="Export Data"
-                              >
-                                <Download className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleViewAsUser(user.id)}
-                                className="p-1 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded transition-colors"
-                                title="View as User"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteUser(user.id, user.email)}
-                                className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
-                                title="Delete User"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                                {onboardingStatus.label}
+                              </span>
+                              {onboardingStatus.willOnboard && (
+                                <span className="text-xs text-orange-600" title="Will see onboarding on next login">
+                                  → Onboard
+                                </span>
+                              )}
                             </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td className="py-3 px-4">
+                            {hasData ? (
+                              <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                                {companyCount} {companyCount === 1 ? 'company' : 'companies'}
+                              </span>
+                            ) : (
+                              <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">
+                                No data
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            {user.role !== 'admin' && (
+                              <div className="flex items-center space-x-2">
+                                <button
+                                  onClick={() => handleImportData(user.id, user.email)}
+                                  className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
+                                  title="Import companies from JSON file"
+                                >
+                                  <FileUp className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleExportData(user.id, user.email)}
+                                  className="p-1.5 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors"
+                                  title="Export user's companies to JSON"
+                                >
+                                  <Download className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleViewAsUser(user.id)}
+                                  className="p-1.5 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded transition-colors"
+                                  title="View the app as this user (opens in new tab)"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleResetOnboarding(user.id, user.email)}
+                                  className="p-1.5 text-orange-600 hover:text-orange-800 hover:bg-orange-50 rounded transition-colors"
+                                  title="Reset onboarding - clears all data and shows onboarding on next login"
+                                >
+                                  <RotateCcw className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteUser(user.id, user.email)}
+                                  className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                                  title="Permanently delete this user and all their data"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
-                
+
                 {users.length === 0 && (
                   <div className="text-center py-8 text-slate-600">
                     No users found. Start by inviting your first user!

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import DreamyFirstContact from './DreamyFirstContact';
 import CMFGraphExplorerNew from './CMFGraphExplorerNew';
-import { useFirstTimeExperience } from '../hooks/useFirstTimeExperience';
 import { createUserProfileFromFiles } from '../utils/fileProcessing';
 import { UserExplorationState } from '../types';
+import { ProfileStatus } from '../types/database';
 import { activeUserProfile } from '../data/companies';
 import { createProfileForUser } from '../utils/userProfileCreation';
 import { migrateCompanyLogos } from '../utils/logoMigration';
@@ -11,7 +11,6 @@ import { mergeUserPreferences } from '../utils/userPreferencesMerger';
 import { track } from '../lib/analytics';
 
 const AppContainer: React.FC = () => {
-  const { isFirstTime, hasChecked, markAsVisited } = useFirstTimeExperience();
   const [isLoading, setIsLoading] = useState(false);
   const [userProfile, setUserProfile] = useState<UserExplorationState | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -21,18 +20,36 @@ const AppContainer: React.FC = () => {
   const [hasCompletedDataCheck, setHasCompletedDataCheck] = useState(false);
   const [isViewingAsUser, setIsViewingAsUser] = useState(false);
   const [viewedUserInfo, setViewedUserInfo] = useState<{ email: string; full_name: string } | null>(null);
+  // Profile status from Supabase - replaces localStorage-based useFirstTimeExperience
+  const [profileStatus, setProfileStatus] = useState<ProfileStatus>('pending');
+  const [userId, setUserId] = useState<string | null>(null);
 
   // Check authentication FIRST, before any other logic
   useEffect(() => {
     const checkAuthAndLoadData = async () => {
-      if (!hasChecked) {
-        return;
-      }
-
       try {
-        // Check for viewAsUserId in URL params
+        // Check for URL params
         const urlParams = new URLSearchParams(window.location.search);
         const viewAsUserId = urlParams.get('viewAsUserId');
+        const resetOnboarding = urlParams.get('reset-onboarding');
+
+        // Handle reset-onboarding param (for dev/testing)
+        if (resetOnboarding === 'true') {
+          console.log('🔄 Reset onboarding requested via URL param');
+          try {
+            const resetResponse = await fetch('/api/user/reset-onboarding', { method: 'POST' });
+            if (resetResponse.ok) {
+              console.log('✅ Onboarding reset successful, reloading...');
+              // Remove the param and reload
+              window.location.href = window.location.pathname;
+              return;
+            } else {
+              console.error('Failed to reset onboarding:', await resetResponse.text());
+            }
+          } catch (error) {
+            console.error('Error resetting onboarding:', error);
+          }
+        }
 
         // Build API URL with viewAsUserId param if present
         let apiUrl = '/api/user/data';
@@ -67,13 +84,17 @@ const AppContainer: React.FC = () => {
           hasData: userData.hasData,
           hasCompanyData: !!userData.companyData,
           companyDataKeys: userData.companyData ? Object.keys(userData.companyData) : null,
-          userId: userData.userId
+          userId: userData.userId,
+          profileStatus: userData.profileStatus
         });
 
+        // Store userId and profileStatus from Supabase
+        setUserId(userData.userId);
+        setProfileStatus(userData.profileStatus || 'pending');
+
         if (userData.hasData && userData.companyData) {
-          // Existing user with data - mark as visited to skip onboarding
-          console.log('✅ User has data, marking as visited to skip first-time experience');
-          markAsVisited();
+          // Existing user with data
+          console.log('✅ User has data, profile_status:', userData.profileStatus);
           
           const dbUserProfile = userData.companyData.user_profile;
           const dbCompanies = userData.companyData.companies;
@@ -147,10 +168,9 @@ const AppContainer: React.FC = () => {
       }
     };
 
-    // Always check authentication, regardless of first-time status
+    // Check authentication on mount
     checkAuthAndLoadData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasChecked]);
+  }, []);
 
   const handleFirstTimeComplete = async (resumeFile: File, cmfFile: File) => {
     setIsLoading(true);
@@ -181,8 +201,35 @@ const AppContainer: React.FC = () => {
 
       console.log('✅ Created user profile with', newUserProfile.baseCompanies.length, 'companies');
 
-      // Mark as visited
-      markAsVisited();
+      // Save profile data AND update profile_status to 'complete' in Supabase
+      if (userId) {
+        try {
+          await fetch('/api/user/data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId,
+              profileStatus: 'complete',
+              // Save the full profile data (CMF + companies)
+              userProfile: newUserProfile.cmf,
+              companies: [
+                ...newUserProfile.baseCompanies,
+                ...newUserProfile.addedCompanies
+              ],
+              preferences: {
+                watchlist_company_ids: newUserProfile.watchlistCompanyIds,
+                removed_company_ids: newUserProfile.removedCompanyIds,
+                view_mode: newUserProfile.viewMode
+              }
+            })
+          });
+          setProfileStatus('complete');
+          console.log('✅ Saved user profile and companies to Supabase');
+        } catch (error) {
+          console.error('Failed to save profile data:', error);
+          // Continue anyway - the user can still use the app
+        }
+      }
 
       // Simulate processing time for dramatic effect (let user read "universe awakening" message)
       setTimeout(() => {
@@ -274,8 +321,17 @@ const AppContainer: React.FC = () => {
     );
   }
 
-  // Show dreamy first contact for first-time users - but only after we've completed data check
-  if (isFirstTime && hasChecked && !authLoading && !dataLoading && hasCompletedDataCheck) {
+  // Show dreamy first contact for first-time users (profile_status === 'pending')
+  // Only after we've completed data check to avoid flash of wrong content
+  // Check for skip-intro param (used by E2E tests and development)
+  const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const skipIntro = urlParams?.get('skip-intro') === 'true';
+  const isTestEnv = typeof window !== 'undefined' && (
+    process.env.NODE_ENV === 'test' ||
+    window.navigator.userAgent.includes('Playwright')
+  );
+
+  if (profileStatus === 'pending' && !authLoading && !dataLoading && hasCompletedDataCheck && !skipIntro && !isTestEnv) {
     return <DreamyFirstContact onComplete={handleFirstTimeComplete} />;
   }
 
@@ -332,7 +388,7 @@ const AppContainer: React.FC = () => {
   }
 
   // Show the main graph explorer for returning users or after completion
-  if (userProfile && hasChecked && !authLoading) {
+  if (userProfile && hasCompletedDataCheck && !authLoading) {
     return (
       <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden transition-all duration-1000" style={{ height: '100dvh', maxHeight: '100dvh' }}>
         <FloatingStars />
@@ -378,7 +434,7 @@ const AppContainer: React.FC = () => {
   }
 
   // Show loading while fetching user data (only after auth is verified)
-  if (dataLoading && hasChecked && !isFirstTime && !authLoading) {
+  if (dataLoading && !authLoading && profileStatus !== 'pending') {
     return (
       <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center" style={{ minHeight: '100vh' }}>
         <div className="text-center">
