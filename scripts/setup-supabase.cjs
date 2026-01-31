@@ -150,7 +150,7 @@ async function setupDatabase() {
   // Run migrations
   const migrations = [
     '001_initial_schema.sql',
-    '002_row_level_security.sql'
+    '002_seed_test_user.sql'
   ];
 
   let allSuccessful = true;
