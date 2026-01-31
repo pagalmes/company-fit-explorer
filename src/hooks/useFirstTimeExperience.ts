@@ -1,5 +1,19 @@
 import { useState, useEffect } from 'react';
 
+/**
+ * @deprecated This hook is deprecated. Onboarding state is now tracked in Supabase
+ * via the `profile_status` column in the profiles table.
+ *
+ * - 'pending': User needs to complete onboarding
+ * - 'complete': User has completed onboarding with valid profile
+ * - 'incomplete': Admin-seeded or partial profile
+ *
+ * See AppContainer.tsx for the new implementation that uses the /api/user/data
+ * endpoint to fetch profile_status.
+ *
+ * This hook is kept for backwards compatibility with E2E tests that use
+ * the skip-intro URL parameter.
+ */
 export const useFirstTimeExperience = () => {
   const [isFirstTime, setIsFirstTime] = useState(true);
   const [hasChecked, setHasChecked] = useState(false);
