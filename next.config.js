@@ -5,6 +5,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Required for PostHog reverse proxy - prevents Next.js from redirecting
+  // URLs with trailing slashes (PostHog's API uses /e/, /s/, etc.)
+  skipTrailingSlashRedirect: true,
+
   // Explicitly set the output file tracing root to this directory
   // This fixes the multiple lockfiles warning by telling Next.js this is the project root
   outputFileTracingRoot: __dirname,
