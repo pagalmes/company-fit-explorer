@@ -1,3 +1,7 @@
+-- ⚠️  WARNING: DEVELOPMENT ONLY - DO NOT RUN IN PRODUCTION ⚠️
+-- This file contains test credentials in plaintext.
+-- ============================================================================
+--
 -- Seed Test User for Development and E2E Testing
 -- This migration creates a test user for local development and automated testing
 --
@@ -9,8 +13,6 @@
 --   1. Run this migration in Supabase SQL Editor after running 001_initial_schema.sql
 --   2. The test user will be created with these default credentials
 --   3. E2E tests will use these credentials automatically
---
--- Note: This is for DEVELOPMENT ONLY. Do not run this in production!
 
 -- ============================================================================
 -- Create Test User in Supabase Auth
@@ -69,6 +71,27 @@ BEGIN
       '',
       ''
     ) RETURNING id INTO test_user_id;
+
+    -- Create identity for email/password auth (required for login)
+    INSERT INTO auth.identities (
+      id,
+      user_id,
+      identity_data,
+      provider,
+      provider_id,
+      last_sign_in_at,
+      created_at,
+      updated_at
+    ) VALUES (
+      gen_random_uuid(),
+      test_user_id,
+      jsonb_build_object('sub', test_user_id::text, 'email', test_email, 'email_verified', true),
+      'email',
+      test_user_id::text,
+      NOW(),
+      NOW(),
+      NOW()
+    ) ON CONFLICT DO NOTHING;
 
     -- Create profile for the test user (if it doesn't exist)
     INSERT INTO profiles (id, email, full_name, role)
