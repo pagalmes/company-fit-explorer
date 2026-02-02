@@ -3,6 +3,19 @@ import { render, screen } from '@testing-library/react'
 import { UserCMF, Company } from '../../types'
 import CMFGraphExplorer from '../CMFGraphExplorer'
 
+// Mock next/dynamic to render components synchronously in tests
+vi.mock('next/dynamic', () => ({
+  default: (_importFn: () => Promise<{ default: React.ComponentType<unknown> }>) => {
+    // For CompanyGraph, return a mock component that renders the user name
+    const MockComponent = (props: { cmf?: { name?: string }; hideCenter?: boolean }) => (
+      <div data-testid="mock-company-graph">
+        {!props.hideCenter && props.cmf?.name && <span>{props.cmf.name}</span>}
+      </div>
+    );
+    return MockComponent;
+  }
+}));
+
 // Mock Cytoscape
 vi.mock('cytoscape', () => {
   const createMockCollection = () => ({

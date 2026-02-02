@@ -1,42 +1,38 @@
-import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
 import { v4 as uuidv4 } from 'uuid'
+import { verifyAdminAccess, isAdminAuthError } from '../../../../src/lib/admin-auth'
+import { auditLog } from '../../../../src/lib/audit-log'
 
 // Get all users (admin only)
 export async function GET() {
-  // Create admin client with service role key for database operations
-  const adminSupabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-
-  // Get cookies to extract the auth token
-  const cookieStore = await cookies()
-  const authToken = cookieStore.get('sb-access-token') || cookieStore.get('supabase-auth-token')
-
-  if (!authToken) {
-    // For now, let's just return all users (we can add auth later)
-    console.log('No auth token found, proceeding anyway for testing')
+  const auth = await verifyAdminAccess()
+  if (isAdminAuthError(auth)) {
+    return auth.response
   }
 
+  const { adminClient } = auth
+
   console.log('Fetching users from profiles table...')
-  
-  // Get users first
-  const { data: profiles, error: profilesError } = await adminSupabase
-    .from('profiles')
-    .select('*')
-    .order('created_at', { ascending: false })
+
+  // Following async-parallel: Use Promise.all() for independent operations
+  // Profiles and company data have no dependencies, fetch in parallel
+  const [profilesResult, companyDataResult] = await Promise.all([
+    adminClient
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false }),
+    adminClient
+      .from('user_company_data')
+      .select('*')
+  ]);
+
+  const { data: profiles, error: profilesError } = profilesResult;
+  const { data: companyData, error: companyError } = companyDataResult;
 
   if (profilesError) {
     console.error('Error fetching users:', profilesError)
     return NextResponse.json({ error: profilesError.message }, { status: 500 })
   }
-
-  // Get all user company data
-  const { data: companyData, error: companyError } = await adminSupabase
-    .from('user_company_data')
-    .select('*')
 
   if (companyError) {
     console.error('Error fetching company data:', companyError)
@@ -83,21 +79,27 @@ export async function GET() {
     }
   }) || []
 
-  return NextResponse.json({ users })
+  // Admin data is private, should never be cached
+  return NextResponse.json({ users }, {
+    headers: {
+      'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+    }
+  })
 }
 
 // Create user invitation (admin only)
 export async function POST(request: Request) {
-  // Create admin client with service role key for database operations
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const auth = await verifyAdminAccess()
+  if (isAdminAuthError(auth)) {
+    return auth.response
+  }
+
+  const { user, adminClient } = auth
 
   const { email, fullName } = await request.json()
 
   // Check if user already exists
-  const { data: existingProfile } = await supabase
+  const { data: existingProfile } = await adminClient
     .from('profiles')
     .select('email')
     .eq('email', email)
@@ -107,21 +109,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'User already exists' }, { status: 400 })
   }
 
-  // For now, we'll use a placeholder admin ID since we simplified auth
-  // In production, you'd get this from the authenticated user
-  const adminUserId = 'd7cb6efc-1cb5-4946-a7db-0a015a646cbf' // Your user ID from the debug info
-
   // Generate invitation token
   const inviteToken = uuidv4()
   const inviteLink = `${process.env.NEXT_PUBLIC_SITE_URL}/invite/${inviteToken}`
 
-  // First, let's check if the user_invitations table exists
-  const { data, error } = await supabase
+  // Create the invitation
+  const { data, error } = await adminClient
     .from('user_invitations')
     .insert({
       email,
       full_name: fullName,
-      invited_by: adminUserId,
+      invited_by: user.id,
       invite_token: inviteToken
     })
     .select()
@@ -131,7 +129,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ 
+  // Audit log
+  await auditLog({
+    adminClient,
+    action: 'user.invitation.create',
+    adminId: user.id,
+    targetUserId: null,
+    details: { email, fullName, inviteToken },
+    request
+  })
+
+  return NextResponse.json({
     invitation: data,
     inviteLink,
     message: 'Invitation created successfully'

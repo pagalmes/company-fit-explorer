@@ -1,7 +1,9 @@
+import { Suspense } from 'react'
 import { createServerComponentClient } from '../../src/lib/supabase'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import App from '../../src/App'
+import ExplorerLoading from './loading'
 
 export default async function HomePage() {
   const cookieStore = await cookies()
@@ -19,6 +21,10 @@ export default async function HomePage() {
     redirect('/login')
   }
 
-  // Only render the app if user is authenticated
-  return <App />
+  // Following async-suspense-boundaries: Wrap App in Suspense for streaming
+  return (
+    <Suspense fallback={<ExplorerLoading />}>
+      <App />
+    </Suspense>
+  )
 }

@@ -1,15 +1,28 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { CMFGraphExplorerProps, ViewMode, Company } from '../types';
 import { useCompanySelection } from '../hooks/useCompanySelection';
 import { useWatchlist } from '../hooks/useWatchlist';
 import { useIsMobile } from '../hooks/useIsMobile';
-import CompanyGraph from './CompanyGraph';
 import CompanyDetailPanel from './CompanyDetailPanel';
-import AddCompanyModal from './AddCompanyModal';
-import LLMSettingsModal from './LLMSettingsModal';
-import { RemoveCompanyModal } from './RemoveCompanyModal';
+
+// Following bundle-dynamic-imports: Lazy-load Cytoscape.js (~400KB) to reduce initial bundle
+const CompanyGraph = dynamic(() => import('./CompanyGraph'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-gray-50">
+      <div className="text-gray-500">Loading graph...</div>
+    </div>
+  )
+});
+
+// Following bundle-conditional: Dynamic import modals (only loaded when opened)
+const AddCompanyModal = dynamic(() => import('./AddCompanyModal'));
+const LLMSettingsModal = dynamic(() => import('./LLMSettingsModal'));
+const RemoveCompanyModal = dynamic(() => import('./RemoveCompanyModal').then(m => ({ default: m.RemoveCompanyModal })));
+const BatchImportPlaceholderModal = dynamic(() => import('./BatchImportPlaceholderModal').then(m => ({ default: m.BatchImportPlaceholderModal })));
+
 import { SpeedDialFAB } from './SpeedDialFAB';
-import { BatchImportPlaceholderModal } from './BatchImportPlaceholderModal';
 import { loadCustomCompanies, addCustomCompany, setupCrossTabSync } from '../utils/companyStateManager';
 import { llmService } from '../utils/llm/service';
 import { loadRemovedCompaniesFromStorage, saveRemovedCompaniesToStorage } from '../utils/removedCompaniesStorage';

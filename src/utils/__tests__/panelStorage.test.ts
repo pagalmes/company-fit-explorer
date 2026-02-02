@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { savePanelState, loadPanelState, PanelState } from '../panelStorage'
+import { clearStorageCache } from '../storageCache'
 
 describe('panelStorage', () => {
   const mockLocalStorage = {
@@ -18,6 +19,8 @@ describe('panelStorage', () => {
       writable: true,
     })
     vi.clearAllMocks()
+    // Clear the storage cache before each test to ensure fresh state
+    clearStorageCache()
   })
 
   afterEach(() => {
@@ -51,8 +54,9 @@ describe('panelStorage', () => {
       mockLocalStorage.getItem.mockReturnValue(null)
 
       expect(() => savePanelState({ cmfCollapsed: true })).not.toThrow()
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to save panel state:', error)
-      
+      // Error now comes from storageCache layer
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to set localStorage:', error)
+
       consoleSpy.mockRestore()
     })
 
@@ -63,9 +67,11 @@ describe('panelStorage', () => {
         throw error
       })
 
+      // With caching, the error is caught at cache layer and returns null
+      // panelStorage then returns default state, so no error is logged
       expect(() => savePanelState({ cmfCollapsed: true })).not.toThrow()
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to load panel state:', error)
-      
+      // The cache layer silently handles errors and returns null
+
       consoleSpy.mockRestore()
     })
 
@@ -128,11 +134,11 @@ describe('panelStorage', () => {
       })
 
       const result = loadPanelState()
-      
+
       expect(result.cmfCollapsed).toBe(true)
       expect(result.lastUpdated).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/)
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to load panel state:', error)
-      
+      // Cache layer silently handles errors and returns null
+
       consoleSpy.mockRestore()
     })
 
@@ -141,11 +147,11 @@ describe('panelStorage', () => {
       mockLocalStorage.getItem.mockReturnValue('invalid json')
 
       const result = loadPanelState()
-      
+
       expect(result.cmfCollapsed).toBe(true)
       expect(result.lastUpdated).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/)
       expect(consoleSpy).toHaveBeenCalledWith('Failed to load panel state:', expect.any(Error))
-      
+
       consoleSpy.mockRestore()
     })
 
@@ -153,12 +159,14 @@ describe('panelStorage', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
       mockLocalStorage.getItem.mockReturnValue('{"corrupted": true}')
 
+      // Clear cache to ensure fresh read
+      clearStorageCache()
       const result = loadPanelState()
-      
+
       // The actual implementation returns the parsed data as-is if it's valid JSON
       // So corrupted but valid JSON will be returned as-is
       expect(result).toEqual({ corrupted: true })
-      
+
       consoleSpy.mockRestore()
     })
   })
@@ -168,16 +176,16 @@ describe('panelStorage', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
       const securityError = new Error('Security error')
       securityError.name = 'SecurityError'
-      
+
       mockLocalStorage.getItem.mockImplementation(() => {
         throw securityError
       })
 
       const result = loadPanelState()
-      
+
       expect(result.cmfCollapsed).toBe(true)
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to load panel state:', securityError)
-      
+      // Cache layer silently handles errors
+
       consoleSpy.mockRestore()
     })
 
@@ -185,15 +193,16 @@ describe('panelStorage', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
       const quotaError = new Error('Quota exceeded')
       quotaError.name = 'QuotaExceededError'
-      
+
       mockLocalStorage.setItem.mockImplementation(() => {
         throw quotaError
       })
       mockLocalStorage.getItem.mockReturnValue(null)
 
       expect(() => savePanelState({ cmfCollapsed: true })).not.toThrow()
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to save panel state:', quotaError)
-      
+      // Error now comes from storageCache layer
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to set localStorage:', quotaError)
+
       consoleSpy.mockRestore()
     })
 

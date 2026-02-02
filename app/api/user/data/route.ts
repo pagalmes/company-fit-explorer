@@ -59,29 +59,24 @@ export async function GET(request: NextRequest) {
 
   console.log('🔐 Authenticated user found:', user.email);
 
-  // Get the user's profile to check profile_status
-  const { data: userProfile } = await supabase
-    .from('profiles')
-    .select('profile_status, onboarding_completed_at')
-    .eq('id', user.id)
-    .single();
-
   // Check if this is an admin viewing as another user
   const { searchParams } = new URL(request.url);
   const viewAsUserId = searchParams.get('viewAsUserId');
+
+  // Fetch user profile with role included to avoid separate admin check query
+  // Following async-parallel: combine profile_status, onboarding, and role in one query
+  const { data: userProfile } = await supabase
+    .from('profiles')
+    .select('profile_status, onboarding_completed_at, role')
+    .eq('id', user.id)
+    .single();
 
   let targetUserId = user.id;
   let isViewingAsUser = false;
 
   if (viewAsUserId) {
-    // Verify the current user is an admin
-    const { data: currentUserProfile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (currentUserProfile?.role === 'admin') {
+    // Check admin role from already-fetched profile (no extra query needed)
+    if (userProfile?.role === 'admin') {
       console.log('🔍 Admin viewing as user:', viewAsUserId);
       targetUserId = viewAsUserId;
       isViewingAsUser = true;
@@ -91,15 +86,48 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Get target user's company data (could be current user or viewed user)
-    const { data: companyData, error: companyError } = await supabase
-      .from('user_company_data')
-      .select('*')
-      .eq('user_id', targetUserId)
+    // Following async-parallel: Use Promise.all() for independent operations
+    // Company data, preferences, and viewed user info can all be fetched in parallel
+
+    // Determine which client to use for preferences (admin bypass vs regular RLS)
+    const preferencesClient = (isViewingAsUser && process.env.SUPABASE_SERVICE_ROLE_KEY)
+      ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+      : supabase;
+
+    // Start all independent queries in parallel
+    const [companyResult, preferencesResult, viewedProfileResult] = await Promise.all([
+      // Query 1: Company data
+      supabase
+        .from('user_company_data')
+        .select('*')
+        .eq('user_id', targetUserId),
+      // Query 2: User preferences
+      preferencesClient
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', targetUserId)
+        .maybeSingle(),
+      // Query 3: Viewed user profile (only if admin viewing as user)
+      isViewingAsUser
+        ? supabase
+            .from('profiles')
+            .select('email, full_name')
+            .eq('id', targetUserId)
+            .single()
+        : Promise.resolve({ data: null, error: null })
+    ]);
+
+    const { data: companyData, error: companyError } = companyResult;
+    const { data: preferences, error: prefError } = preferencesResult;
+    const viewedUserInfo = viewedProfileResult.data;
 
     if (companyError) {
       console.error('Error fetching company data:', companyError)
       return NextResponse.json({ hasData: false, error: companyError.message }, { status: 500 })
+    }
+
+    if (prefError) {
+      console.error('Error fetching preferences:', prefError.message);
     }
 
     if (!companyData || companyData.length === 0) {
@@ -121,50 +149,6 @@ export async function GET(request: NextRequest) {
     }
 
     const userData = companyData[0]
-
-    // Get user preferences for target user
-    // When viewing as another user (admin masquerade), use service role key to bypass RLS
-    let preferences = null;
-    let prefError = null;
-
-    if (isViewingAsUser && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      // Admin viewing as user - use service role to bypass RLS
-      const adminClient = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      );
-      const result = await adminClient
-        .from('user_preferences')
-        .select('*')
-        .eq('user_id', targetUserId)
-        .maybeSingle();
-      preferences = result.data;
-      prefError = result.error;
-    } else {
-      // Normal user viewing their own data - use regular client with RLS
-      const result = await supabase
-        .from('user_preferences')
-        .select('*')
-        .eq('user_id', targetUserId)
-        .maybeSingle();
-      preferences = result.data;
-      prefError = result.error;
-    }
-
-    if (prefError) {
-      console.error('Error fetching preferences:', prefError.message);
-    }
-
-    // Get viewed user's profile info if viewing as user
-    let viewedUserInfo;
-    if (isViewingAsUser) {
-      const { data: viewedProfile } = await supabase
-        .from('profiles')
-        .select('email, full_name')
-        .eq('id', targetUserId)
-        .single();
-      viewedUserInfo = viewedProfile;
-    }
 
     const response = {
       authenticated: true,
@@ -190,7 +174,15 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    return NextResponse.json(response)
+    // Following server-cache-lru: Add cache headers for user data
+    // User data is private, should never be cached by CDN/proxies
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    })
 
   } catch (error) {
     console.error('API error:', error)
@@ -209,7 +201,35 @@ export async function POST(request: Request) {
     });
   }
 
-  // Use admin client to bypass RLS for now
+  const cookieStore = await cookies()
+
+  // Create auth client to verify the requesting user
+  const authClient = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+        set(_name: string, _value: string, _options: CookieOptions) {
+          // Server components can't set cookies
+        },
+        remove(_name: string, _options: CookieOptions) {
+          // Server components can't remove cookies
+        },
+      },
+    }
+  )
+
+  // Get the authenticated user
+  const { data: { user }, error: authError } = await authClient.auth.getUser()
+
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  }
+
+  // Use admin client for database operations (bypasses RLS)
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -223,6 +243,22 @@ export async function POST(request: Request) {
 
     if (!userId) {
       return NextResponse.json({ error: 'User ID required' }, { status: 400 })
+    }
+
+    // Verify user owns this data or is admin
+    if (userId !== user.id) {
+      const { data: currentUserProfile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+      if (currentUserProfile?.role !== 'admin') {
+        console.warn(`⚠️ User ${user.email} attempted to modify data for user ${userId}`)
+        return NextResponse.json({ error: 'Cannot modify another user\'s data' }, { status: 403 })
+      }
+
+      console.log(`🔑 Admin ${user.email} modifying data for user ${userId}`)
     }
 
     // Update profile_status if provided

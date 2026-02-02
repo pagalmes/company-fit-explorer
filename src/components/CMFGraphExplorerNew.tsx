@@ -1,20 +1,33 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { ViewMode, Company, UserExplorationState, getCMFCombinedText } from '../types';
 import { ExplorationStateManager } from '../services/ExplorationStateManager';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { activeUserProfile } from '../data/companies';
-import CompanyGraph from './CompanyGraph';
 import CompanyDetailPanel, { CompanyDetailPanelHandle } from './CompanyDetailPanel';
-import AddCompanyModal from './AddCompanyModal';
-import SettingsViewModal from './SettingsViewModal';
-import { RemoveCompanyModal } from './RemoveCompanyModal';
-import EmptyWatchlistModal from './EmptyWatchlistModal';
-import KeyboardShortcutsModal from './KeyboardShortcutsModal';
+
+// Following bundle-dynamic-imports: Lazy-load Cytoscape.js (~400KB) to reduce initial bundle
+const CompanyGraph = dynamic(() => import('./CompanyGraph'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-gray-50">
+      <div className="text-gray-500">Loading graph...</div>
+    </div>
+  )
+});
+
+// Following bundle-conditional: Dynamic import modals (only loaded when opened)
+const AddCompanyModal = dynamic(() => import('./AddCompanyModal'));
+const SettingsViewModal = dynamic(() => import('./SettingsViewModal'));
+const RemoveCompanyModal = dynamic(() => import('./RemoveCompanyModal').then(m => ({ default: m.RemoveCompanyModal })));
+const EmptyWatchlistModal = dynamic(() => import('./EmptyWatchlistModal'));
+const KeyboardShortcutsModal = dynamic(() => import('./KeyboardShortcutsModal'));
+const PasteCompanyListModal = dynamic(() => import('./PasteCompanyListModal').then(m => ({ default: m.PasteCompanyListModal })));
+const ScreenshotCompanyImportModal = dynamic(() => import('./ScreenshotCompanyImportModal').then(m => ({ default: m.ScreenshotCompanyImportModal })));
+const ExportModal = dynamic(() => import('./ExportModal'));
+
 import { SpeedDialFAB } from './SpeedDialFAB';
 import { SettingsFAB } from './SettingsFAB';
-import { PasteCompanyListModal } from './PasteCompanyListModal';
-import { ScreenshotCompanyImportModal } from './ScreenshotCompanyImportModal';
-import ExportModal from './ExportModal';
 import { llmService } from '../utils/llm/service';
 import { loadPanelState, savePanelState } from '../utils/panelStorage';
 import CollapsibleCMFPanel from './CollapsibleCMFPanel';

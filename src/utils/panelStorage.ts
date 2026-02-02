@@ -1,7 +1,11 @@
 /**
  * Panel state storage utilities
  * Handles persistence of UI panel states like CMF collapse/expand
+ *
+ * Following js-cache-storage: Uses cached localStorage reads
  */
+
+import { getCachedStorage, setCachedStorage, removeCachedStorage } from './storageCache';
 
 const CMF_PANEL_STORAGE_KEY = 'cosmos-panel-state';
 const LEGACY_PANEL_KEY = 'cmf-explorer-panel-state-v2';
@@ -19,7 +23,7 @@ export const savePanelState = (state: Partial<PanelState>): void => {
       ...state,
       lastUpdated: new Date().toISOString()
     };
-    localStorage.setItem(CMF_PANEL_STORAGE_KEY, JSON.stringify(newState));
+    setCachedStorage(CMF_PANEL_STORAGE_KEY, JSON.stringify(newState));
   } catch (error) {
     console.error('Failed to save panel state:', error);
   }
@@ -27,14 +31,14 @@ export const savePanelState = (state: Partial<PanelState>): void => {
 
 export const loadPanelState = (): PanelState => {
   try {
-    let stored = localStorage.getItem(CMF_PANEL_STORAGE_KEY);
+    let stored = getCachedStorage(CMF_PANEL_STORAGE_KEY);
 
     // Migrate from legacy key if new key doesn't exist
     if (!stored) {
-      const legacyStored = localStorage.getItem(LEGACY_PANEL_KEY);
+      const legacyStored = getCachedStorage(LEGACY_PANEL_KEY);
       if (legacyStored) {
-        localStorage.setItem(CMF_PANEL_STORAGE_KEY, legacyStored);
-        localStorage.removeItem(LEGACY_PANEL_KEY);
+        setCachedStorage(CMF_PANEL_STORAGE_KEY, legacyStored);
+        removeCachedStorage(LEGACY_PANEL_KEY);
         stored = legacyStored;
       }
     }
