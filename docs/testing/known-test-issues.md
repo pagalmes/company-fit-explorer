@@ -1,64 +1,68 @@
 # Known Test Issues
 
-## CompanyGraph.integration.test.tsx - Memory Exhaustion
+## CompanyGraph Integration Tests - Memory Exhaustion
 
-**Status**: Excluded from test suite (December 2024)
+**Status**: Excluded from unit test suite (January 2025)
 
-**File**: `src/components/__tests__/CompanyGraph.integration.test.tsx`
+**Affected Files**:
+- `src/components/__tests__/CompanyGraph.integration.test.tsx`
+- `src/components/__tests__/CompanyGraphInteraction.test.tsx` (also affected)
 
 ### Issue
-This test file causes JavaScript heap out of memory errors during the test collection phase (before any tests execute). The worker process exhausts memory and crashes with error code `ERR_WORKER_OUT_OF_MEMORY`.
+ANY test file that renders CompanyGraph causes JavaScript heap out of memory errors **when run as part of the full test suite**. Tests pass in isolation but fail when run with other tests.
 
-### Symptoms
-```
-Error: Worker terminated due to reaching memory limit: JS heap out of memory
-Duration: ~15s (transform 72ms, setup 63ms, collect 126ms, tests 0ms)
-```
+### Root Cause Discovery (Issue #38 Investigation)
+After extensive investigation, we discovered:
 
-Note: `tests 0ms` indicates the crash happens during file collection, not test execution.
+1. **The "working" test also fails**: `CompanyGraphInteraction.test.tsx` was thought to work, but it also causes memory exhaustion when run with the full suite
+2. **Not a mock issue**: Even with simplified mocks matching the "working" pattern, memory exhaustion occurs
+3. **Not a heap size issue**: Even with 8GB heap (`--max-old-space-size=8192`), tests still crash
+4. **Test isolation problem**: The issue is how CompanyGraph interacts with vitest's test runner across multiple test files
 
-### Root Cause
-The test file creates an infinite loop when the Cytoscape mock interacts with the CompanyGraph component during test file loading. Possible causes:
-- Object/Set references being recreated causing infinite useEffect loops
-- Cytoscape mock not properly handling component lifecycle during collection
-- Memory leak in mock setup that compounds during file evaluation
+### Technical Analysis
+CompanyGraph's architecture makes it fundamentally difficult to unit test:
+- **Multiple complex useEffect hooks** with dependencies on `cmf`, `companies`, `watchlistCompanyIds`, `viewMode`
+- **Cytoscape instance lifecycle** - creation, updates, and cleanup across test renders
+- **Memory accumulation** - Graph transformations and mock interactions leak memory between tests
+- **Worker process limits** - Vitest's worker processes can't handle the accumulated memory pressure
 
-### Attempted Fixes
-1. ✅ Moved `watchlistCompanyIds` Set outside defaultProps to use stable reference
-2. ✅ Moved mock functions outside to prevent recreation
-3. ✅ Updated Cytoscape mock to match working CompanyGraphInteraction.test.tsx
-4. ✅ Added missing props (viewMode, watchlistCompanyIds, hideCenter, onCMFToggle)
-5. ❌ Increased worker memory limit to 2048MB (still crashed)
-6. ❌ Used `pool: 'forks'` with `singleFork: true`
-7. ❌ Used `pool: 'threads'` with `singleThread: true`
-8. ❌ Set `isolate: false`
+### Attempted Fixes (Issue #38)
+1. ❌ Removed circular reference in Cytoscape mock `ready()` method
+2. ❌ Consolidated nested test suites to reduce render count
+3. ❌ Created minimal single-test file - still failed
+4. ❌ Increased heap size to 8GB - still failed
+5. ❌ Matched mock structure to "working" test exactly - still failed
 
-### Test Coverage
-CompanyGraph component has test coverage from:
-- **CompanyGraphInteraction.test.tsx** (4 tests passing) - Tests interaction logic, state management, and regression scenarios
-
-The integration test file provided additional coverage for:
-- UI elements (zoom controls, fit to view button)
-- Graph container structure
-- Edge highlighting integration
-- Connection data processing
+### Current Test Coverage
+CompanyGraph is tested via:
+- **E2E Tests** (`tests/e2e/critical-interactions.spec.ts`) - Full integration testing in real browser
+- **Component interaction tests** - Limited unit tests that avoid full graph lifecycle
 
 ### Recommendation
-Future work should:
-1. Investigate why CompanyGraphInteraction.test.tsx works but CompanyGraph.integration.test.tsx doesn't
-2. Consider rewriting integration tests to match the working pattern
-3. Add missing integration test coverage to CompanyGraphInteraction.test.tsx
-4. Profile memory usage during test collection to identify exact leak source
 
-### How to Re-enable
-Remove the exclusion from `vite.config.ts`:
+**Use E2E tests for CompanyGraph integration testing.** The component's complexity (Cytoscape integration, multiple useEffects, graph lifecycle) makes it better suited for end-to-end testing where:
+- Real browser provides proper isolation
+- No mock complications
+- True integration with actual Cytoscape library
+- Better reflects production behavior
+
+### For Future Consideration
+
+If unit testing is still desired:
+1. **Refactor CompanyGraph** to separate concerns (graph logic, rendering, state)
+2. **Use vitest.workspace.ts** to run CompanyGraph tests in isolated worker
+3. **Add better cleanup** in component useEffect returns
+4. **Consider shallow rendering** to avoid full Cytoscape initialization
+
+### How Tests Are Currently Excluded
+
+In `vite.config.ts`:
 ```typescript
 exclude: [
   '**/node_modules/**',
   '**/tests/e2e/**',
-  // Remove this line:
-  // '**/CompanyGraph.integration.test.tsx',
+  '**/CompanyGraph.integration.test.tsx',  // Excluded due to memory exhaustion
 ],
 ```
 
-Then investigate and fix the root cause before committing.
+Note: `CompanyGraphInteraction.test.tsx` runs but may cause issues if more tests are added to the suite.

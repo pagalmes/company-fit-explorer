@@ -23,8 +23,8 @@ export default defineConfig({
     exclude: [
       '**/node_modules/**',
       '**/tests/e2e/**',
-      // Excluded due to memory exhaustion during test collection phase
-      // See docs/known-test-issues.md for details
+      // Excluded: CompanyGraph tests cause memory exhaustion in full suite
+      // See docs/testing/known-test-issues.md for investigation details (#38)
       '**/CompanyGraph.integration.test.tsx',
     ],
     coverage: {

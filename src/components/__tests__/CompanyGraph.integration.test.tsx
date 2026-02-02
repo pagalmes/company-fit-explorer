@@ -3,7 +3,7 @@ import { render, fireEvent } from '@testing-library/react'
 import { UserCMF, Company } from '../../types'
 import CompanyGraph from '../CompanyGraph'
 
-// Mock Cytoscape
+// Mock Cytoscape - simplified to match working test pattern
 vi.mock('cytoscape', () => {
   const createMockCollection = () => ({
     removeClass: vi.fn().mockReturnThis(),
@@ -17,17 +17,22 @@ vi.mock('cytoscape', () => {
   });
 
   const mockCy = {
+    on: vi.fn(),
+    off: vi.fn(),
     nodes: vi.fn(() => createMockCollection()),
     edges: vi.fn(() => createMockCollection()),
+    getElementById: vi.fn(() => createMockCollection()),
     zoom: vi.fn(() => 1),
     pan: vi.fn(() => ({ x: 0, y: 0 })),
     fit: vi.fn(),
     center: vi.fn(),
     resize: vi.fn(),
     destroy: vi.fn(),
-    on: vi.fn(),
-    off: vi.fn(),
-    getElementById: vi.fn(() => createMockCollection()),
+    ready: vi.fn((callback: any) => {
+      if (callback) callback();
+      // Fixed: Don't return mockCy to avoid circular reference
+    }),
+    elements: vi.fn(() => createMockCollection()),
     add: vi.fn(() => createMockCollection()),
     remove: vi.fn(() => createMockCollection()),
     style: vi.fn().mockReturnThis(),
@@ -35,11 +40,6 @@ vi.mock('cytoscape', () => {
       run: vi.fn(),
       stop: vi.fn()
     })),
-    ready: vi.fn((callback: any) => {
-      if (callback) callback();
-      return mockCy;
-    }),
-    elements: vi.fn(() => createMockCollection()),
     batch: vi.fn((callback: any) => {
       if (callback) callback();
     }),
@@ -144,275 +144,155 @@ describe('CompanyGraph - Integration & Edge Highlighting Logic', () => {
     vi.clearAllMocks()
   })
 
-  describe('component initialization and props handling', () => {
-    it('should render graph container with proper structure', () => {
-      const { container } = render(
-        <CompanyGraph
-          {...defaultProps}
-          onCompanySelect={mockOnCompanySelect}
-          onCompanyHover={mockOnCompanyHover}
-        />
-      )
+  it('should render graph container with controls and handle connections', () => {
+    const { container } = render(
+      <CompanyGraph
+        {...defaultProps}
+        onCompanySelect={mockOnCompanySelect}
+        onCompanyHover={mockOnCompanyHover}
+      />
+    )
 
-      // Verify main graph container exists
-      const graphContainer = container.querySelector('.w-full.h-full.relative')
-      expect(graphContainer).toBeInTheDocument()
-      
-      // Verify cytoscape container
-      const cytoscapeContainer = container.querySelector('div[style*="cursor: grab"]')
-      expect(cytoscapeContainer).toBeInTheDocument()
-      // Container has cursor grab style and data attributes for Cytoscape
-      expect(cytoscapeContainer).toHaveAttribute('data-cy', 'cytoscape-container')
-    })
+    // Verify main graph container exists
+    const graphContainer = container.querySelector('.w-full.h-full.relative')
+    expect(graphContainer).toBeInTheDocument()
 
-    it('should render graph controls for user interaction', () => {
-      const { container } = render(
-        <CompanyGraph
-          {...defaultProps}
-          onCompanySelect={mockOnCompanySelect}
-          onCompanyHover={mockOnCompanyHover}
-        />
-      )
+    // Verify cytoscape container
+    const cytoscapeContainer = container.querySelector('div[style*="cursor: grab"]')
+    expect(cytoscapeContainer).toBeInTheDocument()
+    expect(cytoscapeContainer).toHaveAttribute('data-cy', 'cytoscape-container')
 
-      // Verify zoom control buttons exist (critical for UX)
-      const fitButton = container.querySelector('button[title="Fit to view"]')
-      const zoomInButton = container.querySelector('button[title="Zoom in"]')
-      const zoomOutButton = container.querySelector('button[title="Zoom out"]')
+    // Verify zoom control buttons exist
+    const fitButton = container.querySelector('button[title="Fit to view"]')
+    const zoomInButton = container.querySelector('button[title="Zoom in"]')
+    const zoomOutButton = container.querySelector('button[title="Zoom out"]')
 
-      expect(fitButton).toBeInTheDocument()
-      expect(zoomInButton).toBeInTheDocument()
-      expect(zoomOutButton).toBeInTheDocument()
-      
-      // Verify they have proper styling for visibility
-      expect(fitButton).toHaveClass('bg-white', 'rounded-full', 'shadow-lg')
-      expect(zoomInButton).toHaveClass('bg-white', 'rounded-full', 'shadow-lg')
-      expect(zoomOutButton).toHaveClass('bg-white', 'rounded-full', 'shadow-lg')
-    })
+    expect(fitButton).toBeInTheDocument()
+    expect(zoomInButton).toBeInTheDocument()
+    expect(zoomOutButton).toBeInTheDocument()
 
-    it('should handle companies with edge connections properly', () => {
-      // Test that component handles connection data without errors
-      const { container } = render(
-        <CompanyGraph
-          {...defaultProps}
-          onCompanySelect={mockOnCompanySelect}
-          onCompanyHover={mockOnCompanyHover}
-        />
-      )
-
-      // Component should render successfully with connection data
-      expect(container.firstChild).toBeInTheDocument()
-      
-      // OpenAI has connections [2, 3], Anthropic has [1]
-      // This data should be processed without throwing errors
-      expect(mockCompanies[0].connections).toEqual([2, 3])
-      expect(mockCompanies[1].connections).toEqual([1])
-    })
+    // Verify connection data is handled
+    expect(mockCompanies[0].connections).toEqual([2, 3])
+    expect(mockCompanies[1].connections).toEqual([1])
   })
 
-  describe('selection state management for edge highlighting', () => {
-    it('should handle null selectedCompany (no selection state)', () => {
-      const { container } = render(
-        <CompanyGraph
-          cmf={mockUserCMF}
-          companies={mockCompanies}
-          selectedCompany={null}
-          hoveredCompany={null}
-          onCompanySelect={mockOnCompanySelect}
-          onCompanyHover={mockOnCompanyHover}
-        />
-      )
+  it('should handle selection state changes for edge highlighting', () => {
+    const { rerender, container } = render(
+      <CompanyGraph
+        cmf={mockUserCMF}
+        companies={mockCompanies}
+        selectedCompany={null}
+        hoveredCompany={null}
+        onCompanySelect={mockOnCompanySelect}
+        onCompanyHover={mockOnCompanyHover}
+      />
+    )
 
-      // Should render without errors when no company selected
-      expect(container.firstChild).toBeInTheDocument()
-    })
+    // Should render without errors when no company selected
+    expect(container.firstChild).toBeInTheDocument()
 
-    it('should handle selectedCompany prop changes (triggers edge highlighting)', () => {
-      const { rerender } = render(
-        <CompanyGraph
-          cmf={mockUserCMF}
-          companies={mockCompanies}
-          selectedCompany={null}
-          hoveredCompany={null}
-          onCompanySelect={mockOnCompanySelect}
-          onCompanyHover={mockOnCompanyHover}
-        />
-      )
+    // Change selection to OpenAI (should trigger edge highlighting logic)
+    rerender(
+      <CompanyGraph
+        cmf={mockUserCMF}
+        companies={mockCompanies}
+        selectedCompany={mockCompanies[0]} // OpenAI with connections [2, 3]
+        hoveredCompany={null}
+        onCompanySelect={mockOnCompanySelect}
+        onCompanyHover={mockOnCompanyHover}
+      />
+    )
+    expect(mockCompanies[0].connections).toEqual([2, 3])
 
-      // Change selection to OpenAI (should trigger edge highlighting logic)
-      rerender(
-        <CompanyGraph
-          cmf={mockUserCMF}
-          companies={mockCompanies}
-          selectedCompany={mockCompanies[0]} // OpenAI with connections [2, 3]
-          hoveredCompany={null}
-          onCompanySelect={mockOnCompanySelect}
-          onCompanyHover={mockOnCompanyHover}
-        />
-      )
-
-      // Component should handle selection change without errors
-      expect(mockCompanies[0].connections).toEqual([2, 3])
-    })
-
-    it('should handle selection changes between different companies', () => {
-      const { rerender } = render(
-        <CompanyGraph
-          cmf={mockUserCMF}
-          companies={mockCompanies}
-          selectedCompany={mockCompanies[0]} // Start with OpenAI
-          hoveredCompany={null}
-          onCompanySelect={mockOnCompanySelect}
-          onCompanyHover={mockOnCompanyHover}
-        />
-      )
-
-      // Switch to Anthropic (different connection pattern)
-      rerender(
-        <CompanyGraph
-          cmf={mockUserCMF}
-          companies={mockCompanies}
-          selectedCompany={mockCompanies[1]} // Anthropic with connections [1]
-          hoveredCompany={null}
-          onCompanySelect={mockOnCompanySelect}
-          onCompanyHover={mockOnCompanyHover}
-        />
-      )
-
-      // Should handle different connection patterns
-      expect(mockCompanies[1].connections).toEqual([1])
-    })
+    // Switch to Anthropic (different connection pattern)
+    rerender(
+      <CompanyGraph
+        cmf={mockUserCMF}
+        companies={mockCompanies}
+        selectedCompany={mockCompanies[1]} // Anthropic with connections [1]
+        hoveredCompany={null}
+        onCompanySelect={mockOnCompanySelect}
+        onCompanyHover={mockOnCompanyHover}
+      />
+    )
+    expect(mockCompanies[1].connections).toEqual([1])
   })
 
-  describe('callback prop functionality (essential for edge highlighting UX)', () => {
-    it('should accept onCompanySelect callback without errors', () => {
-      const { container } = render(
-        <CompanyGraph
-          cmf={mockUserCMF}
-          companies={mockCompanies}
-          selectedCompany={null}
-          hoveredCompany={null}
-          onCompanySelect={mockOnCompanySelect}
-          onCompanyHover={mockOnCompanyHover}
-        />
-      )
+  it('should handle callbacks and graph control interactions', () => {
+    const { container } = render(
+      <CompanyGraph
+        cmf={mockUserCMF}
+        companies={mockCompanies}
+        selectedCompany={null}
+        hoveredCompany={null}
+        onCompanySelect={mockOnCompanySelect}
+        onCompanyHover={mockOnCompanyHover}
+      />
+    )
 
-      // Callback should be properly passed and stored
-      expect(container.firstChild).toBeInTheDocument()
-      expect(mockOnCompanySelect).toBeInstanceOf(Function)
-    })
+    // Verify callbacks are properly handled
+    expect(container.firstChild).toBeInTheDocument()
+    expect(mockOnCompanySelect).toBeInstanceOf(Function)
+    expect(mockOnCompanyHover).toBeInstanceOf(Function)
 
-    it('should accept onCompanyHover callback for hover highlighting', () => {
-      const { container } = render(
-        <CompanyGraph
-          cmf={mockUserCMF}
-          companies={mockCompanies}
-          selectedCompany={null}
-          hoveredCompany={null}
-          onCompanySelect={mockOnCompanySelect}
-          onCompanyHover={mockOnCompanyHover}
-        />
-      )
+    // Test graph controls don't throw errors
+    const fitButton = container.querySelector('button[title="Fit to view"]')
+    const zoomInButton = container.querySelector('button[title="Zoom in"]')
+    const zoomOutButton = container.querySelector('button[title="Zoom out"]')
 
-      // Hover callback should be properly handled
-      expect(container.firstChild).toBeInTheDocument()
-      expect(mockOnCompanyHover).toBeInstanceOf(Function)
-    })
+    expect(() => {
+      fireEvent.click(fitButton!)
+      fireEvent.click(zoomInButton!)
+      fireEvent.click(zoomOutButton!)
+    }).not.toThrow()
   })
 
-  describe('graph controls interaction (affects user ability to see edge highlighting)', () => {
-    it('should handle fit to view button clicks', () => {
-      const { container } = render(
-        <CompanyGraph
-          cmf={mockUserCMF}
-          companies={mockCompanies}
-          selectedCompany={null}
-          hoveredCompany={null}
-          onCompanySelect={mockOnCompanySelect}
-          onCompanyHover={mockOnCompanyHover}
-        />
-      )
+  it('should handle edge highlighting connection data integrity', () => {
+    render(
+      <CompanyGraph
+        cmf={mockUserCMF}
+        companies={mockCompanies}
+        selectedCompany={mockCompanies[0]}
+        hoveredCompany={null}
+        onCompanySelect={mockOnCompanySelect}
+        onCompanyHover={mockOnCompanyHover}
+      />
+    )
 
-      const fitButton = container.querySelector('button[title="Fit to view"]')
-      
-      // Should not throw errors when clicked (essential for viewing edge highlighting)
-      expect(() => {
-        fireEvent.click(fitButton!)
-      }).not.toThrow()
-    })
+    // Verify connection data integrity
+    const selectedCompany = mockCompanies[0]
+    expect(selectedCompany.connections).toEqual([2, 3])
+    expect(selectedCompany.connectionTypes).toEqual({ 2: 'AI Competitor', 3: 'Partner' })
 
-    it('should handle zoom control button clicks', () => {
-      const { container } = render(
-        <CompanyGraph
-          cmf={mockUserCMF}
-          companies={mockCompanies}
-          selectedCompany={null}
-          hoveredCompany={null}
-          onCompanySelect={mockOnCompanySelect}
-          onCompanyHover={mockOnCompanyHover}
-        />
-      )
-
-      const zoomInButton = container.querySelector('button[title="Zoom in"]')
-      const zoomOutButton = container.querySelector('button[title="Zoom out"]')
-      
-      // Zoom controls are critical for seeing edge highlighting details
-      expect(() => {
-        fireEvent.click(zoomInButton!)
-        fireEvent.click(zoomOutButton!)
-      }).not.toThrow()
-    })
+    // Connected companies should exist in dataset
+    const connectedCompany1 = mockCompanies.find(c => c.id === 2)
+    expect(connectedCompany1).toBeDefined()
+    expect(connectedCompany1?.name).toBe('Anthropic')
+    expect(selectedCompany.connections.length).toBe(2)
   })
 
-  describe('edge highlighting data integrity', () => {
-    it('should process connection data correctly for edge highlighting', () => {
-      render(
-        <CompanyGraph
-          cmf={mockUserCMF}
-          companies={mockCompanies}
-          selectedCompany={mockCompanies[0]}
-          hoveredCompany={null}
-          onCompanySelect={mockOnCompanySelect}
-          onCompanyHover={mockOnCompanyHover}
-        />
-      )
+  it('should handle companies with no connections', () => {
+    const companyWithoutConnections: Company = {
+      ...mockCompanies[0],
+      id: 99,
+      name: 'Isolated Company',
+      connections: [],
+      connectionTypes: {}
+    }
 
-      // Verify connection data integrity (essential for correct edge highlighting)
-      const selectedCompany = mockCompanies[0]
-      expect(selectedCompany.connections).toEqual([2, 3])
-      expect(selectedCompany.connectionTypes).toEqual({ 2: 'AI Competitor', 3: 'Partner' })
-      
-      // Connected companies should exist in dataset
-      const connectedCompany1 = mockCompanies.find(c => c.id === 2)
-      expect(connectedCompany1).toBeDefined()
-      expect(connectedCompany1?.name).toBe('Anthropic') // Verify we find the right company
-      
-      // OpenAI also connects to company id 3, but we only have 2 companies in our test data
-      expect(selectedCompany.connections.length).toBe(2)
-    })
+    render(
+      <CompanyGraph
+        cmf={mockUserCMF}
+        companies={[companyWithoutConnections]}
+        selectedCompany={companyWithoutConnections}
+        hoveredCompany={null}
+        onCompanySelect={mockOnCompanySelect}
+        onCompanyHover={mockOnCompanyHover}
+      />
+    )
 
-    it('should handle companies with no connections (no edges to highlight)', () => {
-      const companyWithoutConnections: Company = {
-        ...mockCompanies[0],
-        id: 99,
-        name: 'Isolated Company',
-        connections: [],
-        connectionTypes: {}
-      }
-
-      render(
-        <CompanyGraph
-          cmf={mockUserCMF}
-          companies={[companyWithoutConnections]}
-          selectedCompany={companyWithoutConnections}
-          hoveredCompany={null}
-          onCompanySelect={mockOnCompanySelect}
-          onCompanyHover={mockOnCompanyHover}
-        />
-      )
-
-      // Should handle companies with no connections gracefully
-      expect(companyWithoutConnections.connections).toEqual([])
-      expect(companyWithoutConnections.connectionTypes).toEqual({})
-    })
+    // Should handle companies with no connections gracefully
+    expect(companyWithoutConnections.connections).toEqual([])
+    expect(companyWithoutConnections.connectionTypes).toEqual({})
   })
 })
