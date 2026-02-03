@@ -47,7 +47,7 @@ export async function auditLog({
     const ipAddress = request?.headers.get('x-forwarded-for')?.split(',')[0].trim() || null
     const userAgent = request?.headers.get('user-agent') || null
 
-    const { error } = await adminClient.from('audit_logs').insert({
+    const { error } = await adminClient.from('admin_audit_logs').insert({
       action,
       admin_id: adminId,
       target_user_id: targetUserId,

@@ -1,7 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { verifyAdminAccess, isAdminAuthError } from '../../../../src/lib/admin-auth'
+import { auditLog } from '../../../../src/lib/audit-log'
 
 /**
  * Admin endpoint to reset onboarding for a specific user
@@ -13,64 +12,12 @@ import { cookies } from 'next/headers'
  * Requires admin role
  */
 export async function POST(request: Request) {
-  // Check if Supabase is configured
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return NextResponse.json(
-      { error: 'Supabase not configured' },
-      { status: 500 }
-    )
+  const auth = await verifyAdminAccess()
+  if (isAdminAuthError(auth)) {
+    return auth.response
   }
 
-  const cookieStore = await cookies()
-
-  // Create a Supabase client configured to use cookies for auth
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-        set(_name: string, _value: string, _options: CookieOptions) {
-          // Server components can't set cookies
-        },
-        remove(_name: string, _options: CookieOptions) {
-          // Server components can't remove cookies
-        },
-      },
-    }
-  )
-
-  // Get the authenticated user
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-  if (authError || !user) {
-    return NextResponse.json(
-      { error: 'Not authenticated' },
-      { status: 401 }
-    )
-  }
-
-  // Use service role client for database operations
-  const adminClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-
-  // Check if current user is admin
-  const { data: adminProfile, error: profileError } = await adminClient
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profileError || adminProfile?.role !== 'admin') {
-    return NextResponse.json(
-      { error: 'Admin access required' },
-      { status: 403 }
-    )
-  }
+  const { user, adminClient } = auth
 
   try {
     const body = await request.json()
@@ -139,6 +86,16 @@ export async function POST(request: Request) {
     }
 
     console.log(`✅ Successfully reset onboarding for user: ${targetUser.email}`)
+
+    // Audit log
+    await auditLog({
+      adminClient,
+      action: 'user.onboarding.reset',
+      adminId: user.id,
+      targetUserId: userId,
+      details: { email: targetUser.email },
+      request
+    })
 
     return NextResponse.json({
       success: true,

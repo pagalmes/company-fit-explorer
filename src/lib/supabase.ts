@@ -165,6 +165,37 @@ export type Database = {
           used?: boolean
         }
       }
+      admin_audit_logs: {
+        Row: {
+          id: string
+          action: string
+          admin_id: string
+          target_user_id: string | null
+          details: Record<string, unknown> | null
+          ip_address: string | null
+          user_agent: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          action: string
+          admin_id: string
+          target_user_id?: string | null
+          details?: Record<string, unknown> | null
+          ip_address?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          action?: string
+          admin_id?: string
+          target_user_id?: string | null
+          details?: Record<string, unknown> | null
+          ip_address?: string | null
+          user_agent?: string | null
+        }
+      }
     }
   }
 }
