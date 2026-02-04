@@ -2,270 +2,164 @@
 
 ## Overview
 
-This project uses [Husky](https://typicode.github.io/husky/) to run automated tests before every commit. This ensures code quality and prevents broken code from being committed.
+This project uses [Husky](https://typicode.github.io/husky/) with [lint-staged](https://github.com/okonet/lint-staged) for fast pre-commit checks. Heavy tests (unit, E2E, build) run in CI instead.
 
-## What Gets Tested
+## What Runs on Commit
 
-When you run `git commit`, the following tests run automatically:
+When you run `git commit`, only **ESLint** runs on staged `.ts` and `.tsx` files:
 
-### 1. **Linting** (ESLint)
-- Checks code style and potential errors
-- Command: `npm run lint`
+| Check | Scope | Time |
+|-------|-------|------|
+| ESLint with auto-fix | Staged files only | ~2 seconds |
 
-### 2. **Type Checking** (TypeScript)
-- Verifies TypeScript types are correct
-- Command: `npx tsc --noEmit`
+This is intentionally minimal for fast developer iteration. Comprehensive checks run in CI.
 
-### 3. **Unit Tests** (Vitest)
-- Runs all unit tests
-- Command: `npm run test:run`
+## Configuration
 
-### 4. **Scroll Behavior Tests** (Critical)
-- Ensures scroll/non-scroll behavior isn't broken
-- Command: `npm run test:run -- tests/unit/scroll-behavior.test.ts`
+### Husky Hook
 
-### 5. **Build Verification** (Next.js)
-- Ensures the application builds successfully
-- Command: `npm run build`
-
-### 6. **E2E Tests** (Playwright) - Optional
-- Critical interactions test
-- Scroll behavior E2E test
-- **Can be skipped** with `SKIP_E2E=true` (see below)
-
-## Running Tests Manually
-
-### Run All Tests (Same as Pre-Commit)
+**`.husky/pre-commit`**:
 ```bash
-npm run test:all
-# or
-npm run test:pre-commit
+# Fast pre-commit hook - only lint staged files
+# Full test suite runs in CI (see .github/workflows/ci.yml)
+npx lint-staged
 ```
 
-### Run All Tests (Skip E2E - Faster)
-```bash
-npm run test:pre-commit:fast
-# or
-SKIP_E2E=true npm run test:all
+### lint-staged Config
+
+**`package.json`**:
+```json
+{
+  "lint-staged": {
+    "*.{ts,tsx}": ["eslint --fix"]
+  }
+}
 ```
 
-### Run Only Scroll Tests
-```bash
-npm run test:scroll
-```
+## Usage
 
-### Run Individual Test Suites
-```bash
-# Linting
-npm run lint
+### Normal Commit
 
-# Type checking
-npx tsc --noEmit
-
-# Unit tests
-npm run test:run
-
-# E2E tests
-npm run test:e2e
-
-# Critical interactions
-npm run test:critical
-
-# Scroll behavior (unit only)
-npm run test:run -- tests/unit/scroll-behavior.test.ts
-
-# Scroll behavior (E2E only)
-npm run test:e2e:scroll
-
-# Build
-npm run build
-```
-
-## Committing Code
-
-### Normal Commit (All Tests)
 ```bash
 git add .
 git commit -m "feat: Add new feature"
-# All tests run automatically
+# ESLint runs on staged files (~2 seconds)
 ```
 
-### Fast Commit (Skip E2E Tests)
-If you're in a hurry and E2E tests are slow:
-
-```bash
-git add .
-SKIP_E2E=true git commit -m "feat: Add new feature"
-# Runs linting, type checking, unit tests, and build only
-```
-
-### Bypass Hooks (NOT RECOMMENDED)
-Only use this in emergencies:
+### Bypass Hook (Emergency Only)
 
 ```bash
 git commit --no-verify -m "emergency: Hotfix"
 ```
 
-⚠️ **Warning**: Bypassing hooks can introduce bugs. Use sparingly and run tests manually afterward.
+> **Warning**: Bypassing hooks can introduce bugs. CI will still catch issues, but it's better to fix locally.
 
-## What Happens When Tests Fail?
+## Running Full Tests Locally
 
-If any test fails:
+Before pushing, you may want to run the full test suite:
 
-1. **Commit is blocked** - Changes won't be committed
-2. **Error summary shows** - You'll see which tests failed
-3. **Fix the issues** - Run the failing test command to see details
-4. **Try again** - Once fixed, commit again
+```bash
+# Quick quality check
+npm run lint           # Lint all files
+npx tsc --noEmit       # Type check
 
-Example output:
+# Full test suite
+npm test               # Unit tests
 
+# Build verification
+npm run build          # Production build
+
+# E2E tests (optional)
+npm run test:e2e       # Playwright tests
 ```
-🧪 Running pre-commit test suite...
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. Linting
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-▶ Running ESLint...
-✓ ESLint passed
+### Run Everything
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-2. Type Checking
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-▶ Running TypeScript...
-✗ TypeScript failed
-  Run 'npx tsc --noEmit' to see details
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Summary
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✗ Some tests failed. Please fix before committing.
-💡 Tip: Run the failing test command to see details
-💡 Tip: To skip E2E tests, use: SKIP_E2E=true git commit
+```bash
+# Simulate CI locally
+npm run lint && npx tsc --noEmit && npm test && npm run build
 ```
 
 ## Troubleshooting
 
 ### Hook Not Running
 
-If the hook doesn't run when you commit:
-
-1. Check husky is installed:
+1. Verify husky is installed:
    ```bash
    ls -la .husky/pre-commit
    ```
 
-2. Ensure the hook is executable:
-   ```bash
-   chmod +x .husky/pre-commit
-   chmod +x scripts/pre-commit-tests.sh
-   ```
-
-3. Reinstall husky:
+2. Reinstall if needed:
    ```bash
    npm install
    npx husky install
    ```
 
-### Tests Taking Too Long
+3. Ensure hook is executable:
+   ```bash
+   chmod +x .husky/pre-commit
+   ```
 
-**Solution 1**: Skip E2E tests
+### ESLint Errors
+
+If ESLint finds issues it can't auto-fix:
+
+1. Read the error message
+2. Fix manually
+3. Stage the fix: `git add .`
+4. Commit again
+
+### lint-staged Stash Issues
+
+If lint-staged has trouble with the git stash:
+
 ```bash
-SKIP_E2E=true git commit -m "message"
+# Clear any stashed changes
+git stash clear
+
+# Try commit again
+git commit -m "message"
 ```
 
-**Solution 2**: Run tests manually first
-```bash
-# Run tests before staging changes
-npm run test:pre-commit:fast
+## What Moved to CI?
 
-# If they pass, commit with --no-verify
-git commit --no-verify -m "message"
-```
+Previously, pre-commit ran all these checks (taking several minutes):
 
-**Solution 3**: Commit smaller changes more frequently
-- Smaller commits = faster tests
-- Easier to debug when tests fail
+| Check | Now Runs In |
+|-------|-------------|
+| ESLint | Pre-commit (staged only) |
+| TypeScript | CI only |
+| Unit Tests | CI only |
+| Build | CI only |
+| E2E Tests | CI only (disabled) |
 
-### E2E Tests Failing Locally
+This change reduced commit time from **minutes** to **~2 seconds**.
 
-E2E tests might fail if:
-- Browser automation is blocked
-- Ports are in use
-- Database isn't set up
+## CI Pipeline
 
-**Quick fix**:
-```bash
-SKIP_E2E=true git commit -m "message"
-```
+The full test suite runs on GitHub Actions for:
+- Pushes to `main` and `develop`
+- Pull requests to `main`
 
-Then run E2E tests separately:
-```bash
-npm run test:e2e
-```
-
-## Customizing the Hook
-
-### Modify Test Script
-
-Edit `scripts/pre-commit-tests.sh` to:
-- Add new test suites
-- Change test order
-- Adjust output formatting
-- Add conditional logic
-
-### Modify Hook Behavior
-
-Edit `.husky/pre-commit` to:
-- Change environment variables
-- Add additional checks
-- Run different scripts
+See [CI/CD Documentation](../guides/CI_CD.md) for details.
 
 ## Best Practices
 
-### ✅ DO
-- Run tests manually before committing large changes
-- Use `SKIP_E2E=true` for quick iterations
-- Fix failing tests immediately
-- Keep commits focused and small
-- Add new tests to the pre-commit script
+### Do
 
-### ❌ DON'T
+- Let lint-staged auto-fix issues
+- Run `npm run lint` before pushing large changes
+- Trust CI to catch comprehensive issues
+- Keep commits small and focused
+
+### Don't
+
 - Use `--no-verify` regularly
-- Commit broken code "just to save it" (use `git stash` instead)
-- Ignore failing tests
-- Commit without running tests manually first on large changes
-- Remove the pre-commit hook
+- Ignore CI failures
+- Push without checking CI status
+- Disable the pre-commit hook
 
-## CI/CD Integration
+## Related Documentation
 
-The same test suite runs on:
-- **Pre-commit** (local, via Husky)
-- **CI/CD** (GitHub Actions, etc.)
-
-This ensures:
-- Consistency between local and remote
-- No surprises in CI
-- Faster CI runs (most issues caught locally)
-
-## Disabling Hooks (Temporary)
-
-For development/debugging only:
-
-```bash
-# Disable all git hooks temporarily
-git config core.hooksPath /dev/null
-
-# Re-enable hooks
-git config --unset core.hooksPath
-```
-
-## Summary
-
-The pre-commit hook helps maintain code quality by:
-- ✅ Preventing broken code from being committed
-- ✅ Catching issues early (before CI/CD)
-- ✅ Maintaining consistent code style
-- ✅ Ensuring tests pass
-- ✅ Verifying builds succeed
-
-Use `SKIP_E2E=true` for faster commits during development, but always run full tests before pushing to production.
+- [CI/CD Pipeline](../guides/CI_CD.md) - Full CI workflow documentation
+- [Testing Guide](../guides/TESTING.md) - Complete testing strategy

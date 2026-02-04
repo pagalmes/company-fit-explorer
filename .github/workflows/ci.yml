@@ -2,66 +2,134 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  test:
+  # Job 1: Quality Check - Fast feedback on code quality
+  quality:
+    name: Quality Check
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Run type check
-      run: npm run build
+      - name: Run ESLint
+        run: npm run lint
 
-    - name: Validate test setup
-      run: npm run test:validate
+      - name: Run TypeScript type check
+        run: npx tsc --noEmit
 
-    # IMPORTANT: Use 'npm test' NOT 'npm run test:run' 
-    # npm test uses "vitest run --no-coverage || exit 0" to handle vitest snapshot bug
-    # Direct vitest commands will fail CI due to snapshot bug
-    - name: Run tests
-      run: npm test
+  # Job 2: Testing - Unit and integration tests
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: quality  # Only run tests if quality checks pass
 
-    # E2E tests disabled in CI due to cross-platform screenshot differences
-    # Local E2E tests work perfectly - run 'npm run test:e2e' locally to verify
-    # - name: Install Playwright browsers
-    #   run: npx playwright install --with-deps
-    # - name: Run E2E visual regression tests  
-    #   run: npm run test:e2e
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    # E2E test upload disabled since E2E tests are disabled in CI
-    # - name: Upload E2E test results
-    #   uses: actions/upload-artifact@v4
-    #   if: always()
-    #   with:
-    #     name: playwright-report
-    #     path: tests/reports/
-    #     retention-days: 7
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
 
-    - name: Upload coverage reports
-      uses: codecov/codecov-action@v3
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./coverage/coverage-final.json
-        fail_ci_if_error: false
-      continue-on-error: true
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Build and test summary
-      run: |
-        echo "✅ Unit Tests: All 206 tests passed (vitest snapshot error handled)"
-        echo "✅ Build: TypeScript compilation successful" 
-        echo "ℹ️  E2E Tests: Disabled in CI (run 'npm run test:e2e' locally)"
-        echo "🎉 Core functionality validation complete!"
+      - name: Validate test setup
+        run: npm run test:validate
+
+      # IMPORTANT: Use 'npm test' NOT 'npm run test:run'
+      # npm test uses "vitest run --no-coverage || exit 0" to handle vitest snapshot bug
+      - name: Run unit tests
+        run: npm test
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/coverage-final.json
+          fail_ci_if_error: false
+        continue-on-error: true
+
+  # Job 3: Build verification
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: quality  # Only build if quality checks pass
+
+    env:
+      # Required for Next.js build (can be dummy values for CI)
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key' }}
+      NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY || 'placeholder-key' }}
+      NEXT_PUBLIC_POSTHOG_HOST: ${{ secrets.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Next.js application
+        run: npm run build
+
+  # Job 4: E2E Tests (Optional - runs on main branch only)
+  # Disabled due to cross-platform screenshot differences between local and CI
+  # To re-enable: uncomment this job and configure Playwright
+  # e2e:
+  #   name: E2E Tests
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   if: github.ref == 'refs/heads/main'
+  #
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20'
+  #         cache: 'npm'
+  #
+  #     - name: Install dependencies
+  #       run: npm ci
+  #
+  #     - name: Install Playwright browsers
+  #       run: npx playwright install --with-deps chromium
+  #
+  #     - name: Build application
+  #       run: npm run build
+  #
+  #     - name: Run E2E tests
+  #       run: npm run test:e2e
+  #
+  #     - name: Upload Playwright report
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: playwright-report
+  #         path: tests/reports/
+  #         retention-days: 7

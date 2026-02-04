@@ -15,6 +15,7 @@ Technical documentation covering the system's design and implementation:
 
 Step-by-step guides for development and configuration:
 
+- **[CI/CD Pipeline](./guides/CI_CD.md)** - GitHub Actions workflow, pre-commit hooks, and automated testing
 - **[Testing Guide](./guides/TESTING.md)** - Complete testing strategy, unit tests, E2E tests, and coverage reports
 - **[LLM Setup](./guides/SETUP_LLM.md)** - Configure AI providers (OpenAI, Anthropic, Google)
 - **[LLM Integration](./guides/LLM_INTEGRATION.md)** - Advanced AI features and company analysis
