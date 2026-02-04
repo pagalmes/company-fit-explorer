@@ -189,9 +189,9 @@ span.rounded-full.text-white[style*="background"] {
 }
 
 /* Sonner toast positioning - center horizontally to match Explore/Watchlist tabs */
-/* Tabs are centered in the left graph container (flex-1), so position at 25% of viewport */
+/* Tabs use left-1/2 transform -translate-x-1/2 for centering at 50% viewport width */
 [data-sonner-toaster][data-position="top-center"] {
-  left: 25% !important;
+  left: 50% !important;
   transform: translateX(-50%) !important;
 }
 
