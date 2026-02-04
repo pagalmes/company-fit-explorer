@@ -360,6 +360,11 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
               {selectedCompany.name}
             </h2>
             <p className="text-sm text-slate-600 mt-0.5">{selectedCompany.industry}</p>
+            {selectedCompany.description && (
+              <p className="text-sm text-slate-500 mt-2 text-center px-6 leading-relaxed">
+                {selectedCompany.description}
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -384,6 +389,11 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
                   {selectedCompany.name}
                 </h2>
                 <p className="text-sm text-slate-600">{selectedCompany.industry}</p>
+                {selectedCompany.description && (
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                    {selectedCompany.description}
+                  </p>
+                )}
               </div>
             </div>
             <button
