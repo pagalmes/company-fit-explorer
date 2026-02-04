@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DreamyFirstContact from './DreamyFirstContact';
 import CMFGraphExplorerNew from './CMFGraphExplorerNew';
 import { createUserProfileFromFiles } from '../utils/fileProcessing';
-import { UserExplorationState } from '../types';
+import { UserExplorationState, UserCMF } from '../types';
 import { ProfileStatus } from '../types/database';
 import { activeUserProfile } from '../data/companies';
 import { createProfileForUser } from '../utils/userProfileCreation';
@@ -172,13 +172,37 @@ const AppContainer: React.FC = () => {
     checkAuthAndLoadData();
   }, []);
 
-  const handleFirstTimeComplete = async (resumeFile: File, cmfFile: File) => {
+  const handleFirstTimeComplete = async (resumeFile: File | null, cmfFile: File | null, profileData?: Partial<UserCMF>) => {
     setIsLoading(true);
 
     try {
-      // Process the uploaded files and discover companies using Perplexity
-      // Returns: { id, name, cmf: {...}, baseCompanies: [...] }
-      const discoveryData = await createUserProfileFromFiles(resumeFile, cmfFile, activeUserProfile.id);
+      // Support two paths:
+      // 1. File upload: Process files and discover companies using Perplexity
+      // 2. Manual entry: Use manually entered profile data directly
+      let discoveryData;
+      
+      if (resumeFile && cmfFile) {
+        // File-based flow: Process the uploaded files
+        discoveryData = await createUserProfileFromFiles(resumeFile, cmfFile, activeUserProfile.id);
+      } else if (profileData) {
+        // Manual entry flow: Use the manually entered profile data directly
+        // Generate a basic discovery data structure from manual entry
+        discoveryData = {
+          id: `user-${Date.now()}`,
+          name: profileData.name || 'User',
+          cmf: {
+            id: `cmf-${Date.now()}`,
+            ...profileData
+          } as UserCMF,
+          baseCompanies: [],
+          addedCompanies: [],
+          removedCompanyIds: [],
+          watchlistCompanyIds: [],
+          viewMode: 'explore' as const
+        };
+      } else {
+        throw new Error('Either files or profile data must be provided');
+      }
 
       console.log('📦 Received discovery data:', {
         name: discoveryData.name,

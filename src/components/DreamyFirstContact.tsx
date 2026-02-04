@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Star, FileText, Target, Upload, CheckCircle, Eye, X } from 'lucide-react';
+import { Sparkles, Star, FileText, Target, Upload, CheckCircle, Eye, X, Edit } from 'lucide-react';
+import { UserCMF } from '../types';
+import ManualCMFEntryForm from './ManualCMFEntryForm';
 
 interface DreamyFirstContactProps {
-  onComplete: (resumeFile: File, cmfFile: File) => void;
+  onComplete: (resumeFile: File | null, cmfFile: File | null, profileData?: Partial<UserCMF>) => void;
 }
 
 const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) => {
@@ -42,6 +44,16 @@ const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) =
     if (resumeFile && cmfFile) {
       onComplete(resumeFile, cmfFile);
     }
+  };
+
+  const handleManualEntryComplete = (profileData: Partial<UserCMF>) => {
+    // Pass null for files since we're using manual entry
+    onComplete(null, null, profileData);
+  };
+
+  const handleSkipToManualEntry = () => {
+    // Skip file upload and go directly to manual entry
+    setStep('manual-entry');
   };
 
   const FloatingStars = () => (
@@ -490,10 +502,10 @@ const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) =
               </button>
             ) : (
               <div className="text-center">
-                <p className="text-gray-400 mb-4">
+                <p className="text-gray-400 mb-6">
                   Collect both cosmic elements to begin universe generation
                 </p>
-                <div className="flex justify-center space-x-4">
+                <div className="flex justify-center space-x-4 mb-6">
                   <div className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
                     resumeFile ? 'bg-green-500/20 text-green-300' : 'bg-gray-500/20 text-gray-400'
                   }`}>
@@ -509,6 +521,15 @@ const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) =
                     {cmfFile && <CheckCircle className="w-4 h-4" />}
                   </div>
                 </div>
+                
+                {/* Fallback option */}
+                <button
+                  onClick={handleSkipToManualEntry}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium text-purple-300 hover:text-purple-200 bg-purple-500/10 hover:bg-purple-500/20 transition-all border border-purple-500/30 hover:border-purple-500/50"
+                >
+                  <Edit className="w-4 h-4" />
+                  Or enter manually
+                </button>
               </div>
             )}
           </div>
@@ -585,6 +606,15 @@ const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) =
           </div>
         )}
       </div>
+    );
+  }
+
+  if (step === 'manual-entry') {
+    return (
+      <ManualCMFEntryForm
+        onComplete={handleManualEntryComplete}
+        onCancel={() => setStep('upload')}
+      />
     );
   }
 
