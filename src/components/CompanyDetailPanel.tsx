@@ -361,16 +361,6 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
               {selectedCompany.name}
             </h2>
             <p className="text-sm text-slate-600 mt-0.5">{selectedCompany.industry}</p>
-            {selectedCompany.description ? (
-              <p className="text-sm text-slate-500 mt-2 text-center px-6 leading-relaxed">
-                {selectedCompany.description}
-              </p>
-            ) : isDescriptionLoading ? (
-              <div className="mt-2 px-6 space-y-1.5 animate-pulse">
-                <div className="h-3 bg-slate-200 rounded w-3/4 mx-auto"></div>
-                <div className="h-3 bg-slate-200 rounded w-5/6 mx-auto"></div>
-              </div>
-            ) : null}
           </div>
         </div>
       )}
@@ -395,16 +385,6 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
                   {selectedCompany.name}
                 </h2>
                 <p className="text-sm text-slate-600">{selectedCompany.industry}</p>
-                {selectedCompany.description ? (
-                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    {selectedCompany.description}
-                  </p>
-                ) : isDescriptionLoading ? (
-                  <div className="mt-1 space-y-1 animate-pulse">
-                    <div className="h-2.5 bg-slate-200 rounded w-full"></div>
-                    <div className="h-2.5 bg-slate-200 rounded w-4/5"></div>
-                  </div>
-                ) : null}
               </div>
             </div>
             <button
@@ -429,6 +409,18 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
               </svg>
             </button>
           </div>
+
+          {/* Company Description */}
+          {selectedCompany.description ? (
+            <p className="text-sm text-slate-600 mt-4 leading-relaxed">
+              {selectedCompany.description}
+            </p>
+          ) : isDescriptionLoading ? (
+            <div className="mt-4 space-y-2 animate-pulse">
+              <div className="h-3 bg-slate-200 rounded w-full"></div>
+              <div className="h-3 bg-slate-200 rounded w-5/6"></div>
+            </div>
+          ) : null}
 
           {/* Match Score */}
           <div className="mt-4">
@@ -458,7 +450,23 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
 
       {/* Content */}
       <div className={`panel-content flex-1 overflow-auto bg-white/30 backdrop-blur-sm ${isMobile ? 'px-4 py-6 space-y-6' : 'p-6 space-y-6'}`}>
-        {/* Mobile Match Score - First item in scrollable content */}
+        {/* Mobile Company Description - Before Match Score */}
+        {isMobile && (selectedCompany.description || isDescriptionLoading) && (
+          <div className="bg-white/60 rounded-lg p-4 border border-blue-100/50">
+            {selectedCompany.description ? (
+              <p className="text-sm text-slate-600 leading-relaxed">
+                {selectedCompany.description}
+              </p>
+            ) : (
+              <div className="space-y-2 animate-pulse">
+                <div className="h-3 bg-slate-200 rounded w-full"></div>
+                <div className="h-3 bg-slate-200 rounded w-5/6"></div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Mobile Match Score */}
         {isMobile && (
           <div className="bg-white/60 rounded-lg p-4 border border-blue-100/50">
             <div className="flex items-center justify-between mb-3">
