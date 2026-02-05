@@ -281,7 +281,6 @@ function getDiscoveryResponseSchema(): any {
           properties: {
             id: { type: 'number' },
             name: { type: 'string' },
-            description: { type: 'string' },
             logo: { type: 'string' },
             careerUrl: { type: 'string' },
             matchScore: { type: 'number', minimum: 0, maximum: 100 },
@@ -388,7 +387,6 @@ Return valid JSON matching the specified schema structure. The response must con
     {
       "id": 1,
       "name": "Company Name",
-      "description": "One-line description of what the company does and its mission.",
       "logo": "company.com",
       "careerUrl": "https://company.com/careers",
       "matchScore": 95,
@@ -510,7 +508,6 @@ function sanitizeCompany(company: any, index: number): any {
   return {
     id: sanitizeNumber(company.id, 1, 10000, index + 1),
     name: companyName,
-    description: sanitizeString(company.description || '', 200),
     logo: logoUrl,
     careerUrl: sanitizeUrl(company.careerUrl),
     matchScore: sanitizeNumber(company.matchScore, 0, 100, 50),
