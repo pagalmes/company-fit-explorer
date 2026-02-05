@@ -91,6 +91,7 @@
     "jsdom": "^26.1.0",
     "langfuse": "^3.38.6",
     "langfuse-node": "^3.38.6",
+    "lint-staged": "^16.2.7",
     "playwright": "^1.54.2",
     "png-to-ico": "^3.0.1",
     "postcss": "^8.4.32",
@@ -112,5 +113,10 @@
     "supabase"
   ],
   "author": "CMF Explorer Team",
-  "license": "MIT"
+  "license": "MIT",
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix"
+    ]
+  }
 }
