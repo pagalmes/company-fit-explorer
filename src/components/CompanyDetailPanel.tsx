@@ -40,7 +40,8 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
   watchlistStats: _watchlistStats,
   userCMF,
   isMobile = false,
-  onBack
+  onBack,
+  isDescriptionLoading = false
 }, ref) => {
   const [isMatchReasonsExpanded, setIsMatchReasonsExpanded] = useState(false);
   const [isJobAlertsModalOpen, setIsJobAlertsModalOpen] = useState(false);
@@ -360,11 +361,16 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
               {selectedCompany.name}
             </h2>
             <p className="text-sm text-slate-600 mt-0.5">{selectedCompany.industry}</p>
-            {selectedCompany.description && (
+            {selectedCompany.description ? (
               <p className="text-sm text-slate-500 mt-2 text-center px-6 leading-relaxed">
                 {selectedCompany.description}
               </p>
-            )}
+            ) : isDescriptionLoading ? (
+              <div className="mt-2 px-6 space-y-1.5 animate-pulse">
+                <div className="h-3 bg-slate-200 rounded w-3/4 mx-auto"></div>
+                <div className="h-3 bg-slate-200 rounded w-5/6 mx-auto"></div>
+              </div>
+            ) : null}
           </div>
         </div>
       )}
@@ -389,11 +395,16 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
                   {selectedCompany.name}
                 </h2>
                 <p className="text-sm text-slate-600">{selectedCompany.industry}</p>
-                {selectedCompany.description && (
+                {selectedCompany.description ? (
                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                     {selectedCompany.description}
                   </p>
-                )}
+                ) : isDescriptionLoading ? (
+                  <div className="mt-1 space-y-1 animate-pulse">
+                    <div className="h-2.5 bg-slate-200 rounded w-full"></div>
+                    <div className="h-2.5 bg-slate-200 rounded w-4/5"></div>
+                  </div>
+                ) : null}
               </div>
             </div>
             <button
