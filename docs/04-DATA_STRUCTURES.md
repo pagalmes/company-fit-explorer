@@ -147,7 +147,21 @@ interface NodeStyle {
 
 ## Persistence
 
-### LocalStorage Keys
+### Supabase Database (Primary)
+
+All user data is persisted to Supabase PostgreSQL database:
+
+**Tables:**
+- `profiles` - User profile data with `profile_status` for onboarding tracking
+- `user_company_data` - User's CMF profile and discovered companies (JSONB)
+- `user_preferences` - Watchlist, removed companies, view mode
+
+**Profile Status Values:**
+- `'pending'` - User needs to complete onboarding
+- `'complete'` - User has valid CMF profile
+- `'incomplete'` - Admin-seeded or partial profile
+
+### LocalStorage Keys (Legacy/Fallback)
 
 ```typescript
 const STORAGE_KEYS = {
@@ -155,9 +169,11 @@ const STORAGE_KEYS = {
   WATCHLIST: 'cosmos-watchlist',
   REMOVED_COMPANIES: 'cosmos-removed-companies',
   PANEL_STATE: 'cosmos-panel-state',
-  VISITED: 'cosmos-visited'
+  // DEPRECATED: cosmos-visited - onboarding now tracked in Supabase via profile_status
 };
 ```
+
+**Note:** Onboarding state (`cosmos-visited`) is no longer stored in localStorage. It is managed in Supabase via the `profile_status` column in the `profiles` table.
 
 ### Storage Format
 
