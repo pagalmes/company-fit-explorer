@@ -1,0 +1,59 @@
+{
+  "enabled": true,
+  "model": "claude-sonnet-4-5-20250929",
+  "maxDiffSize": 50000,
+  "focusAreas": [
+    "Security vulnerabilities (XSS, SQL injection, auth issues)",
+    "Performance bottlenecks and memory leaks",
+    "TypeScript type safety and null checks",
+    "Error handling and edge cases",
+    "Test coverage and quality",
+    "React best practices (hooks, re-renders, memory leaks)",
+    "Code style consistency with project conventions",
+    "Accessibility (a11y) issues",
+    "Database query optimization",
+    "API design and error responses"
+  ],
+  "excludePatterns": [
+    "package-lock.json",
+    "*.lock",
+    "*.min.js",
+    "*.map",
+    "node_modules/",
+    "dist/",
+    "build/",
+    ".next/"
+  ],
+  "autoApprove": {
+    "enabled": false,
+    "conditions": {
+      "maxFilesChanged": 3,
+      "maxLinesChanged": 50,
+      "requiresTests": true,
+      "noSecurityIssues": true
+    }
+  },
+  "severityThresholds": {
+    "blockOnCritical": true,
+    "warnOnSecurity": true,
+    "commentOnStyle": false
+  },
+  "customRules": [
+    {
+      "name": "Require tests for new features",
+      "pattern": "^feat:",
+      "check": "Test files should be included"
+    },
+    {
+      "name": "Check for console.log in production",
+      "pattern": "console\\.(log|debug)",
+      "severity": "warning",
+      "message": "Remove console.log statements before merging"
+    },
+    {
+      "name": "Verify authentication checks",
+      "pattern": "(api|route)\\.ts",
+      "check": "API routes should include authentication checks"
+    }
+  ]
+}

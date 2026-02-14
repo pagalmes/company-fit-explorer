@@ -41,6 +41,7 @@
     "export:companies-csv": "npx tsx scripts/export-companies-csv.ts",
     "import:companies-csv": "npx tsx scripts/import-companies-csv.ts",
     "cleanup:supabase-links": "npx tsx scripts/cleanup-supabase-links.ts",
+    "ai-review": "npx tsx scripts/ai-code-review.ts",
     "prepare": "husky"
   },
   "dependencies": {
