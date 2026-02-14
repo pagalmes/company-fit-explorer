@@ -88,6 +88,7 @@ async function extractProfileWithClaude(
   console.log(`   Must-Haves: ${result.cmf.mustHaves.length} items`);
   console.log(`   Want-to-Have: ${result.cmf.wantToHave.length} items`);
   console.log(`   Experience: ${result.cmf.experience.length} items`);
+  console.log(`   Confidence: ${result.extractionConfidence}`);
 
   if (result.usage) {
     console.log(`   Tokens: ${result.usage.inputTokens} in / ${result.usage.outputTokens} out`);
@@ -394,18 +395,68 @@ export const createUserProfileFromFiles = async (
 
     try {
       extractedCMF = await extractProfileWithClaude(resumeFile, cmfFile);
+      console.log('✅ Profile extraction successful with high quality');
     } catch (extractError) {
-      console.error('❌ Claude extraction failed, falling back to regex:', extractError);
+      const errorMessage = extractError instanceof Error ? extractError.message : 'Unknown error';
+      console.error('❌ Claude extraction failed:', errorMessage);
 
-      // Fallback to regex-based extraction if Claude fails
-      const resumeText = await readFileAsText(resumeFile);
-      const cmfText = await readFileAsText(cmfFile);
-      extractedCMF = extractCMFFromText(cmfText, resumeText);
+      // Check if it's a quality issue vs API failure
+      const isQualityIssue = errorMessage.includes('quality too low') || errorMessage.includes('Issues:');
+      const isApiFailure = errorMessage.includes('API') || errorMessage.includes('ANTHROPIC_API_KEY');
 
-      // Extract name from filename for fallback
-      if (!extractedCMF.name) {
-        const fileName = resumeFile.name.split('.')[0];
-        extractedCMF.name = fileName.charAt(0).toUpperCase() + fileName.slice(1).replace(/[_-]/g, ' ');
+      if (isQualityIssue) {
+        // Quality too low - inform user that their documents need more detail
+        throw new Error(
+          `Profile extraction failed: Your documents don't contain enough specific information.\n\n` +
+          `Common issues:\n` +
+          `• Resume lacks clear role/title information\n` +
+          `• Career goals are too vague or generic\n` +
+          `• Missing specific requirements (must-haves/want-to-haves)\n` +
+          `• No clear target company preferences\n\n` +
+          `Please ensure your documents clearly state:\n` +
+          `1. Your target role (e.g., "Senior Product Manager - AI/ML")\n` +
+          `2. Type of companies you're interested in (e.g., "Series B-C startups in healthcare")\n` +
+          `3. Specific must-haves (e.g., "Remote-first culture", "AI/ML focus")\n` +
+          `4. Key experience and skills\n\n` +
+          `Original error: ${errorMessage}`
+        );
+      }
+
+      if (isApiFailure) {
+        // API configuration issue - don't fallback, inform admin
+        throw new Error(
+          `Profile extraction service unavailable: ${errorMessage}\n\n` +
+          `This appears to be a configuration issue. Please contact support.`
+        );
+      }
+
+      // For other errors, attempt fallback but warn user
+      console.warn('⚠️  Attempting fallback to basic text extraction...');
+
+      try {
+        const resumeText = await readFileAsText(resumeFile);
+        const cmfText = await readFileAsText(cmfFile);
+        extractedCMF = extractCMFFromText(cmfText, resumeText);
+
+        // Extract name from filename for fallback
+        if (!extractedCMF.name) {
+          const fileName = resumeFile.name.split('.')[0];
+          extractedCMF.name = fileName.charAt(0).toUpperCase() + fileName.slice(1).replace(/[_-]/g, ' ');
+        }
+
+        console.warn('⚠️  Fallback extraction completed, but quality may be lower');
+        console.warn('   This typically happens with PDFs or poorly formatted documents');
+      } catch (fallbackError) {
+        // Even fallback failed - give up with clear message
+        throw new Error(
+          `Failed to extract profile from documents.\n\n` +
+          `Primary extraction failed: ${errorMessage}\n` +
+          `Fallback extraction also failed: ${fallbackError instanceof Error ? fallbackError.message : 'Unknown error'}\n\n` +
+          `Please try:\n` +
+          `1. Converting PDFs to text files (.txt or .docx)\n` +
+          `2. Ensuring documents are readable and well-formatted\n` +
+          `3. Providing more detailed information in your documents`
+        );
       }
     }
 
@@ -421,10 +472,10 @@ export const createUserProfileFromFiles = async (
 
     // Return profile with empty company list
     return {
-      id: `user-${Date.now()}`,
+      id: _baseId,
       name: extractedCMF.name || 'User',
       cmf: {
-        id: `cmf-${Date.now()}`,
+        id: _baseId,
         ...extractedCMF
       },
       baseCompanies: [],
