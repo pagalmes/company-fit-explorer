@@ -95,7 +95,7 @@ const AppContainer: React.FC = () => {
         if (userData.hasData && userData.companyData) {
           // Existing user with data
           console.log('✅ User has data, profile_status:', userData.profileStatus);
-          
+
           const dbUserProfile = userData.companyData.user_profile;
           const dbCompanies = userData.companyData.companies;
 
@@ -127,10 +127,10 @@ const AppContainer: React.FC = () => {
         } else {
           // Authenticated but no data - new user (will show first-time experience)
           console.log('❌ User has no data, will show first-time experience');
-          
+
           // Use the real user ID from the API response
           const realUserId = userData.userId;
-          
+
           // Clear localStorage only if NOT using local fallback
           if (process.env.NEXT_PUBLIC_USE_LOCAL_FALLBACK !== 'true') {
             // Clear new cosmos keys
@@ -146,12 +146,12 @@ const AppContainer: React.FC = () => {
             localStorage.removeItem('cmf-watchlist-state');
             localStorage.removeItem('cmf-removed-companies');
           }
-          
+
           const newProfile = await createProfileForUser({
             userId: realUserId, // Use real Supabase user ID
             userName: 'New User'
           }, true);
-          
+
           setUserProfile(newProfile);
         }
 
@@ -159,7 +159,7 @@ const AppContainer: React.FC = () => {
         setHasCompletedDataCheck(true);
       } catch (error) {
         console.error('Error during auth check and data loading:', error);
-        
+
         // On error, redirect to login for safety
         window.location.href = '/login';
       } finally {
@@ -171,6 +171,70 @@ const AppContainer: React.FC = () => {
     // Check authentication on mount
     checkAuthAndLoadData();
   }, []);
+
+  // Separate effect for visibility change refetch (fixes PWA sync issue #130)
+  useEffect(() => {
+    const refetchData = async () => {
+      try {
+        console.log('🔄 Tab became visible, refetching user data...');
+
+        // Build API URL with viewAsUserId param if present
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewAsUserId = urlParams.get('viewAsUserId');
+        let apiUrl = '/api/user/data';
+        if (viewAsUserId) {
+          apiUrl += `?viewAsUserId=${viewAsUserId}`;
+        }
+
+        const response = await fetch(apiUrl);
+        const userData = await response.json();
+
+        // Only update if user still has data (don't disrupt pending profile status)
+        if (userData.hasData && userData.companyData) {
+          const dbUserProfile = userData.companyData.user_profile;
+          const dbCompanies = userData.companyData.companies;
+
+          const baseCompanies = (dbUserProfile?.baseCompanies && dbUserProfile.baseCompanies.length > 0)
+            ? dbUserProfile.baseCompanies
+            : (dbCompanies || []);
+          const addedCompanies = dbUserProfile?.addedCompanies || [];
+
+          const mergedPreferences = mergeUserPreferences(dbUserProfile, userData.preferences);
+
+          const customProfile: UserExplorationState = {
+            ...activeUserProfile,
+            id: userData.companyData.user_id,
+            name: dbUserProfile?.name || 'User',
+            cmf: dbUserProfile?.cmf || dbUserProfile,
+            baseCompanies: migrateCompanyLogos(baseCompanies),
+            addedCompanies: migrateCompanyLogos(addedCompanies),
+            watchlistCompanyIds: mergedPreferences.watchlistCompanyIds,
+            removedCompanyIds: mergedPreferences.removedCompanyIds,
+            viewMode: mergedPreferences.viewMode
+          };
+
+          setUserProfile(customProfile);
+          console.log('✅ Data refetch complete');
+        }
+      } catch (error) {
+        console.error('Error refetching data:', error);
+        // Silent fail on refetch - don't disrupt user experience
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      // Only refetch if user has completed onboarding and data check is done
+      if (document.visibilityState === 'visible' && hasCompletedDataCheck && profileStatus === 'complete') {
+        refetchData();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [hasCompletedDataCheck, profileStatus]);
 
   const handleFirstTimeComplete = async (resumeFile: File, cmfFile: File) => {
     setIsLoading(true);
