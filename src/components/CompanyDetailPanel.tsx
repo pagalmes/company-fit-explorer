@@ -40,7 +40,8 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
   watchlistStats: _watchlistStats,
   userCMF,
   isMobile = false,
-  onBack
+  onBack,
+  isDescriptionLoading = false
 }, ref) => {
   const [isMatchReasonsExpanded, setIsMatchReasonsExpanded] = useState(false);
   const [isJobAlertsModalOpen, setIsJobAlertsModalOpen] = useState(false);
@@ -409,6 +410,18 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
             </button>
           </div>
 
+          {/* Company Description */}
+          {selectedCompany.description ? (
+            <p className="text-sm text-slate-600 mt-4 leading-relaxed">
+              {selectedCompany.description}
+            </p>
+          ) : isDescriptionLoading ? (
+            <div className="mt-4 space-y-2 animate-pulse">
+              <div className="h-3 bg-slate-200 rounded w-full"></div>
+              <div className="h-3 bg-slate-200 rounded w-5/6"></div>
+            </div>
+          ) : null}
+
           {/* Match Score */}
           <div className="mt-4">
           <div className="flex items-center justify-between mb-2">
@@ -437,7 +450,23 @@ const CompanyDetailPanel = forwardRef<CompanyDetailPanelHandle, CompanyDetailPan
 
       {/* Content */}
       <div className={`panel-content flex-1 overflow-auto bg-white/30 backdrop-blur-sm ${isMobile ? 'px-4 py-6 space-y-6' : 'p-6 space-y-6'}`}>
-        {/* Mobile Match Score - First item in scrollable content */}
+        {/* Mobile Company Description - Before Match Score */}
+        {isMobile && (selectedCompany.description || isDescriptionLoading) && (
+          <div className="bg-white/60 rounded-lg p-4 border border-blue-100/50">
+            {selectedCompany.description ? (
+              <p className="text-sm text-slate-600 leading-relaxed">
+                {selectedCompany.description}
+              </p>
+            ) : (
+              <div className="space-y-2 animate-pulse">
+                <div className="h-3 bg-slate-200 rounded w-full"></div>
+                <div className="h-3 bg-slate-200 rounded w-5/6"></div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Mobile Match Score */}
         {isMobile && (
           <div className="bg-white/60 rounded-lg p-4 border border-blue-100/50">
             <div className="flex items-center justify-between mb-3">

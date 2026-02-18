@@ -33,6 +33,7 @@ import { loadPanelState, savePanelState } from '../utils/panelStorage';
 import CollapsibleCMFPanel from './CollapsibleCMFPanel';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useSwipeGesture } from '../hooks/useSwipeGesture';
+import { useCompanyDescription } from '../hooks/useCompanyDescription';
 import { track } from '../lib/analytics';
 // Using inline SVG icons instead of lucide-react
 const SearchIcon = () => (
@@ -118,6 +119,9 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
 
   // Track companies that are fading out (added to watchlist in Explore mode)
   const [fadingCompanyIds, setFadingCompanyIds] = useState<Set<number>>(new Set());
+
+  // Lazy-load company descriptions
+  const { isLoading: isDescriptionLoading, fetchDescription } = useCompanyDescription();
 
   // Refs for keyboard shortcuts
   const companyDetailPanelRef = useRef<CompanyDetailPanelHandle>(null);
@@ -277,6 +281,31 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
   const handleCompanyHover = useCallback((company: Company | null) => {
     setHoveredCompany(company);
   }, []);
+
+  // Lazy-load description when a company is selected
+  useEffect(() => {
+    const loadDescription = async () => {
+      if (!selectedCompany || selectedCompany.description) {
+        return;
+      }
+
+      const userCMF = stateManager.getUserCMF();
+      const description = await fetchDescription(selectedCompany, userCMF);
+
+      if (description) {
+        // Update company in state manager
+        const updatedCompany = { ...selectedCompany, description };
+        stateManager.updateCompany(updatedCompany);
+
+        // Update local selected company state to show description immediately
+        setSelectedCompany(updatedCompany);
+
+        console.log(`📝 Loaded description for ${selectedCompany.name}`);
+      }
+    };
+
+    loadDescription();
+  }, [selectedCompany?.id, fetchDescription, stateManager]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCompanySelectFromPanel = useCallback((company: Company | null) => {
     handleCompanySelect(company);
@@ -922,6 +951,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
             watchlistStats={watchlistStats}
             userCMF={stateManager.getUserCMF()}
             isMobile={false}
+            isDescriptionLoading={isDescriptionLoading}
           />
         </div>
       )}
@@ -974,6 +1004,7 @@ const CMFGraphExplorer: React.FC<CMFGraphExplorerProps> = ({ userProfile }) => {
             userCMF={stateManager.getUserCMF()}
             isMobile={true}
             onBack={handleDetailPanelBack}
+            isDescriptionLoading={isDescriptionLoading}
           />
         </div>
       )}

@@ -65,6 +65,7 @@ export interface CompanyDetailPanelProps {
   watchlistStats: WatchlistStats;
   isMobile?: boolean;
   onBack?: () => void;
+  isDescriptionLoading?: boolean;
 }
 
 export interface CompanyGraphProps {

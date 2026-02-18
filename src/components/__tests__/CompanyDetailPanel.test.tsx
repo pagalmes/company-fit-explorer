@@ -39,6 +39,7 @@ describe('CompanyDetailPanel', () => {
     {
       id: 1,
       name: 'OpenAI',
+      description: 'AI research company focused on ensuring artificial general intelligence benefits humanity.',
       logo: 'https://img.logo.dev/openai.com',
       careerUrl: 'https://openai.com/careers',
       matchScore: 95,
@@ -202,6 +203,42 @@ describe('CompanyDetailPanel', () => {
       expect(screen.getByText('AI/ML')).toBeInTheDocument()
       expect(screen.getByText('95%')).toBeInTheDocument()
       expect(screen.getByText('Candidate Market Fit Score')).toBeInTheDocument()
+    })
+
+    it('should display company description when provided', () => {
+      render(
+        <CompanyDetailPanel
+          selectedCompany={selectedCompany}
+          allCompanies={mockCompanies}
+          onCompanySelect={mockOnCompanySelect}
+          isInWatchlist={mockIsInWatchlist}
+          onToggleWatchlist={mockOnToggleWatchlist}
+          onRequestDelete={mockOnRequestDelete}
+          viewMode="explore"
+          watchlistStats={mockWatchlistStats}
+        />
+      )
+
+      expect(screen.getByText('AI research company focused on ensuring artificial general intelligence benefits humanity.')).toBeInTheDocument()
+    })
+
+    it('should not display description element when company has no description', () => {
+      const companyWithoutDescription = mockCompanies[1] // Anthropic has no description
+      render(
+        <CompanyDetailPanel
+          selectedCompany={companyWithoutDescription}
+          allCompanies={mockCompanies}
+          onCompanySelect={mockOnCompanySelect}
+          isInWatchlist={mockIsInWatchlist}
+          onToggleWatchlist={mockOnToggleWatchlist}
+          onRequestDelete={mockOnRequestDelete}
+          viewMode="explore"
+          watchlistStats={mockWatchlistStats}
+        />
+      )
+
+      // Should not find OpenAI's description
+      expect(screen.queryByText('AI research company focused on ensuring artificial general intelligence benefits humanity.')).not.toBeInTheDocument()
     })
 
     it('should display company information correctly', () => {

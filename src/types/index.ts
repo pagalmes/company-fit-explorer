@@ -47,6 +47,7 @@ export interface UserCMF {
 export interface Company {
   id: number;
   name: string;
+  description?: string;
   logo: string;
   careerUrl: string;
   matchScore: number;
