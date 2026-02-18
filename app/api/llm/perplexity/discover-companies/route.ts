@@ -253,9 +253,6 @@ function getDiscoveryResponseSchema(): any {
               type: 'array',
               items: { type: 'string' }
             },
-            color: { type: 'string' },
-            angle: { type: 'number' },
-            distance: { type: 'number' },
             externalLinks: {
               type: 'object',
               properties: {
@@ -348,9 +345,6 @@ Return valid JSON matching the specified schema structure. The response must con
         "Company stage and growth trajectory align",
         "Cultural values match candidate priorities"
       ],
-      "color": "#10B981",
-      "angle": 0,
-      "distance": 75,
       "externalLinks": {
         "website": "https://company.com"
       }
@@ -369,13 +363,7 @@ Return valid JSON matching the specified schema structure. The response must con
 
 3. **Connections**: Reference other company IDs in the list that are related (similar industry, stage, or culture)
 
-4. **Color Assignment**:
-   - 90-100: "#10B981" (green)
-   - 80-89: "#F59E0B" (amber)
-   - 70-79: "#F97316" (orange)
-   - 60-69: "#EF4444" (red)
-
-5. **Logo URLs**: Simply provide the company domain (e.g., "stripe.com", "openai.com"). The logo will be fetched automatically.
+4. **Logo URLs**: Simply provide the company domain (e.g., "stripe.com", "openai.com"). The logo will be fetched automatically.
 
 6. **Career URLs**: Provide direct links to company career pages (not job boards)
 
@@ -474,11 +462,6 @@ function sanitizeCompany(company: any, index: number): any {
           .map((r: string) => sanitizeString(r, 500))
           .slice(0, 10)
       : [],
-    color: sanitizeString(company.color || '#10B981', 20).match(/^#[0-9A-Fa-f]{6}$/)
-      ? company.color
-      : '#10B981',
-    angle: sanitizeNumber(company.angle, 0, 360, 0),
-    distance: sanitizeNumber(company.distance, 0, 500, 100),
     externalLinks: typeof company.externalLinks === 'object' && company.externalLinks !== null
       ? {
           website: sanitizeUrl(company.externalLinks.website),
