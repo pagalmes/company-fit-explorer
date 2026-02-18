@@ -220,9 +220,11 @@ const AppContainer: React.FC = () => {
       });
 
       // Create new user exploration state with the discovered profile and companies
+      // IMPORTANT: Use the real Supabase user ID (not the generated one from discovery)
+      // so that ExplorationStateManager.persistState() can save to the database.
       const newUserProfile: UserExplorationState = {
         ...activeUserProfile,
-        id: discoveryData.id || activeUserProfile.id,
+        id: userId || discoveryData.id || activeUserProfile.id,
         name: discoveryData.name || discoveryData.cmf.name,
         cmf: discoveryData.cmf,
         baseCompanies: discoveryData.baseCompanies || [],
