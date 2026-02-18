@@ -55,46 +55,53 @@ This separation provides better reliability, cost efficiency, and higher quality
 │                                                                          │
 │  Purpose: Find matching companies via real-time web search               │
 │                                                                          │
+│  Input: Pre-extracted CMF as prompt context (not echoed in response)     │
+│    - candidateName, targetRole, experience, targetCompanies              │
+│    - mustHaves, wantToHave (as "Short: Detailed" combined strings)       │
+│                                                                          │
 │  Process:                                                                │
 │  1. Receive pre-extracted CMF (not raw documents)                        │
 │  2. Search web for companies with open roles matching profile            │
 │  3. Verify job postings on career pages, LinkedIn, ATS platforms         │
-│  4. Return company names with basic metadata                             │
+│  4. Return { baseCompanies: Company[] } (no CMF echo)                   │
 │                                                                          │
-│  Output: Company[] with (web-searchable data only):                      │
-│    - name: string (company name)                                         │
-│    - careerUrl: string (verified careers page)                           │
-│    - industry: string (from web search)                                  │
-│    - location: string (headquarters)                                     │
-│    - stage: string (funding stage)                                       │
-│    - openRoles: number (verified open positions)                         │
+│  Output: Company[] with web-searchable data:                             │
+│    - name, industry, stage, location, employees, remote, openRoles      │
+│    - careerUrl (verified careers page)                                    │
+│    - logo (company domain, e.g. "stripe.com")                            │
+│    - externalLinks (website, linkedin, glassdoor, crunchbase)            │
+│    - matchScore, matchReasons, connections* (see note)                   │
 │                                                                          │
-│  NOTE: Perplexity should NOT generate descriptions or match reasoning.   │
-│  These are content generation tasks better suited for Claude.            │
+│  NOT returned by Perplexity (computed by app):                           │
+│    - color: derived from matchScore via getMatchScoreColor()             │
+│    - angle/distance: computed by companyPositioning.ts                   │
+│                                                                          │
+│  *NOTE: matchScore/matchReasons/connections may move to Phase 3          │
+│  batch enrichment in the future (see #139).                              │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  PHASE 3: COMPANY ENRICHMENT (Claude Sonnet)                            │
+│  PHASE 3: COMPANY ENRICHMENT (Claude Sonnet) — #139                     │
 │  ─────────────────────────────────────────────────────────────────────  │
-│  Endpoint: POST /api/llm/anthropic/analyze                              │
+│  Endpoint: POST /api/llm/anthropic/enrich-companies (planned)           │
+│  Legacy:   POST /api/llm/anthropic/analyze (single-company)             │
 │                                                                          │
-│  Purpose: Generate rich display fields for each company                  │
+│  Purpose: Batch enrich all companies with reasoning and scoring          │
 │                                                                          │
 │  Process:                                                                │
-│  1. Receive company name + user's CMF criteria                           │
-│  2. Claude analyzes company fit against user requirements                │
-│  3. Generate human-readable descriptions and reasoning                   │
+│  1. Receive ALL discovered companies + user's CMF in single call        │
+│  2. Claude analyzes each company's fit against CMF criteria              │
+│  3. Generate match scoring, reasoning, and cross-company connections    │
 │                                                                          │
-│  Output: Enriched company data with:                                     │
-│    - description: string (2-3 sentences about what the company does)     │
+│  Output: Enriched fields for each company:                               │
 │    - matchScore: number (0-100 based on CMF alignment)                   │
 │    - matchReasons: string[] (3-4 specific reasons for the score)         │
-│    - connections: string[] (similar/related companies)                   │
-│    - remote: string (work policy)                                        │
-│    - employees: string (company size)                                    │
-│    - websiteUrl: string (inferred company domain)                        │
-│    - careerUrl: string (if confident)                                    │
+│    - connections: number[] (related company IDs)                         │
+│    - connectionTypes: Record<number, string>                             │
+│    - description: string (2-3 sentences, future)                         │
+│                                                                          │
+│  Status: Not yet implemented as batch. Design decision pending (#139).  │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
