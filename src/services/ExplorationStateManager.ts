@@ -19,6 +19,7 @@ export class ExplorationStateManager {
   private currentState: UserExplorationState;
   private devServerAvailable = false;
   private profileName: string;
+  private remotePersistScheduled = false;
   
   constructor(initialState: UserExplorationState, profileName = 'teeKProfile') {
     this.currentState = this.cloneState(initialState);
@@ -356,32 +357,49 @@ export class ExplorationStateManager {
   }
 
   /**
-   * Persist state changes using hybrid strategy:
-   * - Production: Always save to database
-   * - Development: Database-first with file fallback for rapid iteration
+   * Persist state changes using microtask batching.
+   *
+   * localStorage is updated immediately (synchronous, no race conditions).
+   * The remote save (database/file) is deferred to a microtask so that
+   * multiple synchronous mutations (e.g. addCompany + toggleWatchlist)
+   * coalesce into a single network request with the final state.
    */
-  private async persistState(): Promise<void> {
-    try {
-      // Debug: trace every persist call with caller and watchlist data (#130)
-      console.log('🔍 [SYNC DEBUG] persistState() called:', {
-        watchlistCompanyIds: this.currentState.watchlistCompanyIds,
-        removedCompanyIds: this.currentState.removedCompanyIds,
-        viewMode: this.currentState.viewMode,
-        userId: this.currentState.id,
-        caller: new Error().stack?.split('\n')[2]?.trim() || 'unknown',
+  private persistState(): void {
+    // Debug: trace every persist call with caller and watchlist data (#130)
+    console.log('🔍 [SYNC DEBUG] persistState() called:', {
+      watchlistCompanyIds: this.currentState.watchlistCompanyIds,
+      removedCompanyIds: this.currentState.removedCompanyIds,
+      viewMode: this.currentState.viewMode,
+      userId: this.currentState.id,
+      caller: new Error().stack?.split('\n')[2]?.trim() || 'unknown',
+    });
+
+    // Always save to localStorage immediately as backup
+    localStorage.setItem('cosmos-exploration-state', JSON.stringify(this.currentState));
+
+    // Batch the remote save: if a microtask is already scheduled,
+    // it will pick up the latest this.currentState when it fires.
+    if (!this.remotePersistScheduled) {
+      this.remotePersistScheduled = true;
+      queueMicrotask(() => {
+        this.remotePersistScheduled = false;
+        this.doRemotePersist();
       });
+    }
+  }
 
-      // Always save to localStorage as backup
-      localStorage.setItem('cosmos-exploration-state', JSON.stringify(this.currentState));
-
+  /**
+   * Perform the actual remote persist (database or file).
+   * Called once per microtask batch, always reads the latest this.currentState.
+   */
+  private async doRemotePersist(): Promise<void> {
+    try {
       const persistenceMode = this.getPersistenceMode();
       console.log(`🔧 Persistence mode: ${persistenceMode}`);
-      
+
       if (persistenceMode === 'file-only') {
-        // Development file-only mode (rapid iteration)
         await this.saveToFileOnly();
       } else {
-        // Database-first mode (production + development default)
         await this.saveDatabaseFirst();
       }
     } catch (error) {
