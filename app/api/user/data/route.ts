@@ -152,6 +152,19 @@ export async function GET(request: NextRequest) {
 
     const userData = companyData[0]
 
+    // Debug: trace preferences data for sync diagnosis (#130)
+    console.log('🔍 [SYNC DEBUG] Preferences from DB:', {
+      userId: targetUserId,
+      hasPreferences: !!preferences,
+      watchlist_company_ids: preferences?.watchlist_company_ids ?? 'NO_PREFS',
+      removed_company_ids: preferences?.removed_company_ids ?? 'NO_PREFS',
+      view_mode: preferences?.view_mode ?? 'NO_PREFS',
+      prefs_updated_at: preferences?.updated_at ?? 'NO_PREFS',
+      companyData_updated_at: userData?.updated_at ?? 'NO_DATA',
+      userProfile_has_watchlist: !!(userData?.user_profile?.watchlistCompanyIds),
+      userProfile_watchlist: userData?.user_profile?.watchlistCompanyIds ?? 'NOT_IN_PROFILE',
+    });
+
     const response = {
       authenticated: true,
       hasData: true,
@@ -307,6 +320,16 @@ export async function POST(request: Request) {
     }
 
     // Update user preferences
+    // Debug: trace what we're writing to user_preferences (#130)
+    console.log('🔍 [SYNC DEBUG] POST writing preferences:', {
+      userId,
+      preferences: preferences ? {
+        watchlist_company_ids: preferences.watchlist_company_ids,
+        removed_company_ids: preferences.removed_company_ids,
+        view_mode: preferences.view_mode,
+      } : 'NO_PREFERENCES_IN_BODY',
+    });
+
     if (preferences) {
       const { error: prefError } = await supabase
         .from('user_preferences')

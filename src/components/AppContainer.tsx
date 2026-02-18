@@ -110,6 +110,24 @@ const AppContainer: React.FC = () => {
         // Merge preferences from both sources using centralized utility
         const mergedPreferences = mergeUserPreferences(dbUserProfile, userData.preferences);
 
+        // Debug: trace the full preferences merge pipeline (#130)
+        console.log('🔍 [SYNC DEBUG] AppContainer merge pipeline:', {
+          // Source 1: JSONB profile (legacy fallback)
+          profilePrefs: {
+            watchlistCompanyIds: dbUserProfile?.watchlistCompanyIds ?? 'UNDEFINED',
+            removedCompanyIds: dbUserProfile?.removedCompanyIds ?? 'UNDEFINED',
+            viewMode: dbUserProfile?.viewMode ?? 'UNDEFINED',
+          },
+          // Source 2: user_preferences table (source of truth)
+          tablePrefs: {
+            watchlist_company_ids: userData.preferences?.watchlist_company_ids ?? 'UNDEFINED',
+            removed_company_ids: userData.preferences?.removed_company_ids ?? 'UNDEFINED',
+            view_mode: userData.preferences?.view_mode ?? 'UNDEFINED',
+          },
+          // Merge result
+          merged: mergedPreferences,
+        });
+
         const customProfile: UserExplorationState = {
           ...activeUserProfile, // Use as base structure
           id: userData.companyData.user_id,

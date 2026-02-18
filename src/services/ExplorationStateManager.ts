@@ -23,6 +23,17 @@ export class ExplorationStateManager {
   constructor(initialState: UserExplorationState, profileName = 'teeKProfile') {
     this.currentState = this.cloneState(initialState);
     this.profileName = profileName;
+
+    // Debug: trace what state the manager is initialized with (#130)
+    console.log('🔍 [SYNC DEBUG] ExplorationStateManager created:', {
+      userId: this.currentState.id,
+      watchlistCompanyIds: this.currentState.watchlistCompanyIds,
+      removedCompanyIds: this.currentState.removedCompanyIds,
+      viewMode: this.currentState.viewMode,
+      baseCompaniesCount: this.currentState.baseCompanies?.length ?? 0,
+      addedCompaniesCount: this.currentState.addedCompanies?.length ?? 0,
+    });
+
     this.checkDevServer();
     this.logStateInfo();
   }
@@ -351,9 +362,18 @@ export class ExplorationStateManager {
    */
   private async persistState(): Promise<void> {
     try {
+      // Debug: trace every persist call with caller and watchlist data (#130)
+      console.log('🔍 [SYNC DEBUG] persistState() called:', {
+        watchlistCompanyIds: this.currentState.watchlistCompanyIds,
+        removedCompanyIds: this.currentState.removedCompanyIds,
+        viewMode: this.currentState.viewMode,
+        userId: this.currentState.id,
+        caller: new Error().stack?.split('\n')[2]?.trim() || 'unknown',
+      });
+
       // Always save to localStorage as backup
       localStorage.setItem('cosmos-exploration-state', JSON.stringify(this.currentState));
-      
+
       const persistenceMode = this.getPersistenceMode();
       console.log(`🔧 Persistence mode: ${persistenceMode}`);
       
