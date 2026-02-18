@@ -102,9 +102,7 @@ async function extractProfileWithClaude(
  * @internal Currently disabled for debugging - will be re-enabled after profile extraction is verified
  */
 export async function discoverCompaniesWithPerplexity(
-  extractedCMF: Partial<UserCMF>,
-  resumeText?: string,
-  cmfText?: string
+  extractedCMF: Partial<UserCMF>
 ): Promise<any> {
   console.log('🔍 Calling Perplexity company discovery API...');
 
@@ -125,9 +123,7 @@ export async function discoverCompaniesWithPerplexity(
       experience: extractedCMF.experience || [],
       targetCompanies: extractedCMF.targetCompanies || 'Growth-oriented companies',
       mustHaves: mustHavesForMatching,
-      wantToHave: wantToHaveForMatching,
-      resumeText: resumeText || '',
-      cmfText: cmfText || ''
+      wantToHave: wantToHaveForMatching
     })
   });
 
@@ -438,27 +434,7 @@ export const createUserProfileFromFiles = async (
     /* Phase 2: Discover companies using Perplexity (disabled for debugging)
     console.log('🚀 Phase 2: Discovering companies with Perplexity...');
 
-    // Read text versions for Perplexity (it can use raw text for additional context)
-    // Note: For PDFs, this will be binary garbage but Perplexity can still work with the CMF data
-    let resumeText = '';
-    let cmfText = '';
-    try {
-      // Only try to read as text for non-PDF files
-      if (!resumeFile.type.includes('pdf')) {
-        resumeText = await readFileAsText(resumeFile);
-      }
-      if (!cmfFile.type.includes('pdf')) {
-        cmfText = await readFileAsText(cmfFile);
-      }
-    } catch {
-      // Ignore text reading errors - we have the extracted CMF
-    }
-
-    const discoveryData = await discoverCompaniesWithPerplexity(
-      extractedCMF,
-      resumeText,
-      cmfText
-    );
+    const discoveryData = await discoverCompaniesWithPerplexity(extractedCMF);
 
     // Log warning if Perplexity was not available
     if (discoveryData._warning) {
@@ -469,23 +445,21 @@ export const createUserProfileFromFiles = async (
       console.log(`   Companies discovered: ${discoveryData.baseCompanies?.length || 0}`);
     }
 
-    // Override Perplexity's CMF with Claude's extraction (more accurate)
-    discoveryData.cmf = {
-      ...discoveryData.cmf,
-      ...extractedCMF,
-      id: discoveryData.cmf?.id || 'user-cmf'
+    // Combine Claude's CMF (source of truth) with Perplexity's discovered companies
+    return {
+      id: baseId,
+      name: extractedCMF.name || 'User',
+      cmf: {
+        id: baseId,
+        ...extractedCMF
+      },
+      baseCompanies: discoveryData.baseCompanies || [],
+      addedCompanies: [],
+      removedCompanyIds: [],
+      watchlistCompanyIds: [],
+      viewMode: 'explore' as const,
+      _warning: discoveryData._warning
     };
-
-    console.log(`   Profile: ${discoveryData.cmf.name}`);
-    console.log(`   Target Role: ${discoveryData.cmf.targetRole}`);
-    console.log(`   Must-Haves: ${discoveryData.cmf.mustHaves?.length || 0} items`);
-    console.log(`   Want-to-Have: ${discoveryData.cmf.wantToHave?.length || 0} items`);
-    console.log(`   Experience: ${discoveryData.cmf.experience?.length || 0} items`);
-
-    // Return the full discovery data (CMF + companies)
-    // The calling code (AppContainer) will handle merging this into UserExplorationState
-    // _warning is passed through for the UI to display if needed
-    return discoveryData;
     */
 
   } catch (error) {
