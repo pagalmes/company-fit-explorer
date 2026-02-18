@@ -251,6 +251,32 @@ describe('ExplorationStateManager', () => {
     })
   })
 
+  describe('User ID Validation', () => {
+    it('should accept a valid Supabase UUID', () => {
+      expect(() =>
+        ExplorationStateManager.validateUserId('9d49907c-a057-4f3b-9cfc-a6e2769b44cd')
+      ).not.toThrow()
+    })
+
+    it('should reject a generated timestamp ID', () => {
+      expect(() =>
+        ExplorationStateManager.validateUserId(`user-${Date.now()}`)
+      ).toThrow(/Invalid userId.*Expected a Supabase UUID/)
+    })
+
+    it('should reject a plain string ID', () => {
+      expect(() =>
+        ExplorationStateManager.validateUserId('test-user')
+      ).toThrow(/Invalid userId/)
+    })
+
+    it('should reject an empty string', () => {
+      expect(() =>
+        ExplorationStateManager.validateUserId('')
+      ).toThrow(/Invalid userId/)
+    })
+  })
+
   describe('Manual File Writing', () => {
     it('should handle manual file write in development', async () => {
       // Mock development environment

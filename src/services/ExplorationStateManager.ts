@@ -456,6 +456,10 @@ export class ExplorationStateManager {
         throw new Error('Database calls disabled in test environment');
       }
 
+      // Guard: the userId must be a valid UUID, otherwise the server will
+      // reject the request with 403 ("Cannot modify another user's data").
+      ExplorationStateManager.validateUserId(this.currentState.id);
+
       const response = await fetch('/api/user/data', {
         method: 'POST',
         headers: {
@@ -537,5 +541,21 @@ export class ExplorationStateManager {
    */
   private cloneState(state: UserExplorationState): UserExplorationState {
     return JSON.parse(JSON.stringify(state));
+  }
+
+  /**
+   * Validates that a user ID is a proper UUID (as issued by Supabase Auth).
+   * Throws with a descriptive error if a generated/placeholder ID is detected.
+   * This prevents silent 403 errors when saving to the database.
+   */
+  static validateUserId(id: string): void {
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_REGEX.test(id)) {
+      throw new Error(
+        `Invalid userId for database save: "${id}". ` +
+        `Expected a Supabase UUID. This usually means the profile was ` +
+        `constructed with a generated ID instead of the authenticated user's ID.`
+      );
+    }
   }
 }
