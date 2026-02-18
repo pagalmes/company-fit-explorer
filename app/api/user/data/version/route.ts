@@ -2,6 +2,8 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
+export const dynamic = 'force-dynamic'
+
 // Lightweight endpoint that returns only updated_at timestamps.
 // Used by useDataSync hook to detect stale data without fetching the full payload.
 export async function GET() {
