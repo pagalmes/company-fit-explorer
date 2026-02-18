@@ -8,16 +8,6 @@ import AppContainer from '../AppContainer';
  * Based on 2024 best practices for monitoring fetch calls
  */
 
-// Mock the first-time experience hook
-vi.mock('../../hooks/useFirstTimeExperience', () => ({
-  useFirstTimeExperience: () => ({
-    isFirstTime: false,
-    hasChecked: true,
-    markAsVisited: vi.fn(),
-    resetFirstTime: vi.fn()
-  })
-}));
-
 // Mock the profile context
 vi.mock('../../contexts/ProfileContext', () => ({
   useProfile: () => ({
