@@ -211,7 +211,7 @@ const AppContainer: React.FC = () => {
     try {
       // Process the uploaded files and discover companies using Perplexity
       // Returns: { id, name, cmf: {...}, baseCompanies: [...] }
-      const discoveryData = await createUserProfileFromFiles(resumeFile, cmfFile, activeUserProfile.id);
+      const discoveryData = await createUserProfileFromFiles(resumeFile, cmfFile, userId!);
 
       console.log('📦 Received discovery data:', {
         name: discoveryData.name,
@@ -224,7 +224,7 @@ const AppContainer: React.FC = () => {
       // so that ExplorationStateManager.persistState() can save to the database.
       const newUserProfile: UserExplorationState = {
         ...activeUserProfile,
-        id: userId || discoveryData.id || activeUserProfile.id,
+        id: userId!,
         name: discoveryData.name || discoveryData.cmf.name,
         cmf: discoveryData.cmf,
         baseCompanies: discoveryData.baseCompanies || [],

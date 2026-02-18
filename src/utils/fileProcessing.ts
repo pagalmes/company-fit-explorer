@@ -382,7 +382,7 @@ export const processCMFFile = async (file: File): Promise<Partial<UserCMF>> => {
 export const createUserProfileFromFiles = async (
   resumeFile: File,
   cmfFile: File,
-  _baseId: string = 'user'
+  baseId: string = 'user'
 ): Promise<any> => {
   console.log(`📁 Files received for processing: ${resumeFile.name}, ${cmfFile.name}`);
 
@@ -421,10 +421,10 @@ export const createUserProfileFromFiles = async (
 
     // Return profile with empty company list
     return {
-      id: `user-${Date.now()}`,
+      id: baseId,
       name: extractedCMF.name || 'User',
       cmf: {
-        id: `cmf-${Date.now()}`,
+        id: baseId,
         ...extractedCMF
       },
       baseCompanies: [],
