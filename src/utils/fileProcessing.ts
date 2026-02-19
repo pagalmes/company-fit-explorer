@@ -1,25 +1,6 @@
 import { UserCMF, getCMFCombinedText } from '../types';
 
 /**
- * Read file content as text
- */
-async function readFileAsText(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
-      resolve(text);
-    };
-
-    reader.onerror = () => reject(new Error(`Failed to read file: ${file.name}`));
-
-    // For PDFs, this will get binary content, but for text files it works
-    reader.readAsText(file);
-  });
-}
-
-/**
  * Convert file to base64 for API transmission
  */
 async function fileToBase64(file: File): Promise<string> {
@@ -88,6 +69,7 @@ async function extractProfileWithClaude(
   console.log(`   Must-Haves: ${result.cmf.mustHaves.length} items`);
   console.log(`   Want-to-Have: ${result.cmf.wantToHave.length} items`);
   console.log(`   Experience: ${result.cmf.experience.length} items`);
+  console.log(`   Confidence: ${result.extractionConfidence}`);
 
   if (result.usage) {
     console.log(`   Tokens: ${result.usage.inputTokens} in / ${result.usage.outputTokens} out`);
@@ -102,7 +84,9 @@ async function extractProfileWithClaude(
  * @internal Currently disabled for debugging - will be re-enabled after profile extraction is verified
  */
 export async function discoverCompaniesWithPerplexity(
-  extractedCMF: Partial<UserCMF>
+  extractedCMF: Partial<UserCMF>,
+  resumeText?: string,
+  cmfText?: string
 ): Promise<any> {
   console.log('🔍 Calling Perplexity company discovery API...');
 
@@ -123,7 +107,9 @@ export async function discoverCompaniesWithPerplexity(
       experience: extractedCMF.experience || [],
       targetCompanies: extractedCMF.targetCompanies || 'Growth-oriented companies',
       mustHaves: mustHavesForMatching,
-      wantToHave: wantToHaveForMatching
+      wantToHave: wantToHaveForMatching,
+      resumeText: resumeText || '',
+      cmfText: cmfText || ''
     })
   });
 
@@ -148,46 +134,6 @@ export async function discoverCompaniesWithPerplexity(
     ...result.data,
     _warning: result.warning
   };
-}
-
-/**
- * Extract CMF data from text using improved regex patterns
- */
-function extractCMFFromText(cmfText: string, resumeText: string): Partial<UserCMF> {
-  const combinedText = `${cmfText}\n\n${resumeText}`;
-
-  return {
-    name: extractNameFromText(combinedText),
-    targetRole: extractRoleFromText(cmfText) || extractRoleFromText(resumeText),
-    mustHaves: extractMustHavesFromText(cmfText),
-    wantToHave: extractWantToHaveFromText(cmfText),
-    experience: extractExperienceFromText(resumeText),
-    targetCompanies: extractCompanyTypesFromText(cmfText)
-  };
-}
-
-/**
- * Extract candidate name from text
- */
-function extractNameFromText(text: string): string | undefined {
-  // Look for common name patterns at the start of resumes/CVs
-  const namePatterns = [
-    /^([A-Z][a-z]+\s+[A-Z][a-z]+)/m, // "John Doe" at start
-    /Name:\s*([A-Z][a-z]+\s+[A-Z][a-z]+)/i,
-    /([A-Z][A-Z\s]+)\s*\n/m // ALL CAPS name
-  ];
-
-  for (const pattern of namePatterns) {
-    const match = text.match(pattern);
-    if (match && match[1]) {
-      const name = match[1].trim();
-      if (name.length > 3 && name.length < 50) {
-        return name;
-      }
-    }
-  }
-
-  return undefined;
 }
 
 // Simple text analysis to extract information from files
@@ -378,7 +324,7 @@ export const processCMFFile = async (file: File): Promise<Partial<UserCMF>> => {
 export const createUserProfileFromFiles = async (
   resumeFile: File,
   cmfFile: File,
-  baseId: string = 'user'
+  _baseId: string = 'user'
 ): Promise<any> => {
   console.log(`📁 Files received for processing: ${resumeFile.name}, ${cmfFile.name}`);
 
@@ -390,18 +336,52 @@ export const createUserProfileFromFiles = async (
 
     try {
       extractedCMF = await extractProfileWithClaude(resumeFile, cmfFile);
+      console.log('✅ Profile extraction successful with high quality');
     } catch (extractError) {
-      console.error('❌ Claude extraction failed, falling back to regex:', extractError);
+      const errorMessage = extractError instanceof Error ? extractError.message : 'Unknown error';
+      console.error('❌ Claude extraction failed:', errorMessage);
 
-      // Fallback to regex-based extraction if Claude fails
-      const resumeText = await readFileAsText(resumeFile);
-      const cmfText = await readFileAsText(cmfFile);
-      extractedCMF = extractCMFFromText(cmfText, resumeText);
+      // Check if it's a quality issue vs API failure
+      const isQualityIssue = errorMessage.includes('quality too low') || errorMessage.includes('Issues:');
+      const isApiFailure = errorMessage.includes('API') || errorMessage.includes('ANTHROPIC_API_KEY');
 
-      // Extract name from filename for fallback
-      if (!extractedCMF.name) {
-        const fileName = resumeFile.name.split('.')[0];
-        extractedCMF.name = fileName.charAt(0).toUpperCase() + fileName.slice(1).replace(/[_-]/g, ' ');
+      if (isQualityIssue) {
+        // Quality too low - inform user that their documents need more detail
+        throw new Error(
+          `Profile extraction failed: Your documents don't contain enough specific information.\n\n` +
+          `Common issues:\n` +
+          `• Resume lacks clear role/title information\n` +
+          `• Career goals are too vague or generic\n` +
+          `• Missing specific requirements (must-haves/want-to-haves)\n` +
+          `• No clear target company preferences\n\n` +
+          `Please ensure your documents clearly state:\n` +
+          `1. Your target role (e.g., "Senior Product Manager - AI/ML")\n` +
+          `2. Type of companies you're interested in (e.g., "Series B-C startups in healthcare")\n` +
+          `3. Specific must-haves (e.g., "Remote-first culture", "AI/ML focus")\n` +
+          `4. Key experience and skills\n\n` +
+          `Original error: ${errorMessage}`
+        );
+      }
+
+      if (isApiFailure) {
+        // API configuration issue - don't retry, inform admin
+        throw new Error(
+          `Profile extraction service unavailable: ${errorMessage}\n\n` +
+          `This appears to be a configuration issue. Please contact support.`
+        );
+      }
+
+      // Transient error (network timeout, unexpected failure) — retry once then fail clearly.
+      // A retry is more honest than falling back to regex, which produces low-quality generic
+      // data that silently corrupts downstream company matching.
+      console.warn('⚠️  Transient extraction failure, retrying once...');
+      try {
+        extractedCMF = await extractProfileWithClaude(resumeFile, cmfFile);
+        console.log('✅ Retry succeeded');
+      } catch {
+        throw new Error(
+          'Extraction service temporarily unavailable. Please try again in a moment.'
+        );
       }
     }
 
@@ -417,10 +397,10 @@ export const createUserProfileFromFiles = async (
 
     // Return profile with empty company list
     return {
-      id: baseId,
+      id: _baseId,
       name: extractedCMF.name || 'User',
       cmf: {
-        id: baseId,
+        id: _baseId,
         ...extractedCMF
       },
       baseCompanies: [],
@@ -434,7 +414,27 @@ export const createUserProfileFromFiles = async (
     /* Phase 2: Discover companies using Perplexity (disabled for debugging)
     console.log('🚀 Phase 2: Discovering companies with Perplexity...');
 
-    const discoveryData = await discoverCompaniesWithPerplexity(extractedCMF);
+    // Read text versions for Perplexity (it can use raw text for additional context)
+    // Note: For PDFs, this will be binary garbage but Perplexity can still work with the CMF data
+    let resumeText = '';
+    let cmfText = '';
+    try {
+      // Only try to read as text for non-PDF files
+      if (!resumeFile.type.includes('pdf')) {
+        resumeText = await readFileAsText(resumeFile);
+      }
+      if (!cmfFile.type.includes('pdf')) {
+        cmfText = await readFileAsText(cmfFile);
+      }
+    } catch {
+      // Ignore text reading errors - we have the extracted CMF
+    }
+
+    const discoveryData = await discoverCompaniesWithPerplexity(
+      extractedCMF,
+      resumeText,
+      cmfText
+    );
 
     // Log warning if Perplexity was not available
     if (discoveryData._warning) {
@@ -445,21 +445,23 @@ export const createUserProfileFromFiles = async (
       console.log(`   Companies discovered: ${discoveryData.baseCompanies?.length || 0}`);
     }
 
-    // Combine Claude's CMF (source of truth) with Perplexity's discovered companies
-    return {
-      id: baseId,
-      name: extractedCMF.name || 'User',
-      cmf: {
-        id: baseId,
-        ...extractedCMF
-      },
-      baseCompanies: discoveryData.baseCompanies || [],
-      addedCompanies: [],
-      removedCompanyIds: [],
-      watchlistCompanyIds: [],
-      viewMode: 'explore' as const,
-      _warning: discoveryData._warning
+    // Override Perplexity's CMF with Claude's extraction (more accurate)
+    discoveryData.cmf = {
+      ...discoveryData.cmf,
+      ...extractedCMF,
+      id: discoveryData.cmf?.id || 'user-cmf'
     };
+
+    console.log(`   Profile: ${discoveryData.cmf.name}`);
+    console.log(`   Target Role: ${discoveryData.cmf.targetRole}`);
+    console.log(`   Must-Haves: ${discoveryData.cmf.mustHaves?.length || 0} items`);
+    console.log(`   Want-to-Have: ${discoveryData.cmf.wantToHave?.length || 0} items`);
+    console.log(`   Experience: ${discoveryData.cmf.experience?.length || 0} items`);
+
+    // Return the full discovery data (CMF + companies)
+    // The calling code (AppContainer) will handle merging this into UserExplorationState
+    // _warning is passed through for the UI to display if needed
+    return discoveryData;
     */
 
   } catch (error) {
