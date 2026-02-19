@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { isPDF, calculateCost, parseProfileResponse } from './route';
+import { isPDF, calculateCost, parseProfileResponse } from './utils';
 
 // Minimal valid extraction result for reuse across tests
 const validResult = {

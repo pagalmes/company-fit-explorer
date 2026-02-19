@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getModelForTask } from '@/utils/llm/config';
 import { extractText } from 'unpdf';
+import { isPDF, parseProfileResponse, calculateCost } from './utils';
 
 /**
  * Profile Extraction Endpoint
@@ -36,24 +37,6 @@ interface FileData {
 interface ExtractProfileRequest {
   resume: FileData;
   careerGoals: FileData;
-}
-
-interface CMFItem {
-  short: string;
-  detailed: string;
-}
-
-type ExtractionConfidence = 'high' | 'medium' | 'low';
-
-interface ExtractionResult {
-  name: string;
-  targetRole: string;
-  targetCompanies: string;
-  mustHaves: CMFItem[];
-  wantToHave: CMFItem[];
-  experience: string[];
-  extractionConfidence: ExtractionConfidence;
-  extractionIssues: string[];
 }
 
 export async function POST(request: NextRequest) {
@@ -216,10 +199,6 @@ async function buildMessagesWithDocuments(resume: FileData, careerGoals: FileDat
   return [{ role: 'user', content }];
 }
 
-export function isPDF(mimeType: string): boolean {
-  return mimeType === 'application/pdf' || mimeType.includes('pdf');
-}
-
 /**
  * JSON Schema for profile extraction.
  *
@@ -362,29 +341,3 @@ After extracting, assess your own output:
 - Leave empty if confidence is "high"`;
 }
 
-/**
- * Parse the structured output from Claude.
- * With structured outputs the JSON is guaranteed valid — this just deserialises it.
- */
-export function parseProfileResponse(responseText: string): ExtractionResult {
-  try {
-    return JSON.parse(responseText) as ExtractionResult;
-  } catch (error) {
-    console.error('Failed to parse profile extraction response:', error);
-    console.error('Raw response:', responseText);
-    throw new Error(`Failed to parse profile extraction response: ${error instanceof Error ? error.message : 'Invalid JSON'}`);
-  }
-}
-
-/**
- * Calculate API cost.
- * Pricing constants kept here so they're easy to update when rates change.
- */
-export function calculateCost(inputTokens: number, outputTokens: number): number {
-  // Claude Opus 4.5 pricing: $5/1M input, $25/1M output
-  const INPUT_PRICE_PER_M = 5;
-  const OUTPUT_PRICE_PER_M = 25;
-
-  return (inputTokens / 1_000_000) * INPUT_PRICE_PER_M +
-         (outputTokens / 1_000_000) * OUTPUT_PRICE_PER_M;
-}
