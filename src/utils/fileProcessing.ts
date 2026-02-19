@@ -1,25 +1,6 @@
 import { UserCMF, getCMFCombinedText } from '../types';
 
 /**
- * Read file content as text
- */
-async function readFileAsText(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
-      resolve(text);
-    };
-
-    reader.onerror = () => reject(new Error(`Failed to read file: ${file.name}`));
-
-    // For PDFs, this will get binary content, but for text files it works
-    reader.readAsText(file);
-  });
-}
-
-/**
  * Convert file to base64 for API transmission
  */
 async function fileToBase64(file: File): Promise<string> {
@@ -153,46 +134,6 @@ export async function discoverCompaniesWithPerplexity(
     ...result.data,
     _warning: result.warning
   };
-}
-
-/**
- * Extract CMF data from text using improved regex patterns
- */
-function extractCMFFromText(cmfText: string, resumeText: string): Partial<UserCMF> {
-  const combinedText = `${cmfText}\n\n${resumeText}`;
-
-  return {
-    name: extractNameFromText(combinedText),
-    targetRole: extractRoleFromText(cmfText) || extractRoleFromText(resumeText),
-    mustHaves: extractMustHavesFromText(cmfText),
-    wantToHave: extractWantToHaveFromText(cmfText),
-    experience: extractExperienceFromText(resumeText),
-    targetCompanies: extractCompanyTypesFromText(cmfText)
-  };
-}
-
-/**
- * Extract candidate name from text
- */
-function extractNameFromText(text: string): string | undefined {
-  // Look for common name patterns at the start of resumes/CVs
-  const namePatterns = [
-    /^([A-Z][a-z]+\s+[A-Z][a-z]+)/m, // "John Doe" at start
-    /Name:\s*([A-Z][a-z]+\s+[A-Z][a-z]+)/i,
-    /([A-Z][A-Z\s]+)\s*\n/m // ALL CAPS name
-  ];
-
-  for (const pattern of namePatterns) {
-    const match = text.match(pattern);
-    if (match && match[1]) {
-      const name = match[1].trim();
-      if (name.length > 3 && name.length < 50) {
-        return name;
-      }
-    }
-  }
-
-  return undefined;
 }
 
 // Simple text analysis to extract information from files
@@ -423,39 +364,23 @@ export const createUserProfileFromFiles = async (
       }
 
       if (isApiFailure) {
-        // API configuration issue - don't fallback, inform admin
+        // API configuration issue - don't retry, inform admin
         throw new Error(
           `Profile extraction service unavailable: ${errorMessage}\n\n` +
           `This appears to be a configuration issue. Please contact support.`
         );
       }
 
-      // For other errors, attempt fallback but warn user
-      console.warn('⚠️  Attempting fallback to basic text extraction...');
-
+      // Transient error (network timeout, unexpected failure) — retry once then fail clearly.
+      // A retry is more honest than falling back to regex, which produces low-quality generic
+      // data that silently corrupts downstream company matching.
+      console.warn('⚠️  Transient extraction failure, retrying once...');
       try {
-        const resumeText = await readFileAsText(resumeFile);
-        const cmfText = await readFileAsText(cmfFile);
-        extractedCMF = extractCMFFromText(cmfText, resumeText);
-
-        // Extract name from filename for fallback
-        if (!extractedCMF.name) {
-          const fileName = resumeFile.name.split('.')[0];
-          extractedCMF.name = fileName.charAt(0).toUpperCase() + fileName.slice(1).replace(/[_-]/g, ' ');
-        }
-
-        console.warn('⚠️  Fallback extraction completed, but quality may be lower');
-        console.warn('   This typically happens with PDFs or poorly formatted documents');
-      } catch (fallbackError) {
-        // Even fallback failed - give up with clear message
+        extractedCMF = await extractProfileWithClaude(resumeFile, cmfFile);
+        console.log('✅ Retry succeeded');
+      } catch {
         throw new Error(
-          `Failed to extract profile from documents.\n\n` +
-          `Primary extraction failed: ${errorMessage}\n` +
-          `Fallback extraction also failed: ${fallbackError instanceof Error ? fallbackError.message : 'Unknown error'}\n\n` +
-          `Please try:\n` +
-          `1. Converting PDFs to text files (.txt or .docx)\n` +
-          `2. Ensuring documents are readable and well-formatted\n` +
-          `3. Providing more detailed information in your documents`
+          'Extraction service temporarily unavailable. Please try again in a moment.'
         );
       }
     }
