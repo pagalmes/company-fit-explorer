@@ -8,8 +8,6 @@ interface CompanyDiscoveryRequest {
   targetCompanies: string;
   mustHaves: string[];
   wantToHave: string[];
-  resumeText?: string;
-  cmfText?: string;
 }
 
 /**
@@ -79,9 +77,7 @@ function validateAndSanitizeRequest(raw: any): CompanyDiscoveryRequest | null {
       experience: sanitizeArray(raw.experience || [], 150),
       targetCompanies: sanitizeString(raw.targetCompanies, 300),
       mustHaves: sanitizeArray(raw.mustHaves || [], 200),
-      wantToHave: sanitizeArray(raw.wantToHave || [], 200),
-      resumeText: raw.resumeText ? sanitizeString(raw.resumeText, 10000) : undefined,
-      cmfText: raw.cmfText ? sanitizeString(raw.cmfText, 5000) : undefined
+      wantToHave: sanitizeArray(raw.wantToHave || [], 200)
     };
   } catch (error) {
     console.error('Validation error:', error);
@@ -119,22 +115,7 @@ export async function POST(request: NextRequest) {
         success: true,
         warning: 'PERPLEXITY_API_KEY not configured. Company discovery is disabled. Add the key to your environment variables to enable AI-powered company discovery.',
         data: {
-          id: `user-${Date.now()}`,
-          name: discoveryRequest.candidateName || 'User',
-          cmf: {
-            id: `cmf-${Date.now()}`,
-            name: discoveryRequest.candidateName || 'User',
-            mustHaves: discoveryRequest.mustHaves || [],
-            wantToHave: discoveryRequest.wantToHave || [],
-            experience: discoveryRequest.experience || [],
-            targetRole: discoveryRequest.targetRole || 'Professional Role',
-            targetCompanies: discoveryRequest.targetCompanies || 'Growth-oriented companies'
-          },
-          baseCompanies: [],
-          addedCompanies: [],
-          removedCompanyIds: [],
-          watchlistCompanyIds: [],
-          viewMode: 'explore' as const
+          baseCompanies: []
         },
         citations: [],
         usage: {
@@ -241,38 +222,8 @@ export async function POST(request: NextRequest) {
 function getDiscoveryResponseSchema(): any {
   return {
     type: 'object',
-    required: ['id', 'name', 'cmf', 'baseCompanies'],
+    required: ['baseCompanies'],
     properties: {
-      id: {
-        type: 'string',
-        description: 'Unique identifier for the candidate profile'
-      },
-      name: {
-        type: 'string',
-        description: 'Candidate name'
-      },
-      cmf: {
-        type: 'object',
-        required: ['id', 'name', 'mustHaves', 'wantToHave', 'experience', 'targetRole', 'targetCompanies'],
-        properties: {
-          id: { type: 'string' },
-          name: { type: 'string' },
-          mustHaves: {
-            type: 'array',
-            items: { type: 'string' }
-          },
-          wantToHave: {
-            type: 'array',
-            items: { type: 'string' }
-          },
-          experience: {
-            type: 'array',
-            items: { type: 'string' }
-          },
-          targetRole: { type: 'string' },
-          targetCompanies: { type: 'string' }
-        }
-      },
       baseCompanies: {
         type: 'array',
         items: {
@@ -302,9 +253,6 @@ function getDiscoveryResponseSchema(): any {
               type: 'array',
               items: { type: 'string' }
             },
-            color: { type: 'string' },
-            angle: { type: 'number' },
-            distance: { type: 'number' },
             externalLinks: {
               type: 'object',
               properties: {
@@ -372,17 +320,6 @@ For each company, verify by searching the web:
 Return valid JSON matching the specified schema structure. The response must conform to the JSON schema provided:
 
 {
-  "id": "${request.candidateName.toLowerCase().replace(/\s+/g, '-')}",
-  "name": "${request.candidateName}",
-  "cmf": {
-    "id": "${request.candidateName.toLowerCase().replace(/\s+/g, '-')}",
-    "name": "${request.candidateName}",
-    "mustHaves": [${request.mustHaves.map(h => `"${h}"`).join(', ')}],
-    "wantToHave": [${request.wantToHave.map(w => `"${w}"`).join(', ')}],
-    "experience": [${request.experience.map(e => `"${e}"`).join(', ')}],
-    "targetRole": "${request.targetRole}",
-    "targetCompanies": "${request.targetCompanies}"
-  },
   "baseCompanies": [
     {
       "id": 1,
@@ -408,9 +345,6 @@ Return valid JSON matching the specified schema structure. The response must con
         "Company stage and growth trajectory align",
         "Cultural values match candidate priorities"
       ],
-      "color": "#10B981",
-      "angle": 0,
-      "distance": 75,
       "externalLinks": {
         "website": "https://company.com"
       }
@@ -429,13 +363,7 @@ Return valid JSON matching the specified schema structure. The response must con
 
 3. **Connections**: Reference other company IDs in the list that are related (similar industry, stage, or culture)
 
-4. **Color Assignment**:
-   - 90-100: "#10B981" (green)
-   - 80-89: "#F59E0B" (amber)
-   - 70-79: "#F97316" (orange)
-   - 60-69: "#EF4444" (red)
-
-5. **Logo URLs**: Simply provide the company domain (e.g., "stripe.com", "openai.com"). The logo will be fetched automatically.
+4. **Logo URLs**: Simply provide the company domain (e.g., "stripe.com", "openai.com"). The logo will be fetched automatically.
 
 6. **Career URLs**: Provide direct links to company career pages (not job boards)
 
@@ -534,11 +462,6 @@ function sanitizeCompany(company: any, index: number): any {
           .map((r: string) => sanitizeString(r, 500))
           .slice(0, 10)
       : [],
-    color: sanitizeString(company.color || '#10B981', 20).match(/^#[0-9A-Fa-f]{6}$/)
-      ? company.color
-      : '#10B981',
-    angle: sanitizeNumber(company.angle, 0, 360, 0),
-    distance: sanitizeNumber(company.distance, 0, 500, 100),
     externalLinks: typeof company.externalLinks === 'object' && company.externalLinks !== null
       ? {
           website: sanitizeUrl(company.externalLinks.website),
@@ -688,20 +611,9 @@ function parseDiscoveryResponse(responseText: string): any {
     const parsed = JSON.parse(jsonText);
 
     // Validate the structure
-    if (!parsed.cmf || !parsed.baseCompanies || !Array.isArray(parsed.baseCompanies)) {
-      throw new Error('Invalid response structure: missing cmf or baseCompanies');
+    if (!parsed.baseCompanies || !Array.isArray(parsed.baseCompanies)) {
+      throw new Error('Invalid response structure: missing baseCompanies array');
     }
-
-    // Sanitize CMF data
-    const sanitizedCMF = {
-      id: sanitizeString(parsed.cmf.id || 'user', 50),
-      name: sanitizeString(parsed.cmf.name || 'User', 100),
-      mustHaves: sanitizeArray(parsed.cmf.mustHaves || [], 200),
-      wantToHave: sanitizeArray(parsed.cmf.wantToHave || [], 200),
-      experience: sanitizeArray(parsed.cmf.experience || [], 150),
-      targetRole: sanitizeString(parsed.cmf.targetRole || '', 200),
-      targetCompanies: sanitizeString(parsed.cmf.targetCompanies || '', 300)
-    };
 
     // Sanitize each company
     const sanitizedCompanies = parsed.baseCompanies
@@ -713,9 +625,6 @@ function parseDiscoveryResponse(responseText: string): any {
     console.log(`✅ Parsed and sanitized ${sanitizedCompanies.length} companies successfully`);
 
     return {
-      id: sanitizedCMF.id,
-      name: sanitizedCMF.name,
-      cmf: sanitizedCMF,
       baseCompanies: sanitizedCompanies
     };
   } catch (error) {

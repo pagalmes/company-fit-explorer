@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import DreamyFirstContact from './DreamyFirstContact';
 import CMFGraphExplorerNew from './CMFGraphExplorerNew';
 import { createUserProfileFromFiles } from '../utils/fileProcessing';
@@ -9,6 +9,7 @@ import { createProfileForUser } from '../utils/userProfileCreation';
 import { migrateCompanyLogos } from '../utils/logoMigration';
 import { mergeUserPreferences } from '../utils/userPreferencesMerger';
 import { track } from '../lib/analytics';
+import { useDataSync, DataVersionTimestamps } from '../hooks/useDataSync';
 
 const AppContainer: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -23,154 +24,186 @@ const AppContainer: React.FC = () => {
   // Profile status from Supabase - replaces localStorage-based useFirstTimeExperience
   const [profileStatus, setProfileStatus] = useState<ProfileStatus>('pending');
   const [userId, setUserId] = useState<string | null>(null);
+  const [dataVersions, setDataVersions] = useState<DataVersionTimestamps | null>(null);
 
-  // Check authentication FIRST, before any other logic
-  useEffect(() => {
-    const checkAuthAndLoadData = async () => {
-      try {
-        // Check for URL params
-        const urlParams = new URLSearchParams(window.location.search);
-        const viewAsUserId = urlParams.get('viewAsUserId');
-        const resetOnboarding = urlParams.get('reset-onboarding');
+  // Check authentication and load user data from the API
+  const checkAuthAndLoadData = useCallback(async () => {
+    try {
+      // Check for URL params
+      const urlParams = new URLSearchParams(window.location.search);
+      const viewAsUserId = urlParams.get('viewAsUserId');
+      const resetOnboarding = urlParams.get('reset-onboarding');
 
-        // Handle reset-onboarding param (for dev/testing)
-        if (resetOnboarding === 'true') {
-          console.log('🔄 Reset onboarding requested via URL param');
-          try {
-            const resetResponse = await fetch('/api/user/reset-onboarding', { method: 'POST' });
-            if (resetResponse.ok) {
-              console.log('✅ Onboarding reset successful, reloading...');
-              // Remove the param and reload
-              window.location.href = window.location.pathname;
-              return;
-            } else {
-              console.error('Failed to reset onboarding:', await resetResponse.text());
-            }
-          } catch (error) {
-            console.error('Error resetting onboarding:', error);
+      // Handle reset-onboarding param (for dev/testing)
+      if (resetOnboarding === 'true') {
+        console.log('🔄 Reset onboarding requested via URL param');
+        try {
+          const resetResponse = await fetch('/api/user/reset-onboarding', { method: 'POST' });
+          if (resetResponse.ok) {
+            console.log('✅ Onboarding reset successful, reloading...');
+            // Remove the param and reload
+            window.location.href = window.location.pathname;
+            return;
+          } else {
+            console.error('Failed to reset onboarding:', await resetResponse.text());
           }
+        } catch (error) {
+          console.error('Error resetting onboarding:', error);
         }
+      }
 
-        // Build API URL with viewAsUserId param if present
-        let apiUrl = '/api/user/data';
-        if (viewAsUserId) {
-          apiUrl += `?viewAsUserId=${viewAsUserId}`;
-        }
+      // Build API URL with viewAsUserId param if present
+      let apiUrl = '/api/user/data';
+      if (viewAsUserId) {
+        apiUrl += `?viewAsUserId=${viewAsUserId}`;
+      }
 
-        // Always check authentication first, regardless of first-time status
-        const response = await fetch(apiUrl);
-        const userData = await response.json();
+      // Always check authentication first, regardless of first-time status
+      const response = await fetch(apiUrl);
+      const userData = await response.json();
 
-        // Track if we're viewing as another user
-        if (userData.isViewingAsUser) {
-          setIsViewingAsUser(true);
-          setViewedUserInfo(userData.viewedUserInfo || null);
-        }
+      // Track if we're viewing as another user
+      if (userData.isViewingAsUser) {
+        setIsViewingAsUser(true);
+        setViewedUserInfo(userData.viewedUserInfo || null);
+      }
 
-        // Check if user is authenticated using the authenticated field
-        const userIsAuthenticated = userData.authenticated !== false;
-        setIsAuthenticated(userIsAuthenticated);
+      // Check if user is authenticated using the authenticated field
+      const userIsAuthenticated = userData.authenticated !== false;
+      setIsAuthenticated(userIsAuthenticated);
 
-        if (!userIsAuthenticated) {
-          // User is not authenticated, redirect to login
-          console.log('🚨 SECURITY: User not authenticated, redirecting to login');
-          setAuthLoading(false);
-          window.location.href = '/login';
-          return;
-        }
+      if (!userIsAuthenticated) {
+        // User is not authenticated, redirect to login
+        console.log('🚨 SECURITY: User not authenticated, redirecting to login');
+        setAuthLoading(false);
+        window.location.href = '/login';
+        return;
+      }
 
-        // User is authenticated - now handle data loading
-        console.log('🔍 AppContainer userData analysis:', {
-          hasData: userData.hasData,
-          hasCompanyData: !!userData.companyData,
-          companyDataKeys: userData.companyData ? Object.keys(userData.companyData) : null,
-          userId: userData.userId,
-          profileStatus: userData.profileStatus
+      // User is authenticated - now handle data loading
+      console.log('🔍 AppContainer userData analysis:', {
+        hasData: userData.hasData,
+        hasCompanyData: !!userData.companyData,
+        companyDataKeys: userData.companyData ? Object.keys(userData.companyData) : null,
+        userId: userData.userId,
+        profileStatus: userData.profileStatus
+      });
+
+      // Store userId and profileStatus from Supabase
+      setUserId(userData.userId);
+      setProfileStatus(userData.profileStatus || 'pending');
+
+      if (userData.hasData && userData.companyData) {
+        // Existing user with data
+        console.log('✅ User has data, profile_status:', userData.profileStatus);
+
+        const dbUserProfile = userData.companyData.user_profile;
+        const dbCompanies = userData.companyData.companies;
+
+        // Migrate logo URLs from Clearbit to Logo.dev
+        // Use baseCompanies if it has data, otherwise fall back to companies array
+        const baseCompanies = (dbUserProfile?.baseCompanies && dbUserProfile.baseCompanies.length > 0)
+          ? dbUserProfile.baseCompanies
+          : (dbCompanies || []);
+        const addedCompanies = dbUserProfile?.addedCompanies || [];
+
+        // Merge preferences from both sources using centralized utility
+        const mergedPreferences = mergeUserPreferences(dbUserProfile, userData.preferences);
+
+        // Debug: trace the full preferences merge pipeline (#130)
+        console.log('🔍 [SYNC DEBUG] AppContainer merge pipeline:', {
+          // Source 1: JSONB profile (legacy fallback)
+          profilePrefs: {
+            watchlistCompanyIds: dbUserProfile?.watchlistCompanyIds ?? 'UNDEFINED',
+            removedCompanyIds: dbUserProfile?.removedCompanyIds ?? 'UNDEFINED',
+            viewMode: dbUserProfile?.viewMode ?? 'UNDEFINED',
+          },
+          // Source 2: user_preferences table (source of truth)
+          tablePrefs: {
+            watchlist_company_ids: userData.preferences?.watchlist_company_ids ?? 'UNDEFINED',
+            removed_company_ids: userData.preferences?.removed_company_ids ?? 'UNDEFINED',
+            view_mode: userData.preferences?.view_mode ?? 'UNDEFINED',
+          },
+          // Merge result
+          merged: mergedPreferences,
         });
 
-        // Store userId and profileStatus from Supabase
-        setUserId(userData.userId);
-        setProfileStatus(userData.profileStatus || 'pending');
+        const customProfile: UserExplorationState = {
+          ...activeUserProfile, // Use as base structure
+          id: userData.companyData.user_id,
+          name: dbUserProfile?.name || 'User',
+          cmf: dbUserProfile?.cmf || dbUserProfile,
+          // Handle UserExplorationState format from admin import - with logo migration
+          baseCompanies: migrateCompanyLogos(baseCompanies),
+          addedCompanies: migrateCompanyLogos(addedCompanies),
+          // Use merged preferences from centralized utility
+          watchlistCompanyIds: mergedPreferences.watchlistCompanyIds,
+          removedCompanyIds: mergedPreferences.removedCompanyIds,
+          viewMode: mergedPreferences.viewMode
+        };
 
-        if (userData.hasData && userData.companyData) {
-          // Existing user with data
-          console.log('✅ User has data, profile_status:', userData.profileStatus);
-          
-          const dbUserProfile = userData.companyData.user_profile;
-          const dbCompanies = userData.companyData.companies;
+        setUserProfile(customProfile);
 
-          // Migrate logo URLs from Clearbit to Logo.dev
-          // Use baseCompanies if it has data, otherwise fall back to companies array
-          const baseCompanies = (dbUserProfile?.baseCompanies && dbUserProfile.baseCompanies.length > 0)
-            ? dbUserProfile.baseCompanies
-            : (dbCompanies || []);
-          const addedCompanies = dbUserProfile?.addedCompanies || [];
+        // Track server timestamps for data sync detection
+        setDataVersions({
+          companyDataUpdatedAt: userData.companyData.updated_at ?? null,
+          preferencesUpdatedAt: userData.preferences?.updated_at ?? null,
+        });
+      } else {
+        // Authenticated but no data - new user (will show first-time experience)
+        console.log('❌ User has no data, will show first-time experience');
 
-          // Merge preferences from both sources using centralized utility
-          const mergedPreferences = mergeUserPreferences(dbUserProfile, userData.preferences);
+        // Use the real user ID from the API response
+        const realUserId = userData.userId;
 
-          const customProfile: UserExplorationState = {
-            ...activeUserProfile, // Use as base structure
-            id: userData.companyData.user_id,
-            name: dbUserProfile?.name || 'User',
-            cmf: dbUserProfile?.cmf || dbUserProfile,
-            // Handle UserExplorationState format from admin import - with logo migration
-            baseCompanies: migrateCompanyLogos(baseCompanies),
-            addedCompanies: migrateCompanyLogos(addedCompanies),
-            // Use merged preferences from centralized utility
-            watchlistCompanyIds: mergedPreferences.watchlistCompanyIds,
-            removedCompanyIds: mergedPreferences.removedCompanyIds,
-            viewMode: mergedPreferences.viewMode
-          };
-
-          setUserProfile(customProfile);
-        } else {
-          // Authenticated but no data - new user (will show first-time experience)
-          console.log('❌ User has no data, will show first-time experience');
-          
-          // Use the real user ID from the API response
-          const realUserId = userData.userId;
-          
-          // Clear localStorage only if NOT using local fallback
-          if (process.env.NEXT_PUBLIC_USE_LOCAL_FALLBACK !== 'true') {
-            // Clear new cosmos keys
-            localStorage.removeItem('cosmos-exploration-state');
-            localStorage.removeItem('cosmos-watchlist');
-            localStorage.removeItem('cosmos-custom-companies');
-            localStorage.removeItem('cosmos-removed-companies');
-            // Also clear legacy keys for backwards compatibility
-            localStorage.removeItem('cmf-exploration-state');
-            localStorage.removeItem('cmf-explorer-watchlist');
-            localStorage.removeItem('cmf-explorer-custom-companies');
-            localStorage.removeItem('cmf-explorer-removed-companies');
-            localStorage.removeItem('cmf-watchlist-state');
-            localStorage.removeItem('cmf-removed-companies');
-          }
-          
-          const newProfile = await createProfileForUser({
-            userId: realUserId, // Use real Supabase user ID
-            userName: 'New User'
-          }, true);
-          
-          setUserProfile(newProfile);
+        // Clear localStorage only if NOT using local fallback
+        if (process.env.NEXT_PUBLIC_USE_LOCAL_FALLBACK !== 'true') {
+          // Clear new cosmos keys
+          localStorage.removeItem('cosmos-exploration-state');
+          localStorage.removeItem('cosmos-watchlist');
+          localStorage.removeItem('cosmos-custom-companies');
+          localStorage.removeItem('cosmos-removed-companies');
+          // Also clear legacy keys for backwards compatibility
+          localStorage.removeItem('cmf-exploration-state');
+          localStorage.removeItem('cmf-explorer-watchlist');
+          localStorage.removeItem('cmf-explorer-custom-companies');
+          localStorage.removeItem('cmf-explorer-removed-companies');
+          localStorage.removeItem('cmf-watchlist-state');
+          localStorage.removeItem('cmf-removed-companies');
         }
 
-        // Mark that we've completed the data check
-        setHasCompletedDataCheck(true);
-      } catch (error) {
-        console.error('Error during auth check and data loading:', error);
-        
-        // On error, redirect to login for safety
-        window.location.href = '/login';
-      } finally {
-        setDataLoading(false);
-        setAuthLoading(false);
-      }
-    };
+        const newProfile = await createProfileForUser({
+          userId: realUserId, // Use real Supabase user ID
+          userName: 'New User'
+        }, true);
 
-    // Check authentication on mount
-    checkAuthAndLoadData();
+        setUserProfile(newProfile);
+      }
+
+      // Mark that we've completed the data check
+      setHasCompletedDataCheck(true);
+    } catch (error) {
+      console.error('Error during auth check and data loading:', error);
+
+      // On error, redirect to login for safety
+      window.location.href = '/login';
+    } finally {
+      setDataLoading(false);
+      setAuthLoading(false);
+    }
   }, []);
+
+  // Initial data load on mount
+  useEffect(() => {
+    checkAuthAndLoadData();
+  }, [checkAuthAndLoadData]);
+
+  // Sync data when returning to the app (visibility change)
+  useDataSync({
+    knownVersions: dataVersions,
+    onStaleData: checkAuthAndLoadData,
+    enabled: hasCompletedDataCheck,
+  });
 
   const handleFirstTimeComplete = async (resumeFile: File, cmfFile: File) => {
     setIsLoading(true);
@@ -178,7 +211,7 @@ const AppContainer: React.FC = () => {
     try {
       // Process the uploaded files and discover companies using Perplexity
       // Returns: { id, name, cmf: {...}, baseCompanies: [...] }
-      const discoveryData = await createUserProfileFromFiles(resumeFile, cmfFile, activeUserProfile.id);
+      const discoveryData = await createUserProfileFromFiles(resumeFile, cmfFile, userId!);
 
       console.log('📦 Received discovery data:', {
         name: discoveryData.name,
@@ -187,9 +220,11 @@ const AppContainer: React.FC = () => {
       });
 
       // Create new user exploration state with the discovered profile and companies
+      // IMPORTANT: Use the real Supabase user ID (not the generated one from discovery)
+      // so that ExplorationStateManager.persistState() can save to the database.
       const newUserProfile: UserExplorationState = {
         ...activeUserProfile,
-        id: discoveryData.id || activeUserProfile.id,
+        id: userId!,
         name: discoveryData.name || discoveryData.cmf.name,
         cmf: discoveryData.cmf,
         baseCompanies: discoveryData.baseCompanies || [],

@@ -213,6 +213,31 @@ describe('ExplorationStateManager', () => {
       )
     })
 
+    it('should batch addCompany + toggleWatchlist into one remote persist', async () => {
+      // Simulate the handleAddCompany flow: addCompany then toggleWatchlist
+      const newCompany = stateManager.addCompany({
+        ...mockCompany,
+        id: 0,
+        name: 'Discord'
+      })
+      stateManager.toggleWatchlist(newCompany.id)
+
+      // localStorage should already have the FINAL state (both mutations)
+      const lastLocalStorageCall = localStorageMock.setItem.mock.calls
+        .filter((c: string[]) => c[0] === 'cosmos-exploration-state')
+        .pop()!
+      const savedState = JSON.parse(lastLocalStorageCall[1])
+      expect(savedState.watchlistCompanyIds).toContain(newCompany.id)
+      expect(savedState.addedCompanies.some((c: Company) => c.name === 'Discord')).toBe(true)
+
+      // The remote persist fires after the microtask — flush it
+      await Promise.resolve()
+
+      // State manager should reflect both mutations
+      expect(stateManager.isInWatchlist(newCompany.id)).toBe(true)
+      expect(stateManager.getAllCompanies().find(c => c.id === newCompany.id)).toBeTruthy()
+    })
+
     it('should get current state snapshot', () => {
       stateManager.toggleWatchlist(mockCompany.id)
       stateManager.setViewMode('watchlist')
@@ -248,6 +273,32 @@ describe('ExplorationStateManager', () => {
     it('should get user CMF data', () => {
       const cmf = stateManager.getUserCMF()
       expect(cmf).toEqual(initialState.cmf)
+    })
+  })
+
+  describe('User ID Validation', () => {
+    it('should accept a valid Supabase UUID', () => {
+      expect(() =>
+        ExplorationStateManager.validateUserId('9d49907c-a057-4f3b-9cfc-a6e2769b44cd')
+      ).not.toThrow()
+    })
+
+    it('should reject a generated timestamp ID', () => {
+      expect(() =>
+        ExplorationStateManager.validateUserId(`user-${Date.now()}`)
+      ).toThrow(/Invalid userId.*Expected a Supabase UUID/)
+    })
+
+    it('should reject a plain string ID', () => {
+      expect(() =>
+        ExplorationStateManager.validateUserId('test-user')
+      ).toThrow(/Invalid userId/)
+    })
+
+    it('should reject an empty string', () => {
+      expect(() =>
+        ExplorationStateManager.validateUserId('')
+      ).toThrow(/Invalid userId/)
     })
   })
 

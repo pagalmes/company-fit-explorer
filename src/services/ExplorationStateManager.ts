@@ -19,10 +19,22 @@ export class ExplorationStateManager {
   private currentState: UserExplorationState;
   private devServerAvailable = false;
   private profileName: string;
+  private remotePersistScheduled = false;
   
   constructor(initialState: UserExplorationState, profileName = 'teeKProfile') {
     this.currentState = this.cloneState(initialState);
     this.profileName = profileName;
+
+    // Debug: trace what state the manager is initialized with (#130)
+    console.log('🔍 [SYNC DEBUG] ExplorationStateManager created:', {
+      userId: this.currentState.id,
+      watchlistCompanyIds: this.currentState.watchlistCompanyIds,
+      removedCompanyIds: this.currentState.removedCompanyIds,
+      viewMode: this.currentState.viewMode,
+      baseCompaniesCount: this.currentState.baseCompanies?.length ?? 0,
+      addedCompaniesCount: this.currentState.addedCompanies?.length ?? 0,
+    });
+
     this.checkDevServer();
     this.logStateInfo();
   }
@@ -345,23 +357,49 @@ export class ExplorationStateManager {
   }
 
   /**
-   * Persist state changes using hybrid strategy:
-   * - Production: Always save to database
-   * - Development: Database-first with file fallback for rapid iteration
+   * Persist state changes using microtask batching.
+   *
+   * localStorage is updated immediately (synchronous, no race conditions).
+   * The remote save (database/file) is deferred to a microtask so that
+   * multiple synchronous mutations (e.g. addCompany + toggleWatchlist)
+   * coalesce into a single network request with the final state.
    */
-  private async persistState(): Promise<void> {
+  private persistState(): void {
+    // Debug: trace every persist call with caller and watchlist data (#130)
+    console.log('🔍 [SYNC DEBUG] persistState() called:', {
+      watchlistCompanyIds: this.currentState.watchlistCompanyIds,
+      removedCompanyIds: this.currentState.removedCompanyIds,
+      viewMode: this.currentState.viewMode,
+      userId: this.currentState.id,
+      caller: new Error().stack?.split('\n')[2]?.trim() || 'unknown',
+    });
+
+    // Always save to localStorage immediately as backup
+    localStorage.setItem('cosmos-exploration-state', JSON.stringify(this.currentState));
+
+    // Batch the remote save: if a microtask is already scheduled,
+    // it will pick up the latest this.currentState when it fires.
+    if (!this.remotePersistScheduled) {
+      this.remotePersistScheduled = true;
+      queueMicrotask(() => {
+        this.remotePersistScheduled = false;
+        this.doRemotePersist();
+      });
+    }
+  }
+
+  /**
+   * Perform the actual remote persist (database or file).
+   * Called once per microtask batch, always reads the latest this.currentState.
+   */
+  private async doRemotePersist(): Promise<void> {
     try {
-      // Always save to localStorage as backup
-      localStorage.setItem('cosmos-exploration-state', JSON.stringify(this.currentState));
-      
       const persistenceMode = this.getPersistenceMode();
       console.log(`🔧 Persistence mode: ${persistenceMode}`);
-      
+
       if (persistenceMode === 'file-only') {
-        // Development file-only mode (rapid iteration)
         await this.saveToFileOnly();
       } else {
-        // Database-first mode (production + development default)
         await this.saveDatabaseFirst();
       }
     } catch (error) {
@@ -435,6 +473,10 @@ export class ExplorationStateManager {
       if (process.env.VITEST || process.env.NODE_ENV === 'test') {
         throw new Error('Database calls disabled in test environment');
       }
+
+      // Guard: the userId must be a valid UUID, otherwise the server will
+      // reject the request with 403 ("Cannot modify another user's data").
+      ExplorationStateManager.validateUserId(this.currentState.id);
 
       const response = await fetch('/api/user/data', {
         method: 'POST',
@@ -517,5 +559,21 @@ export class ExplorationStateManager {
    */
   private cloneState(state: UserExplorationState): UserExplorationState {
     return JSON.parse(JSON.stringify(state));
+  }
+
+  /**
+   * Validates that a user ID is a proper UUID (as issued by Supabase Auth).
+   * Throws with a descriptive error if a generated/placeholder ID is detected.
+   * This prevents silent 403 errors when saving to the database.
+   */
+  static validateUserId(id: string): void {
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_REGEX.test(id)) {
+      throw new Error(
+        `Invalid userId for database save: "${id}". ` +
+        `Expected a Supabase UUID. This usually means the profile was ` +
+        `constructed with a generated ID instead of the authenticated user's ID.`
+      );
+    }
   }
 }

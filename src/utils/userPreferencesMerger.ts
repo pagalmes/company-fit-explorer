@@ -2,10 +2,15 @@
  * Utility for merging user preferences from multiple sources
  *
  * User preferences can be stored in two places:
- * 1. user_preferences table (separate table) - newer approach
- * 2. user_profile JSONB field in user_company_data - legacy/admin import format
+ * 1. user_preferences table — the SOURCE OF TRUTH (updated on every user action)
+ * 2. user_profile JSONB field in user_company_data — legacy fallback (only from admin imports)
  *
- * This utility provides a centralized way to merge these sources.
+ * IMPORTANT: The table MUST take priority over the JSONB profile because:
+ * - ExplorationStateManager writes preferences to the table on every toggle/change
+ * - ExplorationStateManager writes only CMF (not preferences) to the JSONB column
+ * - The JSONB may contain stale preference data from an old admin import
+ * - The profile fallback only exists for the edge case where an admin import
+ *   wrote to JSONB but the table write failed
  */
 
 export interface UserPreferencesFromProfile {
@@ -26,26 +31,27 @@ export interface MergedPreferences {
   viewMode: 'explore' | 'watchlist';
 }
 
+/** Use the primary source if it has data, otherwise fall back to the secondary source. */
+function preferWithFallback(primary: number[], fallback: number[]): number[] {
+  return primary.length > 0 ? primary : fallback;
+}
+
 /**
- * Merge preferences from user_profile and user_preferences table
- *
- * Priority logic:
- * - If user_profile has data (length > 0), use it (handles admin imports and legacy data)
- * - Otherwise, use user_preferences table data
- * - Fall back to empty arrays/defaults if both are empty
+ * Merge preferences from user_preferences table (primary) and user_profile JSONB (fallback).
  */
 export function mergeUserPreferences(
   profilePrefs: UserPreferencesFromProfile | null | undefined,
   tablePrefs: UserPreferencesFromTable | null | undefined
 ): MergedPreferences {
-  const watchlistFromProfile = profilePrefs?.watchlistCompanyIds || [];
+  // Table is the source of truth; profile is the legacy fallback
   const watchlistFromTable = tablePrefs?.watchlist_company_ids || [];
-  const removedFromProfile = profilePrefs?.removedCompanyIds || [];
+  const watchlistFromProfile = profilePrefs?.watchlistCompanyIds || [];
   const removedFromTable = tablePrefs?.removed_company_ids || [];
+  const removedFromProfile = profilePrefs?.removedCompanyIds || [];
 
   return {
-    watchlistCompanyIds: watchlistFromProfile.length > 0 ? watchlistFromProfile : watchlistFromTable,
-    removedCompanyIds: removedFromProfile.length > 0 ? removedFromProfile : removedFromTable,
-    viewMode: profilePrefs?.viewMode || tablePrefs?.view_mode || 'explore'
+    watchlistCompanyIds: preferWithFallback(watchlistFromTable, watchlistFromProfile),
+    removedCompanyIds: preferWithFallback(removedFromTable, removedFromProfile),
+    viewMode: tablePrefs?.view_mode || profilePrefs?.viewMode || 'explore'
   };
 }
