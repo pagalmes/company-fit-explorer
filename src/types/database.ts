@@ -44,5 +44,13 @@ export interface UserInvitation {
   created_at: string
 }
 
+export interface UserContacts {
+  id: string
+  user_id: string
+  contacts: import('./contacts').ContactRecord[]
+  created_at: string
+  updated_at: string
+}
+
 // Re-export existing types from the main types file
 export type { Company, UserCMF } from './index'
