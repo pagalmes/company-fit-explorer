@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getModelForTask } from '@/utils/llm/config';
 import { extractText } from 'unpdf';
+import { isPDF, parseProfileResponse, calculateCost } from './utils';
 
 /**
  * Profile Extraction Endpoint
  *
- * Uses Claude Opus 4.5 to extract structured UserCMF data from resume and career goals documents.
+ * Uses Claude to extract structured UserCMF data from resume and career goals documents.
  * Supports PDF files via base64 encoding.
+ *
+ * Claude self-evaluates extraction confidence so we can surface low-confidence
+ * results to the user without relying on brittle heuristics.
  *
  * Request body:
  * {
@@ -18,6 +22,8 @@ import { extractText } from 'unpdf';
  * {
  *   success: boolean,
  *   cmf: UserCMF,
+ *   extractionConfidence: 'high' | 'medium' | 'low',
+ *   extractionIssues: string[],
  *   usage: { inputTokens, outputTokens, totalCost }
  * }
  */
@@ -93,12 +99,39 @@ export async function POST(request: NextRequest) {
     console.log('📝 Profile extraction response length:', responseText.length, 'characters');
     console.log('⏹️  Stop reason:', data.stop_reason);
 
-    // Parse the JSON response
-    const cmfData = parseProfileResponse(responseText);
+    const result = parseProfileResponse(responseText);
+
+    // Log confidence and any issues Claude flagged
+    console.log('✅ Profile extracted:', {
+      name: result.name,
+      targetRole: result.targetRole,
+      mustHavesCount: result.mustHaves.length,
+      wantToHaveCount: result.wantToHave.length,
+      experienceCount: result.experience.length,
+      extractionConfidence: result.extractionConfidence,
+      extractionIssues: result.extractionIssues,
+    });
+
+    if (result.extractionConfidence === 'low') {
+      console.error('❌ Claude reported low extraction confidence:', result.extractionIssues);
+      throw new Error(
+        `Profile extraction confidence is low. Issues: ${result.extractionIssues.join(', ')}. ` +
+        'Please ensure documents contain specific information about target role, companies, and requirements.'
+      );
+    }
+
+    if (result.extractionConfidence === 'medium') {
+      console.warn('⚠️  Claude reported medium extraction confidence:', result.extractionIssues);
+    }
+
+    // Strip internal fields before returning — callers don't need them in cmf
+    const { extractionConfidence, extractionIssues, ...cmfData } = result;
 
     return NextResponse.json({
       success: true,
       cmf: cmfData,
+      extractionConfidence,
+      extractionIssues,
       usage: {
         inputTokens: data.usage?.input_tokens || 0,
         outputTokens: data.usage?.output_tokens || 0,
@@ -123,13 +156,10 @@ export async function POST(request: NextRequest) {
  * For PDFs, uses unpdf to extract text content - more efficient than sending images
  */
 async function extractTextFromFile(file: FileData): Promise<string> {
-  // Decode base64 to buffer
   const buffer = Buffer.from(file.data, 'base64');
 
   if (isPDF(file.type)) {
     try {
-      // Use unpdf to extract text from PDF
-      // unpdf requires Uint8Array, not Buffer
       console.log(`📄 Extracting text from PDF: ${file.name}`);
       const uint8Array = new Uint8Array(buffer);
       const { text } = await extractText(uint8Array, { mergePages: true });
@@ -140,21 +170,17 @@ async function extractTextFromFile(file: FileData): Promise<string> {
       throw new Error(`Failed to extract text from PDF: ${file.name}`);
     }
   } else {
-    // For text files, decode as UTF-8
     return buffer.toString('utf-8');
   }
 }
 
 /**
  * Build messages array with extracted text content for Claude API
- * Text extraction from PDFs reduces token usage significantly
  */
 async function buildMessagesWithDocuments(resume: FileData, careerGoals: FileData) {
-  // Extract text from both documents
   const resumeText = await extractTextFromFile(resume);
   const careerGoalsText = await extractTextFromFile(careerGoals);
 
-  // Build content with extracted text only (no PDF attachments)
   const content = [
     {
       type: 'text',
@@ -174,19 +200,12 @@ async function buildMessagesWithDocuments(resume: FileData, careerGoals: FileDat
 }
 
 /**
- * Check if file is a PDF
- */
-function isPDF(mimeType: string): boolean {
-  return mimeType === 'application/pdf' || mimeType.includes('pdf');
-}
-
-/**
- * JSON Schema for profile extraction - ensures structured output from Claude
+ * JSON Schema for profile extraction.
  *
- * mustHaves and wantToHave use CMFItem format with short (display) and detailed (matching) versions
+ * Includes extractionConfidence and extractionIssues so Claude can self-evaluate
+ * the quality of its own output — avoiding the need for brittle post-hoc heuristics.
  */
 function getProfileExtractionSchema() {
-  // Schema for CMF items with short and detailed versions
   const cmfItemSchema = {
     type: 'object',
     properties: {
@@ -232,110 +251,93 @@ function getProfileExtractionSchema() {
         type: 'array',
         items: { type: 'string' },
         description: 'Key skills, domains, and experience areas - short labels only (2-4 words each)'
+      },
+      extractionConfidence: {
+        type: 'string',
+        enum: ['high', 'medium', 'low'],
+        description: 'Your confidence that the extracted profile reflects real information from the documents. "high" = specific data clearly present; "medium" = some inference required; "low" = documents too vague to extract meaningful specifics'
+      },
+      extractionIssues: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'List of specific fields or items where you had to guess or fall back to generic values. Empty array if confidence is high.'
       }
     },
-    required: ['name', 'targetRole', 'targetCompanies', 'mustHaves', 'wantToHave', 'experience'],
+    required: ['name', 'targetRole', 'targetCompanies', 'mustHaves', 'wantToHave', 'experience', 'extractionConfidence', 'extractionIssues'],
     additionalProperties: false
   };
 }
 
 /**
- * Build the extraction prompt
- * Note: The output format is enforced by structured outputs (JSON schema)
+ * Build the extraction prompt.
+ * Note: Output format is enforced by the JSON schema above.
  */
 function buildExtractionPrompt(): string {
   return `Based on the resume and career goals documents above, extract the candidate's profile information.
 
-## INSTRUCTIONS
+## CRITICAL REQUIREMENTS
 
-Analyze both documents carefully and extract:
+🚫 **NEVER use these generic/placeholder values:**
+- "Professional Role" / "Professional" / "User"
+- "No experience specified" / "Experience" / "Skills"
+- "Growth-oriented companies" / "Tech companies"
+- "High-quality team culture" / "Competitive compensation"
+- Any vague or generic descriptions
 
-1. **Name**: The candidate's full name
-2. **Target Role**: The specific job title or role they are seeking (e.g., "Senior Product Manager", "Software Engineering Lead")
-3. **Target Companies**: What type of companies they want to work at (e.g., "Series B-C startups in AI/ML", "Late-stage tech companies")
-4. **Must-Haves**: Non-negotiable requirements (extract 3-5 items minimum)
-   - Each item needs TWO versions:
-     - "short": A brief label for UI display (2-6 words)
-     - "detailed": Full description with context (1-2 sentences)
-   - Example: { "short": "High Velocity of Execution", "detailed": "A dynamic pace of work where we move and learn quickly, with a tangible sense of progress and clear visibility of results and outcomes" }
-5. **Want-to-Haves**: Nice-to-have preferences (extract 3-5 items minimum)
-   - Same format as Must-Haves: both "short" and "detailed" versions
-6. **Experience**: Key skills, domains, and experience areas from the resume (extract 5-10 items)
-   - Simple short labels only (2-4 words each, e.g., "AI/ML Products", "Data Pipelines")
+✅ **ALWAYS extract SPECIFIC information from the actual documents:**
+- Actual names, roles, and company types from the text
+- Specific technologies, skills, and domains mentioned
+- Concrete requirements stated in career goals
+- Real experience and achievements from resume
 
-## IMPORTANT NOTES
+## EXTRACTION INSTRUCTIONS
 
-- Extract actual information from the documents - do NOT use placeholder or generic values
-- If a career goals document explicitly lists must-haves and want-to-haves, use those directly
-- The "short" version is for display in the UI - keep it concise
-- The "detailed" version is for company matching - include full context
-- For experience, focus on key skills, technologies, industries, and notable achievements
-- Be specific in your extractions`;
+### 1. Name (REQUIRED)
+- Extract the candidate's actual full name from the resume
+- Look at the top of resume, email signature, or "Name:" field
+- If not found, use filename without extension
+
+### 2. Target Role (REQUIRED - BE SPECIFIC)
+- Extract the EXACT role they're seeking from career goals or resume objective
+- Examples of GOOD extractions: "Senior Product Manager - AI/ML", "Staff Software Engineer", "VP of Engineering"
+- Examples of BAD extractions: "Professional Role", "Manager", "Engineer" ❌
+- If not explicitly stated, infer from their experience level and domain
+
+### 3. Target Companies (REQUIRED - BE SPECIFIC)
+- Extract their actual company preferences from career goals
+- Examples of GOOD extractions: "Series B-D startups in AI/ML space", "Late-stage fintech companies", "Healthcare tech startups in San Diego"
+- Examples of BAD extractions: "Growth-oriented companies", "Tech companies", "Startups" ❌
+- Include: company stage, industry, location if mentioned
+
+### 4. Must-Haves (EXTRACT 4-6 SPECIFIC ITEMS)
+- Extract their actual non-negotiable requirements from career goals
+- Each item needs a "short" label (2-6 words) and a "detailed" description (1-2 sentences)
+- Example: { "short": "Remote-First Culture", "detailed": "A company that embraces remote work as a first-class option with async communication and flexible hours" }
+- If career goals list explicit must-haves, USE THOSE verbatim
+
+### 5. Want-to-Haves (EXTRACT 4-6 SPECIFIC ITEMS)
+- Extract their nice-to-have preferences from career goals
+- Same format as Must-Haves
+- Example: { "short": "Equity Package", "detailed": "Meaningful equity stake with transparent vesting schedule and potential for significant upside" }
+
+### 6. Experience (EXTRACT 6-10 SPECIFIC ITEMS)
+- Extract key skills, technologies, and domains from resume
+- Short labels only (2-4 words each)
+- Examples: "Python/Django", "AWS/Kubernetes", "Team Leadership (10+)", "Startup 0-1 Products"
+- Include years if mentioned
+
+## SELF-EVALUATION (REQUIRED)
+
+After extracting, assess your own output:
+
+**extractionConfidence:**
+- "high" — You found specific, concrete information for all fields directly in the documents
+- "medium" — Most fields are specific but 1-2 required reasonable inference or the documents were somewhat vague
+- "low" — The documents lack enough specific information; you had to use generic fallbacks for multiple fields
+
+**extractionIssues:**
+- List each field where you had to guess or use a generic value
+- Example: ["targetRole was inferred from job titles only — no explicit target stated", "targetCompanies defaulted to general preference — no company type specified"]
+- Leave empty if confidence is "high"`;
 }
 
-/**
- * CMF Item with short (display) and detailed (matching) versions
- */
-interface CMFItem {
-  short: string;
-  detailed: string;
-}
-
-/**
- * Parse and validate the profile extraction response
- * With structured outputs, the response is guaranteed to be valid JSON matching our schema
- */
-function parseProfileResponse(responseText: string): {
-  name: string;
-  targetRole: string;
-  targetCompanies: string;
-  mustHaves: CMFItem[];
-  wantToHave: CMFItem[];
-  experience: string[];
-} {
-  try {
-    // With structured outputs, response is guaranteed valid JSON
-    const parsed = JSON.parse(responseText);
-
-    // Log extraction results
-    console.log('✅ Profile extracted:', {
-      name: parsed.name,
-      targetRole: parsed.targetRole,
-      mustHavesCount: parsed.mustHaves?.length || 0,
-      wantToHaveCount: parsed.wantToHave?.length || 0,
-      experienceCount: parsed.experience?.length || 0
-    });
-
-    // Log sample items for debugging
-    if (parsed.mustHaves?.length > 0) {
-      console.log('   Sample must-have:', parsed.mustHaves[0]);
-    }
-
-    return {
-      name: parsed.name,
-      targetRole: parsed.targetRole,
-      targetCompanies: parsed.targetCompanies,
-      mustHaves: parsed.mustHaves,
-      wantToHave: parsed.wantToHave,
-      experience: parsed.experience
-    };
-  } catch (error) {
-    // This should rarely happen with structured outputs
-    console.error('Failed to parse profile extraction response:', error);
-    console.error('Raw response:', responseText);
-    throw new Error(`Failed to parse profile extraction response: ${error instanceof Error ? error.message : 'Invalid JSON'}`);
-  }
-}
-
-/**
- * Calculate API cost for Opus 4.5
- */
-function calculateCost(inputTokens: number, outputTokens: number): number {
-  // Claude Opus 4.5 pricing: $5/1M input, $25/1M output
-  const inputPrice = 5;
-  const outputPrice = 25;
-
-  const inputCost = (inputTokens / 1000000) * inputPrice;
-  const outputCost = (outputTokens / 1000000) * outputPrice;
-  return inputCost + outputCost;
-}
