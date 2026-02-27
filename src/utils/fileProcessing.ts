@@ -1,4 +1,6 @@
-import { UserCMF, getCMFCombinedText } from '../types';
+import { UserCMF, Company, getCMFCombinedText } from '../types';
+import { findSmartPositioningSolution } from './smartPositioning';
+import { getColorForScore } from './companyPositioning';
 
 /**
  * Read file content as text
@@ -148,6 +150,99 @@ export async function discoverCompaniesWithPerplexity(
     ...result.data,
     _warning: result.warning
   };
+}
+
+/**
+ * Call Phase 3 batch enrichment endpoint
+ * Sends all discovered companies + CMF to Claude for high-quality scoring
+ */
+async function enrichCompaniesWithClaude(
+  cmf: Partial<UserCMF>,
+  companies: Company[]
+): Promise<{ enrichments: any[]; warning?: string; usage?: { inputTokens: number; outputTokens: number; totalCost: number } }> {
+  const response = await fetch('/api/llm/anthropic/enrich-companies', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      cmf,
+      companies: companies.map(c => ({
+        id: c.id,
+        name: c.name,
+        industry: c.industry,
+        stage: c.stage,
+        location: c.location,
+        employees: c.employees,
+        remote: c.remote,
+        openRoles: c.openRoles,
+        discoveryEvidence: c.matchReasons, // Perplexity's factual observations become input for Claude
+        careerUrl: c.careerUrl,
+        externalLinks: c.externalLinks
+      }))
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Enrichment failed: ${response.status}`);
+  }
+
+  const result = await response.json();
+
+  if (!result.success) {
+    throw new Error(result.error || 'Enrichment failed');
+  }
+
+  return {
+    enrichments: result.enrichments || [],
+    warning: result.warning,
+    usage: result.usage
+  };
+}
+
+/**
+ * Merge Phase 3 enrichment data into Phase 2 base companies
+ * Overwrites matchScore/matchReasons/connections with Claude's output.
+ * Companies without enrichment keep Perplexity's data as fallback.
+ */
+function mergeEnrichmentData(baseCompanies: Company[], enrichments: any[]): Company[] {
+  const enrichmentMap = new Map(enrichments.map((e: any) => [e.id, e]));
+
+  return baseCompanies.map(company => {
+    const enrichment = enrichmentMap.get(company.id);
+    if (!enrichment) return company;
+
+    return {
+      ...company,
+      matchScore: enrichment.matchScore,
+      matchReasons: enrichment.matchReasons,
+      connections: enrichment.connections,
+      connectionTypes: enrichment.connectionTypes
+    };
+  });
+}
+
+/**
+ * Compute graph positioning for all companies after enrichment
+ * Uses smartPositioning for collision detection and getColorForScore for color
+ */
+function computeCompanyPositioning(companies: Company[]): Company[] {
+  const positioned: Company[] = [];
+
+  for (const company of companies) {
+    const solution = findSmartPositioningSolution(company, positioned, 'explore');
+    const color = getColorForScore(company.matchScore);
+
+    positioned.push({
+      ...solution.newCompany,
+      color,
+      explorePosition: {
+        angle: solution.newCompany.angle ?? 0,
+        distance: solution.newCompany.distance ?? 100
+      }
+    });
+  }
+
+  return positioned;
 }
 
 /**
@@ -405,33 +500,7 @@ export const createUserProfileFromFiles = async (
       }
     }
 
-    // DEBUG MODE: Skip Perplexity call, just return profile with empty companies
-    // TODO: Re-enable Phase 2 after profile extraction is working
-    console.log('⚠️ DEBUG MODE: Skipping Perplexity company discovery');
-    console.log(`   Profile: ${extractedCMF.name}`);
-    console.log(`   Target Role: ${extractedCMF.targetRole}`);
-    console.log(`   Target Companies: ${extractedCMF.targetCompanies}`);
-    console.log(`   Must-Haves: ${extractedCMF.mustHaves?.length || 0} items`);
-    console.log(`   Want-to-Have: ${extractedCMF.wantToHave?.length || 0} items`);
-    console.log(`   Experience: ${extractedCMF.experience?.length || 0} items`);
-
-    // Return profile with empty company list
-    return {
-      id: baseId,
-      name: extractedCMF.name || 'User',
-      cmf: {
-        id: baseId,
-        ...extractedCMF
-      },
-      baseCompanies: [],
-      addedCompanies: [],
-      removedCompanyIds: [],
-      watchlistCompanyIds: [],
-      viewMode: 'explore' as const,
-      _warning: 'DEBUG MODE: Company discovery skipped'
-    };
-
-    /* Phase 2: Discover companies using Perplexity (disabled for debugging)
+    // Phase 2: Discover companies using Perplexity
     console.log('🚀 Phase 2: Discovering companies with Perplexity...');
 
     const discoveryData = await discoverCompaniesWithPerplexity(extractedCMF);
@@ -445,7 +514,36 @@ export const createUserProfileFromFiles = async (
       console.log(`   Companies discovered: ${discoveryData.baseCompanies?.length || 0}`);
     }
 
-    // Combine Claude's CMF (source of truth) with Perplexity's discovered companies
+    let enrichedCompanies = discoveryData.baseCompanies || [];
+
+    if (enrichedCompanies.length > 0) {
+      // Phase 3: Batch enrichment with Claude
+      console.log('🎨 Phase 3: Enriching companies with Claude...');
+
+      try {
+        const enrichmentResult = await enrichCompaniesWithClaude(extractedCMF, enrichedCompanies);
+
+        if (enrichmentResult.warning) {
+          console.warn(`⚠️ Enrichment warning: ${enrichmentResult.warning}`);
+        } else {
+          enrichedCompanies = mergeEnrichmentData(enrichedCompanies, enrichmentResult.enrichments);
+          console.log(`✅ Enrichment complete! ${enrichmentResult.enrichments.length} companies enriched`);
+
+          if (enrichmentResult.usage) {
+            console.log(`   Tokens: ${enrichmentResult.usage.inputTokens} in / ${enrichmentResult.usage.outputTokens} out`);
+            console.log(`   Cost: $${enrichmentResult.usage.totalCost.toFixed(4)}`);
+          }
+        }
+      } catch (enrichError) {
+        console.error('⚠️ Phase 3 enrichment failed, using Perplexity scores as fallback:', enrichError);
+      }
+
+      // Compute positioning using final matchScores (from Phase 3, or Phase 2 fallback)
+      console.log('📍 Computing company positions...');
+      enrichedCompanies = computeCompanyPositioning(enrichedCompanies);
+    }
+
+    // Combine CMF (source of truth) with enriched + positioned companies
     return {
       id: baseId,
       name: extractedCMF.name || 'User',
@@ -453,14 +551,13 @@ export const createUserProfileFromFiles = async (
         id: baseId,
         ...extractedCMF
       },
-      baseCompanies: discoveryData.baseCompanies || [],
+      baseCompanies: enrichedCompanies,
       addedCompanies: [],
       removedCompanyIds: [],
       watchlistCompanyIds: [],
       viewMode: 'explore' as const,
       _warning: discoveryData._warning
     };
-    */
 
   } catch (error) {
     console.error('❌ Error in profile extraction/company discovery:', error);

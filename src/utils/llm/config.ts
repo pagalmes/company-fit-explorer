@@ -35,6 +35,9 @@ export const TASK_MODELS = {
   COMPANY_ANALYSIS: ANTHROPIC_MODELS.SONNET_4_5,
   COMPANY_EXTRACTION: ANTHROPIC_MODELS.SONNET_4_5,
 
+  // Batch enrichment - scores all discovered companies against user CMF
+  BATCH_ENRICHMENT: ANTHROPIC_MODELS.SONNET_4_5,
+
   // Quick validation tasks - use faster/cheaper models
   API_VALIDATION: ANTHROPIC_MODELS.HAIKU_4_5,
 

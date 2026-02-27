@@ -165,8 +165,29 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.error?.message || 'Unknown error';
       console.error('❌ Perplexity API error:', response.status, errorData);
-      throw new Error(`Perplexity API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+
+      // Graceful degradation for auth/billing errors — return empty companies
+      // so onboarding can complete with just the extracted profile
+      if ([401, 402, 429].includes(response.status)) {
+        const warnings: Record<number, string> = {
+          401: 'Perplexity API key is invalid or expired.',
+          402: 'Perplexity API has no remaining credits.',
+          429: 'Perplexity API rate limit exceeded.'
+        };
+        const warning = `${warnings[response.status]} Company discovery is temporarily unavailable.`;
+        console.warn(`⚠️ ${warning}`);
+        return NextResponse.json({
+          success: true,
+          warning,
+          data: { baseCompanies: [] },
+          citations: [],
+          usage: { model: 'none', tokensUsed: 0 }
+        });
+      }
+
+      throw new Error(`Perplexity API error: ${response.status} - ${errorMessage}`);
     }
 
     const data = await response.json();
