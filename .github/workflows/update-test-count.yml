@@ -1,0 +1,55 @@
+name: Update Test Count in README
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  update-test-count:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests and capture count
+        id: test_count
+        run: |
+          OUTPUT=$(npm test 2>&1 || true)
+          # Match the vitest summary line: "      Tests  324 passed (324)"
+          COUNT=$(echo "$OUTPUT" | grep -oP '^\s+Tests\s+\K\d+(?=\s+passed)')
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "Detected test count: $COUNT"
+
+      - name: Update README with new test count
+        if: steps.test_count.outputs.count != ''
+        run: |
+          COUNT="${{ steps.test_count.outputs.count }}"
+          # Update both occurrences of the test count pattern in README.md
+          sed -i "s/([0-9]\+ tests with performance regression detection)/($COUNT tests with performance regression detection)/g" README.md
+          sed -i "s/^\*\*[0-9]\+ tests\*\*/**$COUNT tests**/g" README.md
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet README.md; then
+            echo "No test count change — skipping commit."
+          else
+            git add README.md
+            git commit -m "chore: update test count in README to ${{ steps.test_count.outputs.count }}"
+            git push
+          fi
