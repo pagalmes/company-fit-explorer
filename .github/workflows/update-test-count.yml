@@ -29,9 +29,9 @@ jobs:
         id: test_count
         run: |
           OUTPUT=$(npm test 2>&1 || true)
-          # Match the vitest summary line: "      Tests  324 passed (324)"
-          # Uses sed (POSIX) instead of grep -P to avoid PCRE dependency on ubuntu-latest
-          COUNT=$(echo "$OUTPUT" | grep '^\s*Tests' | sed 's/.*Tests[[:space:]]*\([0-9]*\) passed.*/\1/')
+          # Strip ANSI color codes, then match vitest summary line: "      Tests  324 passed (324)"
+          CLEAN=$(echo "$OUTPUT" | sed 's/\x1b\[[0-9;]*m//g')
+          COUNT=$(echo "$CLEAN" | grep 'Tests.*passed' | sed 's/.*Tests[[:space:]]*\([0-9]*\) passed.*/\1/' | head -1)
           if [ -z "$COUNT" ]; then
             echo "Warning: could not parse test count from output"
             echo "$OUTPUT" | tail -20
