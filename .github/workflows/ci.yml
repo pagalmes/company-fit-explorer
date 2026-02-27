@@ -33,7 +33,7 @@ jobs:
       run: npm run test:validate
 
     - name: Run unit tests
-      run: npm run test:run
+      run: npm test
 
     - name: Upload coverage reports
       uses: codecov/codecov-action@v3
