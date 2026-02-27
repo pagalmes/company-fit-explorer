@@ -30,7 +30,13 @@ jobs:
         run: |
           OUTPUT=$(npm test 2>&1 || true)
           # Match the vitest summary line: "      Tests  324 passed (324)"
-          COUNT=$(echo "$OUTPUT" | grep -oP '^\s+Tests\s+\K\d+(?=\s+passed)')
+          # Uses sed (POSIX) instead of grep -P to avoid PCRE dependency on ubuntu-latest
+          COUNT=$(echo "$OUTPUT" | grep '^\s*Tests' | sed 's/.*Tests[[:space:]]*\([0-9]*\) passed.*/\1/')
+          if [ -z "$COUNT" ]; then
+            echo "Warning: could not parse test count from output"
+            echo "$OUTPUT" | tail -20
+            exit 1
+          fi
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
           echo "Detected test count: $COUNT"
 
