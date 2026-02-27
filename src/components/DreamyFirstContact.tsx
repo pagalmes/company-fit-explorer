@@ -68,7 +68,7 @@ const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) =
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-y-auto" style={{ height: '100dvh', maxHeight: '100dvh' }}>
         <FloatingStars />
         
-        <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
           <div className="absolute inset-0" style={{
             backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)',
             backgroundSize: '50px 50px'
@@ -76,11 +76,27 @@ const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) =
         </div>
 
         <div className="relative flex flex-col items-center justify-center min-h-screen px-4">
+          {/* Headline above spark */}
+          <div className={`text-center mb-10 transition-opacity duration-1000 ${
+            showText && !sparkClicked ? 'opacity-100' : 'opacity-0'
+          }`}>
+            <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight">
+              Welcome to your{' '}
+              <span className="bg-gradient-to-r from-orange-300 via-pink-300 to-purple-300 bg-clip-text text-transparent">
+                career universe
+              </span>
+            </h1>
+            <p className="mt-4 text-lg md:text-xl text-blue-200/80 font-light">
+               Ready to discover your perfect company matches?
+            </p>
+          </div>
+
+          {/* Spark — the hero interactive element */}
           <div 
-            className="relative mb-8 cursor-pointer transition-transform duration-300"
+            className="relative cursor-pointer transition-transform duration-300 hover:scale-110 group"
             onClick={handleFlameClick}
           >
-            {/* Explosion rings - shown behind the spark when clicked */}
+            {/* Explosion rings */}
             {sparkClicked && [1,2,3,4,5,6,7,8].map((_, i) => {
               const size = (i + 1) * 60;
               return (
@@ -102,20 +118,22 @@ const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) =
                 />
               );
             })}
-            
-            <div className="absolute inset-0 scale-150 opacity-20 pointer-events-none" style={{ transform: 'translateZ(0)', willChange: 'opacity' }}>
+
+            {/* Outer glow */}
+            <div className="absolute inset-0 scale-150 opacity-20 pointer-events-none group-hover:opacity-30 transition-opacity" style={{ transform: 'translateZ(0)', willChange: 'opacity' }}>
               <div className="w-32 h-32 bg-gradient-to-r from-orange-400 via-purple-500 to-blue-500 rounded-full animate-pulse" />
             </div>
-            
-            <div className="absolute inset-0 scale-125 opacity-40 pointer-events-none" style={{ transform: 'translateZ(0)', willChange: 'opacity' }}>
-              <div className="w-32 h-32 bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 rounded-full animate-pulse" 
+
+            <div className="absolute inset-0 scale-125 opacity-40 pointer-events-none group-hover:opacity-50 transition-opacity" style={{ transform: 'translateZ(0)', willChange: 'opacity' }}>
+              <div className="w-32 h-32 bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 rounded-full animate-pulse"
                    style={{ animationDelay: '0.5s', animationDuration: '3s' }} />
             </div>
-            
-            <div className="relative w-32 h-32 bg-gradient-to-br from-orange-300 via-pink-400 to-purple-500 rounded-full shadow-2xl z-10">
+
+            {/* Main spark orb */}
+            <div className="relative w-32 h-32 bg-gradient-to-br from-orange-300 via-pink-400 to-purple-500 rounded-full shadow-2xl z-10 group-hover:shadow-[0_0_60px_rgba(251,146,60,0.5)] transition-shadow duration-300">
               <div className="absolute inset-2 bg-gradient-to-br from-yellow-200 via-orange-300 to-pink-400 rounded-full animate-pulse pointer-events-none" style={{ animationDuration: '2s', transform: 'translateZ(0)', willChange: 'opacity' }} />
               <div className="absolute inset-4 bg-gradient-to-br from-yellow-100 via-orange-200 to-yellow-300 rounded-full animate-pulse pointer-events-none" style={{ animationDelay: '1s', animationDuration: '4s', transform: 'translateZ(0)', willChange: 'opacity' }} />
-              
+
               <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 pointer-events-none">
                 <Sparkles className="w-6 h-6 text-yellow-200 animate-bounce" style={{ animationDelay: '2s' }} />
               </div>
@@ -126,12 +144,13 @@ const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) =
                 <Sparkles className="w-3 h-3 text-purple-200 animate-bounce" style={{ animationDelay: '3s' }} />
               </div>
             </div>
-            
+
+            {/* Ping ring to draw attention */}
             {showInteraction && !sparkClicked && (
               <div className="absolute inset-0 rounded-full animate-ping opacity-20 bg-gradient-to-r from-orange-400 to-purple-500 pointer-events-none" />
             )}
-            
-            {/* Explosion particles - shown on the same screen */}
+
+            {/* Explosion particles */}
             {sparkClicked && [...Array(20)].map((_, i) => {
               const angle = Math.random() * 2 * Math.PI;
               const distance = 50 + Math.random() * 150;
@@ -153,57 +172,30 @@ const DreamyFirstContact: React.FC<DreamyFirstContactProps> = ({ onComplete }) =
             })}
           </div>
 
-          <div className={`text-center transition-opacity duration-1000 ${
-            showText && !sparkClicked ? 'opacity-100' : 'opacity-0'
+          {/* Hint below spark */}
+          <div className={`mt-8 text-center transition-all duration-1000 ${
+            showInteraction && !sparkClicked ? 'opacity-70' : 'opacity-0'
           }`}>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
-              Welcome to your{' '}
-              <span className="bg-gradient-to-r from-orange-300 via-pink-300 to-purple-300 bg-clip-text text-transparent">
-                career universe
-              </span>
-            </h1>
-            <p className="text-xl text-blue-100 mb-8 max-w-2xl leading-relaxed">
-              This is your spark of potential, waiting to illuminate the companies 
-              that align with your dreams and ambitions.
+            <p className="text-sm text-blue-300 tracking-wide">
+              Tap the spark to begin
             </p>
           </div>
 
-          <div className={`text-center transition-all duration-1000 ${
-            showInteraction && !sparkClicked ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-4'
-          }`}>
-            <p className="text-lg text-blue-200 mb-6">
-              Ready to discover your perfect company matches?
-            </p>
-            <div className="animate-bounce">
-              <p className="text-sm text-blue-300 font-medium tracking-wide">
-                ✨ Click your spark to begin the journey ✨
-              </p>
-            </div>
-          </div>
-
-          {/* Show universe awakening text during explosion */}
-          <div className={`text-center mt-20 transition-opacity duration-1000 ${
+          {/* Universe awakening text during explosion */}
+          <div className={`text-center mt-12 transition-opacity duration-1000 ${
             sparkClicked ? 'opacity-100' : 'opacity-0'
           }`}>
             <h2 className="text-3xl font-bold text-white opacity-80 animate-pulse">
               ✨ Your universe is awakening ✨
             </h2>
           </div>
-          
-          <div className={`absolute bottom-8 text-center transition-opacity duration-1000 delay-100 ${
-            showInteraction && !sparkClicked ? 'opacity-60' : 'opacity-0'
-          }`}>
-            <p className="text-xs text-blue-400">
-              Let's build your constellation of opportunities
-            </p>
-          </div>
         </div>
 
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full opacity-5 blur-3xl animate-pulse" 
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full opacity-5 blur-3xl animate-pulse pointer-events-none" 
              style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-500 rounded-full opacity-5 blur-3xl animate-pulse" 
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-500 rounded-full opacity-5 blur-3xl animate-pulse pointer-events-none" 
              style={{ animationDelay: '3s', animationDuration: '6s' }} />
-        <div className="absolute top-1/3 right-1/3 w-64 h-64 bg-pink-500 rounded-full opacity-5 blur-3xl animate-pulse" 
+        <div className="absolute top-1/3 right-1/3 w-64 h-64 bg-pink-500 rounded-full opacity-5 blur-3xl animate-pulse pointer-events-none" 
              style={{ animationDelay: '1s', animationDuration: '10s' }} />
       </div>
     );

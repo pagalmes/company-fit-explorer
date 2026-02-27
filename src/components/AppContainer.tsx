@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import DreamyFirstContact from './DreamyFirstContact';
+import UniverseLoadingScreen from './UniverseLoadingScreen';
 import CMFGraphExplorerNew from './CMFGraphExplorerNew';
 import { createUserProfileFromFiles } from '../utils/fileProcessing';
 import { UserExplorationState } from '../types';
@@ -307,53 +308,7 @@ const AppContainer: React.FC = () => {
 
   // Loading state during universe generation
   if (isLoading) {
-    return (
-      <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center relative overflow-hidden" style={{ minHeight: '100vh' }}>
-        {/* Floating cosmic particles */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute animate-pulse opacity-30"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 2}s`
-              }}
-            >
-              <div className="w-1 h-1 bg-blue-300 rounded-full" />
-            </div>
-          ))}
-        </div>
-        
-        <div className="text-center px-4">
-          <div className="relative mb-8">
-            <div className="w-32 h-32 bg-gradient-to-br from-orange-300 via-pink-400 to-purple-500 rounded-full mx-auto animate-pulse shadow-2xl" />
-            <div className="absolute inset-0 scale-150 opacity-20">
-              <div className="w-32 h-32 bg-gradient-to-r from-orange-400 to-purple-500 rounded-full animate-spin" style={{ animationDuration: '8s' }} />
-            </div>
-          </div>
-          
-          <h1 className="text-4xl font-bold text-white mb-6">
-            🌟 Generating Your Universe 🌟
-          </h1>
-          <p className="text-xl text-blue-200 mb-8 max-w-2xl mx-auto">
-            Analyzing your profile and mapping perfect company matches...
-          </p>
-          
-          <div className="flex justify-center space-x-2">
-            {[...Array(3)].map((_, i) => (
-              <div
-                key={i}
-                className="w-2 h-2 bg-blue-300 rounded-full animate-bounce"
-                style={{ animationDelay: `${i * 0.2}s` }}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+    return <UniverseLoadingScreen />;
   }
 
   // Show dreamy first contact for first-time users (profile_status === 'pending')
