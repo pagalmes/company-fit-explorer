@@ -312,7 +312,9 @@ ${request.mustHaves.length > 0 ? request.mustHaves.map((item, i) => `${i + 1}. $
 ${request.wantToHave.length > 0 ? request.wantToHave.map((item, i) => `${i + 1}. ${item}`).join('\n') : 'Not specified'}
 
 ## DISCOVERY TASK
-Find 30-40 companies that match this profile. Include a mix of:
+You MUST return between 30 and 40 companies. This is a hard requirement — do not stop before 30.
+
+Include a mix of:
 - 15%-20% obvious top-tier matches (well-known companies)
 - 30%-40% strong matches (growing companies with good fit)
 - 20%-30% local gems (companies with physical presence in candidate's preferred locations)
@@ -320,22 +322,18 @@ Find 30-40 companies that match this profile. Include a mix of:
 - 10%-15% stretch opportunities (aspirational but possible matches)
 
 ## RESEARCH REQUIREMENTS
-For each company, verify by searching the web:
-1. **Current open roles** matching the target position level (verify on company career pages, LinkedIn Jobs, or ATS platforms)
-2. **Location policies** and remote work options (prioritize companies with physical presence in candidate's preferred cities)
-3. **Company stage** (funding round, public/private status)
-4. **Recent growth indicators** (hiring trends, funding news, expansion)
-5. **Cultural values** and work environment fit
-6. **Technical innovation areas** relevant to candidate experience and career goals
+For each company, search the web and gather:
+1. **Open roles** — look for positions matching the target role level on career pages, LinkedIn Jobs, or ATS platforms
+2. **Location & remote policies** — prioritize companies near the candidate's preferred cities
+3. **Company stage** — funding round, public/private status
+4. **Growth signals** — hiring trends, funding news, expansion
+5. **Culture & values** relevant to candidate priorities
 
-## CRITICAL VERIFICATION RULES
-- ONLY include companies with **verified open roles at the target level**
-- Confirm jobs are visible on:
-  - Company career pages (e.g., company.com/careers)
-  - LinkedIn Jobs
-  - ATS platforms (Greenhouse, Lever, Ashby, etc.)
-- AVOID job aggregators like Teal, BeeBee, ZipRecruiter, Indeed (use these to find companies, but verify on official sources)
-- Check that job postings are recent (within last 30 days preferred)
+## VERIFICATION GUIDELINES
+- Prefer companies where you find evidence of current hiring at the target level
+- Check career pages, LinkedIn, or ATS platforms (Greenhouse, Lever, Ashby, etc.)
+- Avoid job aggregator URLs (Teal, ZipRecruiter, Indeed) — use them to find companies but link to official sources
+- If you cannot verify exact open roles, still include the company if it is a strong match and is known to be actively hiring — set openRoles to 0 and note the uncertainty in matchReasons
 
 ## OUTPUT FORMAT
 Return valid JSON matching the specified schema structure. The response must conform to the JSON schema provided:
@@ -388,9 +386,11 @@ Return valid JSON matching the specified schema structure. The response must con
 
 6. **Career URLs**: Provide direct links to company career pages (not job boards)
 
-7. **Verify Everything**: All information must be current and verifiable via web search
+7. **Verify Everything**: All information should be current and verifiable via web search when possible
 
-Research thoroughly and provide specific evidence for each company. Return ONLY the JSON object, no additional text.`;
+REMINDER: You must return at least 30 companies. If you have fewer verified companies, expand your search to include companies that are strong matches based on industry, stage, and culture fit even if you cannot confirm exact open role counts — mark those with openRoles: 0.
+
+Return ONLY the JSON object, no additional text.`;
 }
 
 /**

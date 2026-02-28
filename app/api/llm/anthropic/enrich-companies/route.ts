@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
         messages: [{ role: 'user', content: prompt }],
         output_format: {
           type: 'json_schema',
-          schema: getEnrichmentSchema(companies.map(c => c.id))
+          schema: getEnrichmentSchema()
         }
       })
     });
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
       matchScore: Math.max(0, Math.min(100, Math.round(e.matchScore || 0))),
       matchReasons: (e.matchReasons || []).slice(0, 5).map((r: string) => String(r).slice(0, 300)),
       connections: (e.connections || []).filter((id: number) => typeof id === 'number'),
-      connectionTypes: sanitizeConnectionTypes(e.connectionTypes || {})
+      connectionTypes: sanitizeConnectionTypes(e.connectionTypes || [])
     }));
 
     console.log(`✅ Enriched ${enrichments.length} / ${companies.length} companies`);
@@ -157,12 +157,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function sanitizeConnectionTypes(types: Record<string, string>): Record<number, string> {
+function sanitizeConnectionTypes(types: { companyId: number; relationship: string }[]): Record<number, string> {
   const result: Record<number, string> = {};
-  for (const [key, value] of Object.entries(types)) {
-    const numKey = Number(key);
-    if (!isNaN(numKey) && typeof value === 'string') {
-      result[numKey] = String(value).slice(0, 100);
+  for (const entry of types) {
+    if (typeof entry.companyId === 'number' && typeof entry.relationship === 'string') {
+      result[entry.companyId] = entry.relationship.slice(0, 100);
     }
   }
   return result;
@@ -223,8 +222,8 @@ For EACH company, produce:
 3. **connections** (array of 2-4 company IDs from THIS batch): Related companies.
    Only use IDs from the list above. Consider: same industry, similar stage, complementary products, shared tech stack.
 
-4. **connectionTypes** (object mapping connected company ID to relationship label):
-   Example: { "5": "Industry Peer", "12": "Similar Stage & Mission" }
+4. **connectionTypes** (array of { companyId, relationship } objects):
+   Example: [{ "companyId": 5, "relationship": "Industry Peer" }, { "companyId": 12, "relationship": "Similar Stage & Mission" }]
 
 IMPORTANT:
 - Be honest — not every company should score high.
@@ -233,7 +232,7 @@ IMPORTANT:
 - Calibrate scores relative to each other so the distribution is meaningful.`;
 }
 
-function getEnrichmentSchema(companyIds: number[]) {
+function getEnrichmentSchema() {
   return {
     type: 'object',
     properties: {
@@ -261,9 +260,17 @@ function getEnrichmentSchema(companyIds: number[]) {
               description: 'Related company IDs from this batch'
             },
             connectionTypes: {
-              type: 'object',
-              additionalProperties: { type: 'string' },
-              description: 'Map of company ID to relationship type'
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  companyId: { type: 'number', description: 'Connected company ID' },
+                  relationship: { type: 'string', description: 'Relationship label' }
+                },
+                required: ['companyId', 'relationship'],
+                additionalProperties: false
+              },
+              description: 'Relationship labels for connected companies'
             }
           },
           required: ['id', 'matchScore', 'matchReasons', 'connections', 'connectionTypes'],
