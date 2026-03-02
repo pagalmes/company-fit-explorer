@@ -43,13 +43,16 @@ setup('authenticate', async ({ page }) => {
     signInButton.click(),
   ]);
 
-  // Wait for the app to fully initialize - verify we're actually authenticated
-  // by checking for an element that only appears when logged in
-  await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 30000 });
-
-  // Verify we're not stuck on "Verifying authentication..."
+  // Wait for auth loading screen to clear first (must resolve before graph can mount)
   const verifyingText = page.locator('text=Verifying authentication');
-  await expect(verifyingText).not.toBeVisible({ timeout: 10000 });
+  await expect(verifyingText).not.toBeVisible({ timeout: 15000 });
+
+  // Wait for data loading screen to clear (Supabase fetch + profile resolution)
+  const dataLoadingText = page.locator('text=Loading your personalized data');
+  await expect(dataLoadingText).not.toBeVisible({ timeout: 30000 });
+
+  // Graph only mounts after authLoading + dataLoading + hasCompletedDataCheck all resolve
+  await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 60000 });
 
   // Save the authenticated state
   await page.context().storageState({ path: authFile });
