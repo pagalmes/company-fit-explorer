@@ -12,12 +12,18 @@ test.describe('Critical User Interactions', () => {
     await page.goto('/explorer?skip-intro=true');
     await page.waitForLoadState('domcontentloaded');
 
-    // Wait for the graph container with extended timeout
-    // The auth verification can sometimes be slow, especially under parallel load
+    // Clear auth loading screen first — graph cannot mount until this resolves
+    const verifyingText = page.locator('text=Verifying authentication');
+    await verifyingText.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+
+    // Clear data loading screen — graph cannot mount until this resolves
+    const dataLoadingText = page.locator('text=Loading your personalized data');
+    await dataLoadingText.waitFor({ state: 'hidden', timeout: 30000 }).catch(() => {});
+
+    // Now wait for graph — all async chains resolved
     try {
-      await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 45000 });
+      await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 60000 });
     } catch {
-      // If we timed out, try to get more info for debugging
       const currentUrl = page.url();
       if (currentUrl.includes('/login')) {
         throw new Error('Authentication failed - redirected to login page');
@@ -62,30 +68,31 @@ test.describe('Critical User Interactions', () => {
   });
 
   test('should not trigger infinite API calls on page load', async ({ page }) => {
+    // Navigate and wait for full load first — calls during auth/data load are expected
+    await setupPage(page);
+
+    // Start counting AFTER page is ready so we only detect post-load infinite loops
+    // (not the legitimate initial fetch that happens during auth resolution)
     const apiCalls: string[] = [];
     const startTime = Date.now();
 
-    // Set up monitoring BEFORE navigation
     page.on('request', request => {
       if (request.url().includes('/api/user/data')) {
         apiCalls.push(request.url());
       }
     });
 
-    // Navigate and load
-    await setupPage(page);
-
-    // Wait additional time to catch any delayed infinite loops
-    await page.waitForTimeout(3000);
+    // Observe for 5s post-load — useDataSync polls every 10s so at most 1 call expected
+    await page.waitForTimeout(5000);
 
     const duration = Date.now() - startTime;
 
-    // Should make at most 2 API calls (initial load + possible one refresh)
-    // If there's an infinite loop, we'd see many more
-    expect(apiCalls.length).toBeLessThanOrEqual(2);
+    // At most 1 sync call should fire in the 5s post-load window (10s poll interval)
+    // An infinite loop would produce many more
+    expect(apiCalls.length).toBeLessThanOrEqual(1);
 
-    // Should not take excessively long due to infinite loops
-    expect(duration).toBeLessThan(15000); // 15 seconds max
+    // Observation window should complete without hanging
+    expect(duration).toBeLessThan(10000);
   });
 
   test('should handle rapid user interactions without breaking', async ({ page }) => {

@@ -35,11 +35,20 @@ jobs:
     - name: Run tests
       run: npm test
 
-    # E2E tests disabled in CI due to cross-platform screenshot differences
-    # Local E2E tests work perfectly - run 'npm run test:e2e' locally to verify
+    # ============================================================
+    # TODO: Enable E2E tests in CI (issue #137)
+    # BEFORE enabling, verify locally:
+    #   1. npm run test:e2e:local   — chromium + firefox pass cleanly
+    #   2. Update linux baseline snapshots if needed (--update-snapshots)
+    # NOTE: webkit is CI-only — WSL2 is missing required system libs.
+    #   webkit will be validated automatically here on ubuntu-latest
+    #   via `npx playwright install --with-deps`. Do NOT attempt locally.
+    # THEN uncomment the steps below and merge to fix/improve-test-coverage
+    # via test-coverage/ci-branch-protection-137
+    # ============================================================
     # - name: Install Playwright browsers
     #   run: npx playwright install --with-deps
-    # - name: Run E2E visual regression tests  
+    # - name: Run E2E tests
     #   run: npm run test:e2e
 
     # E2E test upload disabled since E2E tests are disabled in CI

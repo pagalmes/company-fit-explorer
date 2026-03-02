@@ -10,6 +10,17 @@ dotenv.config({ path: resolve(__dirname, '../.env.local') });
 
 /**
  * @see https://playwright.dev/docs/test-configuration
+ *
+ * Browser coverage strategy:
+ * - Local dev: use `npm run test:e2e:local` (chromium + firefox only)
+ *   Webkit requires system libs unavailable on WSL2.
+ * - CI (ubuntu-latest): use `npm run test:e2e` (all browsers)
+ *   `npx playwright install --with-deps` installs webkit deps automatically.
+ *
+ * TODO (#137): Before enabling E2E in CI, verify locally:
+ *   npm run test:e2e:local  — chromium + firefox must pass cleanly
+ * Webkit is CI-only — do NOT attempt to run webkit locally on WSL2.
+ * It will be validated automatically on ubuntu-latest via `npx playwright install --with-deps`.
  */
 export default defineConfig({
   testDir: '../tests/e2e',
