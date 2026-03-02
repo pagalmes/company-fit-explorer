@@ -24,6 +24,8 @@ dotenv.config({ path: resolve(__dirname, '../.env.local') });
  */
 export default defineConfig({
   testDir: '../tests/e2e',
+  /* Runs once before all tests to seed deterministic DB state for the test user */
+  globalSetup: resolve(__dirname, '../tests/e2e/global.setup.ts'),
   /* Output directories for organized test artifacts */
   outputDir: '../tests/results',
   reporter: [['html', { outputFolder: '../tests/reports' }]],

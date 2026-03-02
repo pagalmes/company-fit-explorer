@@ -105,7 +105,8 @@ BEGIN
     )
     ON CONFLICT (id) DO NOTHING;
 
-    -- Create initial user_company_data (empty profile) if it doesn't exist
+    -- Create initial user_company_data with sample companies for E2E testing.
+    -- Includes enough companies for watchlist, graph interaction, and detail panel tests.
     INSERT INTO user_company_data (user_id, user_profile, companies)
     VALUES (
       test_user_id,
@@ -116,7 +117,14 @@ BEGIN
         'wantToHave', '[]'::jsonb,
         'experience', '[]'::jsonb,
         'targetRole', 'Software Engineer',
-        'targetCompanies', 'Technology companies'
+        'targetCompanies', 'Technology companies',
+        'baseCompanies', '[
+          {"id":1,"name":"Acme Corp","logo":"https://img.logo.dev/acme.com?token=pk_test","careerUrl":"https://acme.com/careers","matchScore":92,"industry":"Software","stage":"Series B","location":"San Francisco, CA","employees":"200-500","remote":"Hybrid","openRoles":5,"connections":[2,3],"connectionTypes":{"2":"industry","3":"stage"},"matchReasons":["Great culture fit","Strong engineering team"],"color":"#3B82F6","angle":0,"distance":200},
+          {"id":2,"name":"Beta Inc","logo":"https://img.logo.dev/beta.com?token=pk_test","careerUrl":"https://beta.com/careers","matchScore":85,"industry":"Software","stage":"Series A","location":"New York, NY","employees":"50-200","remote":"Remote","openRoles":3,"connections":[1,4],"connectionTypes":{"1":"industry","4":"industry"},"matchReasons":["Remote friendly","Fast growth"],"color":"#10B981","angle":72,"distance":200},
+          {"id":3,"name":"Gamma Ltd","logo":"https://img.logo.dev/gamma.com?token=pk_test","careerUrl":"https://gamma.com/careers","matchScore":78,"industry":"Fintech","stage":"Series C","location":"Austin, TX","employees":"500-1000","remote":"On-site","openRoles":8,"connections":[1,5],"connectionTypes":{"1":"stage","5":"industry"},"matchReasons":["Interesting domain","Competitive pay"],"color":"#F59E0B","angle":144,"distance":200},
+          {"id":4,"name":"Delta Systems","logo":"https://img.logo.dev/delta.com?token=pk_test","careerUrl":"https://delta.com/careers","matchScore":71,"industry":"Healthcare","stage":"Series B","location":"Boston, MA","employees":"200-500","remote":"Hybrid","openRoles":2,"connections":[2],"connectionTypes":{"2":"location"},"matchReasons":["Mission driven","Good benefits"],"color":"#EF4444","angle":216,"distance":200},
+          {"id":5,"name":"Epsilon AI","logo":"https://img.logo.dev/epsilon.com?token=pk_test","careerUrl":"https://epsilon.com/careers","matchScore":88,"industry":"AI/ML","stage":"Series A","location":"Seattle, WA","employees":"50-200","remote":"Remote","openRoles":6,"connections":[3],"connectionTypes":{"3":"stage"},"matchReasons":["Cutting edge AI","Top talent"],"color":"#8B5CF6","angle":288,"distance":200}
+        ]'::jsonb
       ),
       '[]'::jsonb
     )
@@ -134,8 +142,27 @@ BEGIN
 
     RAISE NOTICE 'Test user created successfully: %', test_email;
   ELSE
-    RAISE NOTICE 'Test user already exists: %', test_email;
+    RAISE NOTICE 'Test user already exists: %, updating company data for E2E tests', test_email;
   END IF;
+
+  -- Always ensure the test user has sample companies (unconditional upsert).
+  -- Runs regardless of whether the row was just created or already existed.
+  -- Overwrites baseCompanies only if currently empty/missing — never clobbers real data.
+  UPDATE user_company_data
+  SET user_profile = jsonb_set(
+    COALESCE(user_profile, '{}'::jsonb),
+    '{baseCompanies}',
+    '[
+      {"id":1,"name":"Acme Corp","logo":"https://img.logo.dev/acme.com?token=pk_test","careerUrl":"https://acme.com/careers","matchScore":92,"industry":"Software","stage":"Series B","location":"San Francisco, CA","employees":"200-500","remote":"Hybrid","openRoles":5,"connections":[2,3],"connectionTypes":{"2":"industry","3":"stage"},"matchReasons":["Great culture fit","Strong engineering team"],"color":"#3B82F6","angle":0,"distance":200},
+      {"id":2,"name":"Beta Inc","logo":"https://img.logo.dev/beta.com?token=pk_test","careerUrl":"https://beta.com/careers","matchScore":85,"industry":"Software","stage":"Series A","location":"New York, NY","employees":"50-200","remote":"Remote","openRoles":3,"connections":[1,4],"connectionTypes":{"1":"industry","4":"industry"},"matchReasons":["Remote friendly","Fast growth"],"color":"#10B981","angle":72,"distance":200},
+      {"id":3,"name":"Gamma Ltd","logo":"https://img.logo.dev/gamma.com?token=pk_test","careerUrl":"https://gamma.com/careers","matchScore":78,"industry":"Fintech","stage":"Series C","location":"Austin, TX","employees":"500-1000","remote":"On-site","openRoles":8,"connections":[1,5],"connectionTypes":{"1":"stage","5":"industry"},"matchReasons":["Interesting domain","Competitive pay"],"color":"#F59E0B","angle":144,"distance":200},
+      {"id":4,"name":"Delta Systems","logo":"https://img.logo.dev/delta.com?token=pk_test","careerUrl":"https://delta.com/careers","matchScore":71,"industry":"Healthcare","stage":"Series B","location":"Boston, MA","employees":"200-500","remote":"Hybrid","openRoles":2,"connections":[2],"connectionTypes":{"2":"location"},"matchReasons":["Mission driven","Good benefits"],"color":"#EF4444","angle":216,"distance":200},
+      {"id":5,"name":"Epsilon AI","logo":"https://img.logo.dev/epsilon.com?token=pk_test","careerUrl":"https://epsilon.com/careers","matchScore":88,"industry":"AI/ML","stage":"Series A","location":"Seattle, WA","employees":"50-200","remote":"Remote","openRoles":6,"connections":[3],"connectionTypes":{"3":"stage"},"matchReasons":["Cutting edge AI","Top talent"],"color":"#8B5CF6","angle":288,"distance":200}
+    ]'::jsonb,
+    true  -- create_missing: insert key even if user_profile doesn't have it yet
+  )
+  WHERE user_id = test_user_id
+    AND COALESCE(jsonb_array_length(user_profile->'baseCompanies'), 0) = 0;
 END $$;
 
 -- ============================================================================
