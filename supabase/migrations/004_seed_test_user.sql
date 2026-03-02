@@ -94,12 +94,14 @@ BEGIN
     ) ON CONFLICT DO NOTHING;
 
     -- Create profile for the test user (if it doesn't exist)
-    INSERT INTO profiles (id, email, full_name, role)
+    -- profile_status must be 'complete' so E2E tests skip onboarding and reach the graph
+    INSERT INTO profiles (id, email, full_name, role, profile_status)
     VALUES (
       test_user_id,
       test_email,
       'Test User',
-      'user'
+      'user',
+      'complete'
     )
     ON CONFLICT (id) DO NOTHING;
 
