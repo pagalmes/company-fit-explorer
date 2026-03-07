@@ -17,10 +17,9 @@ dotenv.config({ path: resolve(__dirname, '../.env.local') });
  * - CI (ubuntu-latest): use `npm run test:e2e` (all browsers)
  *   `npx playwright install --with-deps` installs webkit deps automatically.
  *
- * TODO (#137): Before enabling E2E in CI, verify locally:
- *   npm run test:e2e:local  — chromium + firefox must pass cleanly
- * Webkit is CI-only — do NOT attempt to run webkit locally on WSL2.
- * It will be validated automatically on ubuntu-latest via `npx playwright install --with-deps`.
+ * E2E in CI: enabled in .github/workflows/ci.yml (issue #137).
+ * Chromium + firefox verified locally. Webkit is CI-only (ubuntu-latest).
+ * WSL2 is missing webkit system libs — do NOT attempt webkit locally.
  */
 export default defineConfig({
   testDir: '../tests/e2e',
