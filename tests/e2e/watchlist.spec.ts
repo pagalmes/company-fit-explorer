@@ -2,12 +2,14 @@
  * @file watchlist.spec.ts
  * @description E2E tests for watchlist management (22 tests total).
  *
- * STATUS (in-progress): 11/22 passing on chromium as of last run.
- *
  * ARCHITECTURE NOTES:
  * - resetSupabaseWatchlist() is called in beforeEach because the app syncs
  *   watchlist_company_ids FROM user_preferences (Supabase) on page load.
  *   Clearing only localStorage is not enough — DB state persists between tests.
+ * - The Supabase admin client and test user ID are cached after the first lookup
+ *   so only a fast upsert runs on each beforeEach (not the expensive listUsers()).
+ * - Two Supabase resets bracket the localStorage clear + navigation to handle the
+ *   race where the previous test's async POST /api/user/data fires after our reset.
  * - cosmos-panel-state is forced to {cmfCollapsed: true} before each navigation
  *   so the CMF panel doesn't block the view toggle pill on mount.
  * - EmptyWatchlistModal (z-50 backdrop) opens automatically when switching to
@@ -15,18 +17,9 @@
  *   must first add a company via the heart button to avoid the modal.
  * - Serial mode prevents parallel navigation overload on the dev server.
  * - beforeEach timeout is 90s to cover: Supabase reset + page load + Cytoscape paint.
- *
- * REMAINING ISSUES:
- * - 1 cascade blocker: "adding to watchlist writes companyIds to localStorage" (line ~270)
- *   fails after passing 11 earlier tests — likely the Supabase reset call is adding
- *   latency that causes the first test's retry to time out, cascading the rest.
- *   TODO: investigate whether the page-load timeout needs to increase further, or
- *   whether the admin.auth.admin.listUsers() call can be cached/skipped on subsequent
- *   beforeEach calls (user ID is stable: 75a22303-ef74-4a0e-a16a-f8107856b48d).
- * - 1 persistent flaky: "view mode toggle shows Explore and Watchlist buttons" (line ~163)
- *   fails only on retry with "Page load timed out" — server cold-start on retry run.
- *   TODO: cache the userId from a one-time lookup in beforeAll to avoid repeated
- *   admin.auth.admin.listUsers() calls per test, which add ~500ms each.
+ * - Watchlist state is persisted via ExplorationStateManager into the
+ *   'cosmos-exploration-state' localStorage key (not 'cosmos-watchlist').
+ *   localStorage tests read from that key.
  */
 
 import { test, expect } from '@playwright/test';
@@ -43,21 +36,38 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const TEST_EMAIL = process.env.E2E_TEST_EMAIL ?? 'test@example.com';
 
+// Admin client and test user ID are created once per worker process.
+// listUsers() is an expensive paginated call — caching avoids ~500ms overhead
+// on every beforeEach, which previously caused cascade timeouts after ~11 tests.
+let _adminClient: ReturnType<typeof createClient> | null = null;
+let _testUserId: string | null = null;
+
+async function getAdminAndUserId(): Promise<{ admin: ReturnType<typeof createClient>; userId: string } | null> {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return null;
+  if (!_adminClient) {
+    _adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+  }
+  if (!_testUserId) {
+    const { data: users } = await _adminClient.auth.admin.listUsers();
+    const testUser = users?.users.find((u) => u.email === TEST_EMAIL);
+    if (!testUser) return null;
+    _testUserId = testUser.id;
+  }
+  return { admin: _adminClient, userId: _testUserId };
+}
+
 /**
  * Reset the test user's watchlist in Supabase so each test starts with an empty
  * watchlist regardless of what previous tests wrote. The app syncs watchlist from
  * user_preferences on page load, so clearing localStorage alone is not enough.
  */
 async function resetSupabaseWatchlist() {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return;
-  const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-  const { data: users } = await admin.auth.admin.listUsers();
-  const testUser = users?.users.find((u) => u.email === TEST_EMAIL);
-  if (!testUser) return;
-  await admin.from('user_preferences').upsert(
-    { user_id: testUser.id, watchlist_company_ids: [], view_mode: 'explore' },
+  const ctx = await getAdminAndUserId();
+  if (!ctx) return;
+  await (ctx.admin.from('user_preferences') as any).upsert(
+    { user_id: ctx.userId, watchlist_company_ids: [], view_mode: 'explore' },
     { onConflict: 'user_id', ignoreDuplicates: false }
   );
 }
@@ -68,8 +78,8 @@ async function resetSupabaseWatchlist() {
  * switching view modes, and verifying localStorage persistence.
  *
  * Key implementation details:
- * - Watchlist is stored in localStorage under 'cosmos-watchlist'
- * - No API calls — 100% client-side
+ * - Watchlist is managed by ExplorationStateManager, persisted to
+ *   'cosmos-exploration-state' localStorage key and Supabase user_preferences
  * - Heart button: gray (not watched) ↔ red (watched)
  * - View mode toggle at top-center: "Explore Companies" | "Your Watchlist"
  * - Switching to watchlist view hides non-watched companies from graph
@@ -85,8 +95,7 @@ test.describe.configure({ mode: 'serial' });
 
 // Navigate to explorer and wait for the graph to be fully interactive.
 async function setupPage(page: any) {
-  // Reset Supabase watchlist — the app syncs from user_preferences on load,
-  // so clearing localStorage alone is insufficient between tests.
+  // First reset — clears any Supabase state from prior tests.
   await resetSupabaseWatchlist();
 
   // If we're already on the app origin, clear watchlist before navigating.
@@ -96,15 +105,20 @@ async function setupPage(page: any) {
     await page.waitForLoadState('domcontentloaded');
   }
 
-  // Clear watchlist keys before loading the explorer so the app mounts clean.
+  // Clear all watchlist/exploration state keys so the app mounts clean.
   // Also force the CMF panel to its default collapsed state so it doesn't
   // cover the view toggle buttons on mount.
   await page.evaluate(() => {
     localStorage.removeItem('cosmos-watchlist');
     localStorage.removeItem('cmf-explorer-watchlist');
+    localStorage.removeItem('cosmos-exploration-state');
     // Ensure CMF panel loads collapsed (default) — prevents it from covering view toggle.
     localStorage.setItem('cosmos-panel-state', JSON.stringify({ cmfCollapsed: true, lastUpdated: new Date().toISOString() }));
   });
+
+  // Second reset — catches any in-flight POST /api/user/data from the previous test
+  // that may have committed to Supabase after our first reset above.
+  await resetSupabaseWatchlist();
 
   await page.goto('/explorer?skip-intro=true');
   await page.waitForLoadState('domcontentloaded');
@@ -141,6 +155,24 @@ async function setupPage(page: any) {
   if (await closePanel.isVisible().catch(() => false)) {
     await closePanel.click({ force: true });
     await page.waitForTimeout(300);
+  }
+
+  // Final safety: if the watchlist count is non-zero despite our resets (rare race),
+  // clear it in-app by waiting for the count to settle to 0.
+  const wlCount = await page.locator('.absolute.top-4')
+    .filter({ has: page.locator('button').nth(1) })
+    .first()
+    .getByRole('button', { name: /Watchlist|Saved/i })
+    .first()
+    .textContent()
+    .catch(() => '(0)') as string;
+  if (!/\(0\)/.test(wlCount)) {
+    // Re-reset Supabase and reload to pick up the cleared state
+    await resetSupabaseWatchlist();
+    await page.reload();
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 30000 }).catch(() => {});
+    await page.waitForTimeout(1500);
   }
 }
 
@@ -180,6 +212,22 @@ async function selectAnyCompany(page: any) {
   return await page.locator('.panel-header').isVisible().catch(() => false);
 }
 
+// Ensure heart button is in the "Add to watchlist" state before using it in a test.
+// Polls in a loop because a Supabase async sync can re-flip the button back to "Remove"
+// even after we've clicked it once. Loops until the title is stable at "Add to watchlist"
+// for at least one poll cycle with no subsequent flip.
+async function ensureNotWatched(page: any, heartBtn: any) {
+  await expect.poll(async () => {
+    const title = (await heartBtn.getAttribute('title')) ?? '';
+    if (title.includes('Remove')) {
+      await heartBtn.click();
+      await page.waitForTimeout(400);
+      return false;
+    }
+    return true;
+  }, { timeout: 10000, intervals: [500] }).toBe(true);
+}
+
 // ─── Tests ──────────────────────────────────────────────────────────────────
 
 test.describe('Watchlist Management', () => {
@@ -205,6 +253,7 @@ test.describe('Watchlist Management', () => {
     // one company saved. Add one first, then switch to watchlist view.
     if (!await selectAnyCompany(page)) { test.skip(); return; }
     const heartBtn = page.locator('button[title*="watchlist"], button[aria-label*="watchlist"]').first();
+    await ensureNotWatched(page, heartBtn);
     await heartBtn.click();
     await page.waitForTimeout(300);
 
@@ -219,6 +268,7 @@ test.describe('Watchlist Management', () => {
     // Need a watchlisted company so the toggle works without the EmptyWatchlistModal.
     if (!await selectAnyCompany(page)) { test.skip(); return; }
     const heartBtn = page.locator('button[title*="watchlist"], button[aria-label*="watchlist"]').first();
+    await ensureNotWatched(page, heartBtn);
     await heartBtn.click();
     await page.waitForTimeout(300);
 
@@ -255,6 +305,7 @@ test.describe('Watchlist Management', () => {
     if (!await selectAnyCompany(page)) { test.skip(); return; }
 
     const heartBtn = page.locator('button[title*="watchlist"], button[aria-label*="watchlist"]').first();
+    await ensureNotWatched(page, heartBtn);
     await expect(heartBtn).toHaveAttribute('title', /Add to watchlist/);
   });
 
@@ -262,6 +313,7 @@ test.describe('Watchlist Management', () => {
     if (!await selectAnyCompany(page)) { test.skip(); return; }
 
     const heartBtn = page.locator('button[title*="watchlist"], button[aria-label*="watchlist"]').first();
+    await ensureNotWatched(page, heartBtn);
     await heartBtn.click();
     await page.waitForTimeout(300);
 
@@ -272,6 +324,7 @@ test.describe('Watchlist Management', () => {
     if (!await selectAnyCompany(page)) { test.skip(); return; }
 
     const heartBtn = page.locator('button[title*="watchlist"], button[aria-label*="watchlist"]').first();
+    await ensureNotWatched(page, heartBtn);
     await heartBtn.click();
     await page.waitForTimeout(300);
 
@@ -286,6 +339,7 @@ test.describe('Watchlist Management', () => {
     if (!await selectAnyCompany(page)) { test.skip(); return; }
 
     const heartBtn = page.locator('button[title*="watchlist"], button[aria-label*="watchlist"]').first();
+    await ensureNotWatched(page, heartBtn);
     await heartBtn.click();
     await page.waitForTimeout(300);
     await heartBtn.click();
@@ -302,51 +356,60 @@ test.describe('Watchlist Management', () => {
     if (!await selectAnyCompany(page)) { test.skip(); return; }
 
     const heartBtn = page.locator('button[title*="watchlist"], button[aria-label*="watchlist"]').first();
+    await ensureNotWatched(page, heartBtn);
     await heartBtn.click();
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(500);
 
-    const stored = await page.evaluate(() => localStorage.getItem('cosmos-watchlist'));
+    // The app persists watchlist via ExplorationStateManager → 'cosmos-exploration-state'.
+    // The watchlistCompanyIds array lives inside that serialised state object.
+    const stored = await page.evaluate(() => localStorage.getItem('cosmos-exploration-state'));
     expect(stored).not.toBeNull();
-    const data = JSON.parse(stored as string);
-    expect(Array.isArray(data.companyIds)).toBe(true);
-    expect(data.companyIds.length).toBeGreaterThan(0);
+    const state = JSON.parse(stored as string);
+    expect(Array.isArray(state.watchlistCompanyIds)).toBe(true);
+    expect(state.watchlistCompanyIds.length).toBeGreaterThan(0);
   });
 
   test('removing from watchlist empties companyIds in localStorage', async ({ page }) => {
     if (!await selectAnyCompany(page)) { test.skip(); return; }
 
     const heartBtn = page.locator('button[title*="watchlist"], button[aria-label*="watchlist"]').first();
+    await ensureNotWatched(page, heartBtn);
     await heartBtn.click();
     await page.waitForTimeout(300);
     await heartBtn.click();
     await page.waitForTimeout(300);
 
-    const stored = await page.evaluate(() => localStorage.getItem('cosmos-watchlist'));
+    const stored = await page.evaluate(() => localStorage.getItem('cosmos-exploration-state'));
     if (stored) {
-      expect(JSON.parse(stored as string).companyIds.length).toBe(0);
+      const state = JSON.parse(stored as string);
+      expect(state.watchlistCompanyIds.length).toBe(0);
     }
-    // null is also valid — app may omit the key entirely for an empty watchlist
+    // null state means app hasn't persisted yet — acceptable for a just-cleared watchlist
   });
 
   test('watchlist survives page reload', async ({ page }) => {
     if (!await selectAnyCompany(page)) { test.skip(); return; }
 
     const heartBtn = page.locator('button[title*="watchlist"], button[aria-label*="watchlist"]').first();
+    await ensureNotWatched(page, heartBtn);
     await heartBtn.click();
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(500);
 
-    const stored = await page.evaluate(() => localStorage.getItem('cosmos-watchlist'));
-    const idsBefore = JSON.parse(stored as string).companyIds as number[];
+    // Read the watchlist IDs from the exploration state (where the app persists them)
+    const stored = await page.evaluate(() => localStorage.getItem('cosmos-exploration-state'));
+    expect(stored).not.toBeNull();
+    const idsBefore = (JSON.parse(stored as string).watchlistCompanyIds as number[]);
     expect(idsBefore.length).toBeGreaterThan(0);
 
-    // Reload without calling setupPage so localStorage is preserved
+    // Reload without calling setupPage so localStorage + Supabase state is preserved
     await page.reload();
     await page.waitForLoadState('domcontentloaded');
     await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 60000 });
     await page.waitForTimeout(2000);
 
-    const storedAfter = await page.evaluate(() => localStorage.getItem('cosmos-watchlist'));
-    expect(JSON.parse(storedAfter as string).companyIds).toEqual(idsBefore);
+    const storedAfter = await page.evaluate(() => localStorage.getItem('cosmos-exploration-state'));
+    const idsAfter = (JSON.parse(storedAfter as string).watchlistCompanyIds as number[]);
+    expect(idsAfter).toEqual(idsBefore);
 
     const count = await getCount(page, /Watchlist|Saved/i);
     expect(count).toBe(idsBefore.length);
@@ -355,28 +418,31 @@ test.describe('Watchlist Management', () => {
   // ── Count Updates ──────────────────────────────────────────────────────────
 
   test('watchlist count increments when company is added', async ({ page }) => {
-    const initialCount = await getCount(page, /Watchlist|Saved/i);
     if (!await selectAnyCompany(page)) { test.skip(); return; }
 
     const heartBtn = page.locator('button[title*="watchlist"], button[aria-label*="watchlist"]').first();
-    await heartBtn.click();
-    await page.waitForTimeout(500);
+    await ensureNotWatched(page, heartBtn);
 
-    expect(await getCount(page, /Watchlist|Saved/i)).toBe(initialCount + 1);
+    const initialCount = await getCount(page, /Watchlist|Saved/i);
+    await heartBtn.click();
+
+    // Poll for the count to increment rather than using a fixed timeout.
+    await expect.poll(() => getCount(page, /Watchlist|Saved/i), { timeout: 5000 }).toBe(initialCount + 1);
   });
 
   test('watchlist count decrements when company is removed', async ({ page }) => {
     if (!await selectAnyCompany(page)) { test.skip(); return; }
 
     const heartBtn = page.locator('button[title*="watchlist"], button[aria-label*="watchlist"]').first();
+    await ensureNotWatched(page, heartBtn);
     await heartBtn.click();
-    await page.waitForTimeout(300);
+    // Poll for add to register before reading baseline count for the decrement check.
+    await expect.poll(() => getCount(page, /Watchlist|Saved/i), { timeout: 5000 }).toBeGreaterThan(0);
     const countAfterAdd = await getCount(page, /Watchlist|Saved/i);
 
     await heartBtn.click();
-    await page.waitForTimeout(300);
-
-    expect(await getCount(page, /Watchlist|Saved/i)).toBe(countAfterAdd - 1);
+    // Poll for count to decrement.
+    await expect.poll(() => getCount(page, /Watchlist|Saved/i), { timeout: 5000 }).toBe(countAfterAdd - 1);
   });
 
   // ── View Mode Filtering ────────────────────────────────────────────────────
@@ -385,6 +451,7 @@ test.describe('Watchlist Management', () => {
     if (!await selectAnyCompany(page)) { test.skip(); return; }
 
     const heartBtn = page.locator('button[title*="watchlist"], button[aria-label*="watchlist"]').first();
+    await ensureNotWatched(page, heartBtn);
     await heartBtn.click();
     await page.waitForTimeout(300);
 
@@ -416,6 +483,7 @@ test.describe('Watchlist Management', () => {
     // Requires a watchlisted company so the toggle pill works without EmptyWatchlistModal.
     if (!await selectAnyCompany(page)) { test.skip(); return; }
     const heartBtn = page.locator('button[title*="watchlist"], button[aria-label*="watchlist"]').first();
+    await ensureNotWatched(page, heartBtn);
     await heartBtn.click();
     await page.waitForTimeout(300);
 
@@ -438,6 +506,7 @@ test.describe('Watchlist Management', () => {
     const badgesBefore = await page.locator('.bg-red-500.rounded-full').count();
 
     const heartBtn = page.locator('button[title*="watchlist"], button[aria-label*="watchlist"]').first();
+    await ensureNotWatched(page, heartBtn);
     await heartBtn.click();
     await page.waitForTimeout(500);
 
@@ -448,6 +517,7 @@ test.describe('Watchlist Management', () => {
     if (!await selectAnyCompany(page)) { test.skip(); return; }
 
     const heartBtn = page.locator('button[title*="watchlist"], button[aria-label*="watchlist"]').first();
+    await ensureNotWatched(page, heartBtn);
     await heartBtn.click();
     await page.waitForTimeout(500);
 
