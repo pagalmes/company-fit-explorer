@@ -56,8 +56,10 @@ test.describe('Scroll Behavior', () => {
 
   test('login page should be scrollable', async ({ page }) => {
     // Navigate to login page
+    // Use domcontentloaded, not networkidle — PostHog/analytics keep network busy
+    // and styles are applied synchronously with the DOM so networkidle is not needed
     await page.goto('/login');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Get page overflow styles
     const overflow = await page.evaluate(() => ({
@@ -149,8 +151,9 @@ test.describe('Scroll Behavior', () => {
 
   test('CosmosBackground component allows scrolling', async ({ page }) => {
     // Test that pages using CosmosBackground can scroll
+    // Use domcontentloaded — analytics keep network busy, styles don't need networkidle
     await page.goto('/login');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // The login page uses CosmosBackground which wraps the content
     // Check that the page itself allows scrolling (not locked by overflow: hidden)

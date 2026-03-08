@@ -13,12 +13,18 @@ async function waitForAppReady(page: any) {
   await page.goto('/explorer?skip-intro=true');
   await page.waitForLoadState('domcontentloaded');
 
-  // Wait for the graph container with extended timeout
-  // The auth verification can sometimes be slow, especially under parallel load
+  // Clear auth loading screen first — graph cannot mount until this resolves
+  const verifyingText = page.locator('text=Verifying authentication');
+  await verifyingText.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+
+  // Clear data loading screen — graph cannot mount until this resolves
+  const dataLoadingText = page.locator('text=Loading your personalized data');
+  await dataLoadingText.waitFor({ state: 'hidden', timeout: 30000 }).catch(() => {});
+
+  // Now wait for graph — all async chains resolved
   try {
-    await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 45000 });
+    await page.waitForSelector('[data-cy="cytoscape-container"]', { timeout: 60000 });
   } catch {
-    // If we timed out, try to get more info for debugging
     const currentUrl = page.url();
     if (currentUrl.includes('/login')) {
       throw new Error('Authentication failed - redirected to login page');
