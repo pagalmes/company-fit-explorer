@@ -23,9 +23,9 @@ import { toast } from 'sonner'
 import { llmService } from '../../utils/llm/service'
 import { getCompanyPreview } from '../../utils/companyValidation'
 
-const mockLlm = llmService as { isConfigured: ReturnType<typeof vi.fn>; extractCompanies: ReturnType<typeof vi.fn> }
-const mockPreview = getCompanyPreview as ReturnType<typeof vi.fn>
-const mockToast = toast as { error: ReturnType<typeof vi.fn>; warning: ReturnType<typeof vi.fn> }
+const mockLlm = llmService as unknown as { isConfigured: ReturnType<typeof vi.fn>; extractCompanies: ReturnType<typeof vi.fn> }
+const mockPreview = getCompanyPreview as unknown as ReturnType<typeof vi.fn>
+const mockToast = toast as unknown as { error: ReturnType<typeof vi.fn>; warning: ReturnType<typeof vi.fn> }
 
 const existingCompanies: any[] = [
   { id: 1, name: 'OpenAI', logo: '', careerUrl: '', matchScore: 95 },

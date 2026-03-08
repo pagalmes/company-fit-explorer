@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, act, fireEvent } from '@testing-library/react'
-import React, { useRef } from 'react'
+import React from 'react'
 import { useSwipeGesture } from '../useSwipeGesture'
 
 function touch(x: number, y: number): Touch {
