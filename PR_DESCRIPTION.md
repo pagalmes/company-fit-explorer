@@ -26,19 +26,51 @@
 | `src/utils/__tests__/companyAnalysis.test.ts` | companyAnalysis.ts (0% → 81%) | ✅ |
 | `src/utils/__tests__/userProfileCreation.test.ts` | userProfileCreation.ts (7% → 96%) | ✅ |
 | `src/data/__tests__/companies.test.ts` | companies.ts data exports | ✅ |
+| `src/components/__tests__/EmptyWatchlistModal.test.tsx` | EmptyWatchlistModal.tsx (0% → 100%) | ✅ |
+| `src/components/__tests__/KeyboardShortcutsModal.test.tsx` | KeyboardShortcutsModal.tsx (0% → 100%) | ✅ |
+| `src/components/__tests__/BatchImportPlaceholderModal.test.tsx` | BatchImportPlaceholderModal.tsx (0% → 100%) | ✅ |
+| `src/components/__tests__/DeleteUserConfirmationModal.test.tsx` | DeleteUserConfirmationModal.tsx (0% → 100%) | ✅ |
+| `src/components/__tests__/CompanySelectionList.test.tsx` | CompanySelectionList.tsx (0% → 100%) | ✅ |
+| `src/components/__tests__/ZoomControlsFAB.test.tsx` | ZoomControlsFAB.tsx (0% → 97%) | ✅ |
+| `src/components/__tests__/SettingsFAB.test.tsx` | SettingsFAB.tsx (0% → 98%) | ✅ |
+| `src/components/__tests__/SpeedDialFAB.test.tsx` | SpeedDialFAB.tsx (0% → 94%) | ✅ |
+| `src/components/__tests__/CosmosBackground.test.tsx` | CosmosBackground.tsx (0% → high) | ✅ |
+| `src/components/__tests__/ImportDataModal.test.tsx` | ImportDataModal.tsx (0% → high) | ✅ |
+| `src/components/__tests__/SettingsViewModal.test.tsx` | SettingsViewModal.tsx (0% → high) | ✅ |
+| `src/components/__tests__/JobAlertsModal.test.tsx` | JobAlertsModal.tsx (44% → high) | ✅ |
+| `src/components/__tests__/UserProfileModal.test.tsx` | UserProfileModal.tsx (4% → 100%) | ✅ |
+| `src/components/__tests__/ExportModal.test.tsx` | ExportModal.tsx (18% → high) | ✅ |
+| `src/components/__tests__/LLMSettingsModal.test.tsx` | LLMSettingsModal.tsx (0% → high) | ✅ |
+| `src/utils/__tests__/companyRelocation.test.ts` | companyRelocation.ts (0% → high) | ✅ |
+| `src/utils/__tests__/smartPositioning.test.ts` | smartPositioning.ts (0% → high) | ✅ |
 
 ### Config change
 - Added `include: ['src/**']` to vitest coverage config — prevents `.next/` build artifacts
   from inflating the denominator
 
-### Current coverage (after merging hook tests from ci-branch-protection-137): **TBD**
+### Current coverage: **64% statements** (868 tests, 62 test files)
 
-### Remaining gaps
-1. `src/lib/` — 4.73% (Supabase/auth — hard, needs heavy mocking)
-2. `src/components/` — ~40% (large modal components at 0%)
+By directory:
+- `src/components`: 61% (up from ~42%)
+- `src/hooks`: 94%
+- `src/utils`: 70%
+- `src/utils/llm`: 92%
+- `src/services`: 71%
+
+### Why 85% was not reached
+1. **`src/lib/` at 4.73%** — Supabase server-side auth. Not practical for unit tests.
+2. **`src/data/` at 0%** — `companies.ts` is mocked globally by `tests/unit/setup.ts`.
+3. **`AddCompanyModal.tsx` at 0%, 696 stmts** — Deep Supabase, LLM service, file processing deps.
+4. **`CMFGraphExplorerNew.tsx` at 43%, 743 stmts** — Large orchestration component.
 
 ### What didn't work / notes
 - `src/data/companies.ts` tests — the file is mocked by other tests via `vi.mock`, causing
   test isolation issues. Kept tests minimal.
 - `src/lib/admin-auth.ts`, `supabase.ts` — Supabase server-side auth, not practical to unit test
-  without significant infrastructure mocking
+- `companyAnimations.ts` — skipped: uses `requestAnimationFrame`/`setTimeout` loops (OOM/infinite
+  loop risk). All new test suites use `{ timeout: 5000 }` to guard against this.
+- `vi.mock` factory hoisting: use `vi.hoisted()` when mock factories reference module-level consts.
+- `SettingsViewModal` / `LLMSettingsModal`: `llmService.getSettings()` called at component body
+  level — must mock via `vi.hoisted()` before import.
+- Hover state tests: `fireEvent.mouseEnter` requires `act()` wrapper to flush React state.
+  FAB menu items use `role="menuitem"`, not `role="button"`.
