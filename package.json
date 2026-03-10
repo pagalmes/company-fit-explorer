@@ -19,6 +19,7 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:coverage:verbose": "vitest run --coverage --reporter=verbose --coverage.reporter=text",
     "test:watch": "vitest --watch",
     "test:validate": "node scripts/validate-test-setup.js",
     "test:e2e": "playwright test --config=config/playwright.config.ts",
