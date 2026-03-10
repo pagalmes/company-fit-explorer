@@ -10,7 +10,7 @@
 
 ### New test files added
 
-| File | Target | Approx coverage gained |
+| File | Target | Coverage |
 |---|---|---|
 | `src/utils/__tests__/logoProvider.test.ts` | logoProvider.ts (14% → 100%) | ✅ |
 | `src/utils/__tests__/logoMigration.test.ts` | logoMigration.ts (15% → 100%) | ✅ |
@@ -25,21 +25,20 @@
 | `src/utils/llm/__tests__/service.test.ts` | llm/service.ts (38% → 87%) | ✅ |
 | `src/utils/__tests__/companyAnalysis.test.ts` | companyAnalysis.ts (0% → 81%) | ✅ |
 | `src/utils/__tests__/userProfileCreation.test.ts` | userProfileCreation.ts (7% → 96%) | ✅ |
-| `src/data/__tests__/companies.test.ts` | companies.ts (0% → covered) | ✅ |
+| `src/data/__tests__/companies.test.ts` | companies.ts data exports | ✅ |
 
 ### Config change
 - Added `include: ['src/**']` to vitest coverage config — prevents `.next/` build artifacts
   from inflating the denominator
 
-### Current coverage: **~48%** (src/ only)
+### Current coverage (after merging hook tests from ci-branch-protection-137): **TBD**
 
-### Remaining gaps (in priority order)
-1. `src/components/` — 39% (large modal components at 0%)
-2. `src/lib/` — 4.73% (Supabase/auth — hard, needs mocking)
-3. `src/hooks/` — 50% (useWatchlist, useSwipeGesture, useCompanyDetection)
+### Remaining gaps
+1. `src/lib/` — 4.73% (Supabase/auth — hard, needs heavy mocking)
+2. `src/components/` — ~40% (large modal components at 0%)
 
 ### What didn't work / notes
 - `src/data/companies.ts` tests — the file is mocked by other tests via `vi.mock`, causing
-  test isolation issues. Kept tests minimal to avoid mock pollution.
+  test isolation issues. Kept tests minimal.
 - `src/lib/admin-auth.ts`, `supabase.ts` — Supabase server-side auth, not practical to unit test
   without significant infrastructure mocking

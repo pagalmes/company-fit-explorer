@@ -10,9 +10,21 @@ dotenv.config({ path: resolve(__dirname, '../.env.local') });
 
 /**
  * @see https://playwright.dev/docs/test-configuration
+ *
+ * Browser coverage strategy:
+ * - Local dev: use `npm run test:e2e:local` (chromium + firefox only)
+ *   Webkit requires system libs unavailable on WSL2.
+ * - CI (ubuntu-latest): use `npm run test:e2e` (all browsers)
+ *   `npx playwright install --with-deps` installs webkit deps automatically.
+ *
+ * E2E in CI: enabled in .github/workflows/ci.yml (issue #137).
+ * Chromium + firefox verified locally. Webkit is CI-only (ubuntu-latest).
+ * WSL2 is missing webkit system libs — do NOT attempt webkit locally.
  */
 export default defineConfig({
   testDir: '../tests/e2e',
+  /* Runs once before all tests to seed deterministic DB state for the test user */
+  globalSetup: resolve(__dirname, '../tests/e2e/global.setup.ts'),
   /* Output directories for organized test artifacts */
   outputDir: '../tests/results',
   reporter: [['html', { outputFolder: '../tests/reports' }]],
