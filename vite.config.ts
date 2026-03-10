@@ -36,6 +36,7 @@ export default defineConfig({
         '**/main.tsx',
         'dist/',
         '.next/',
+        'src/data/',   // globally mocked by tests/unit/setup.ts — always 0%, not meaningful
       ],
     },
     bail: 0,
